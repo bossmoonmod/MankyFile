@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="legal-container">
+    <div class="legal-header">
+        <h1>{{ title }}</h1>
+        <p>{{ subtitle }}</p>
+    </div>
+
+    <div class="legal-content">
+        <section>
+            <h2>1. ความมุ่งมั่นในความเป็นส่วนตัว</h2>
+            <p>MankyFile ตระหนักถึงความสำคัญของข้อมูลส่วนบุคคลของคุณ เรายึดมั่นในนโยบาย "ความเป็นส่วนตัวโดยการออกแบบ"
+                (Privacy by Design)
+                ซึ่งหมายความว่าเราออกแบบระบบเพื่อลดการเก็บข้อมูลให้เหลือน้อยที่สุดเท่าที่จำเป็นต่อการให้บริการ</p>
+        </section>
+
+        <section>
+            <h2>2. ข้อมูลที่เราเก็บรวบรวม</h2>
+            <p>เราพยายามเก็บข้อมูลให้น้อยที่สุด:</p>
+            <ul>
+                <li><strong>ไฟล์ที่อัปโหลด:</strong> เราเก็บไฟล์ไว้ชั่วคราวเพื่อทำตามคำสั่งการประมวลผลของคุณเท่านั้น
+                </li>
+                <li><strong>ข้อมูลการใช้งาน:</strong> เราอาจเก็บข้อมูลเชิงเทคนิค เช่น ที่อยู่ IP, ประเภทเบราว์เซอร์
+                    เพื่อวัตถุประสงค์ในการรักษาความปลอดภัยและการวิเคราะห์การทำงานของระบบเท่านั้น</li>
+                <li><strong>ไม่มีการใช้คุกกี้เพื่อการโฆษณา:</strong> เราไม่ใช้คุกกี้เพื่อติดตามคุณข้ามเว็บไซต์อื่น</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>3. ความปลอดภัยของไฟล์และการลบข้อมูล</h2>
+            <p>ความปลอดภัยของคุณคือสิ่งสำคัญที่สุดของเรา:</p>
+            <ul>
+                <li><strong>การลบไฟล์อัตโนมัติ:</strong>
+                    ทั้งไฟล์ต้นฉบับและไฟล์ที่ประมวลผลแล้วจะถูกลบออกจากระบบของเราอย่างถาวรภายใน 60 นาทีหลังจากอัปโหลด
+                </li>
+                <li><strong>การเข้ารหัส:</strong>
+                    ข้อมูลที่ถูกส่งระหว่างเครื่องคอมพิวเตอร์ของคุณและเซิร์ฟเวอร์ของเราจะถูกส่งผ่านโปรโตคอล HTTPS
+                    ที่มีการเข้ารหัส SSL/TLS</li>
+                <li><strong>การเข้าถึงที่จำกัด:</strong>
+                    ไม่มีบุคคลภายนอกหรือพนักงานของเราสามารถเข้าถึงเนื้อหาภายในไฟล์ของคุณได้ในระหว่างการประมวลผล</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>4. การเปิดเผยข้อมูลแก่บุคคลที่สาม</h2>
+            <p>เรา <strong>"จะไม่"</strong> ขาย ให้เช่า หรือเปิดเผยไฟล์หรือข้อมูลส่วนบุคคลของคุณแก่บุคคลที่สาม
+                เว้นแต่ในกรณีต่อไปนี้:</p>
+            <ul>
+                <li>เพื่อปฏิบัติตามข้อบังคับทางกฎหมาย หรือคำสั่งศาล</li>
+                <li>เพื่อปกป้องสิทธิ์หรือทรัพย์สินของ MankyFile จากการละเมิด</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>5. สิทธิตามกฎหมายคุ้มครองข้อมูลส่วนบุคคล (PDPA)</h2>
+            <p>คุณมีสิทธิในการตรวจสอบ ลบ หรือระงับการใช้ข้อมูลส่วนบุคคลของคุณ เนื่องจากเรามีนโยบายลบข้อมูลโดยอัตโนมัติ
+                ข้อมูลของคุณจะถูกทำลายทิ้งเป็นประจำอยู่แล้วตามมาตรการรักษาความปลอดภัยของเรา</p>
+        </section>
+
+        <section>
+            <h2>6. การติดต่อเรา</h2>
+            <p>หากคุณมีคำถามหรือข้อสงสัยเกี่ยวกับนโยบายความเป็นส่วนตัวนี้
+                คุณสามารถติดต่อเราได้ผ่านช่องทางที่ระบุไว้ในหน้าหลักของเว็บไซต์</p>
+        </section>
+    </div>
+</div>
+
+<style>
+    .legal-container {
+        max-width: 900px;
+        width: 100%;
+        margin: 40px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .legal-header {
+        text-align: center;
+        padding: 40px 20px;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 30px;
+    }
+
+    .legal-header h1 {
+        font-size: 32px;
+        color: #1a1a1a;
+        margin-bottom: 10px;
+    }
+
+    .legal-header p {
+        font-size: 18px;
+        color: #666;
+    }
+
+    .legal-content {
+        padding: 0 20px 40px;
+        line-height: 1.8;
+    }
+
+    .legal-content section {
+        margin-bottom: 35px;
+    }
+
+    .legal-content h2 {
+        font-size: 22px;
+        color: #3b82f6;
+        /* Privacy uses blue theme */
+        margin-bottom: 15px;
+        border-left: 4px solid #3b82f6;
+        padding-left: 15px;
+    }
+
+    .legal-content p {
+        color: #444;
+        margin-bottom: 15px;
+    }
+
+    .legal-content ul {
+        padding-left: 20px;
+        color: #444;
+    }
+
+    .legal-content li {
+        margin-bottom: 10px;
+    }
+
+    @media (max-width: 768px) {
+        .legal-container {
+            margin: 20px;
+            border-radius: 0;
+        }
+    }
+</style>
+{% endblock %}

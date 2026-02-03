@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="legal-container">
+    <div class="legal-header">
+        <h1>{{ title }}</h1>
+        <p>{{ subtitle }}</p>
+    </div>
+
+    <div class="legal-content">
+        <section>
+            <h2>1. การยอมรับข้อตกลง</h2>
+            <p>การเข้าถึงและการใช้งานเว็บไซต์ MankyFile ("เรา", "บริการ") ถือว่าคุณได้อ่าน เข้าใจ
+                และตกลงที่จะผูกพันตามเงื่อนไขการใช้งานเหล่านี้ หากคุณไม่เห็นด้วยกับข้อกำหนดใดๆ
+                โปรดหยุดการใช้งานบริการทันที</p>
+        </section>
+
+        <section>
+            <h2>2. ขอบเขตบริการ</h2>
+            <p>MankyFile ให้บริการเครื่องมือจัดการไฟล์ PDF ออนไลน์ เช่น การรวมไฟล์ การแยกไฟล์ การบีบอัด
+                และการแปลงไฟล์รูปแบบต่างๆ บริการนี้จัดเตรียมไว้ "ตามที่เป็นอยู่" (As-is) โดยไม่มีการรับประกันใดๆ
+                เพิ่มเติม</p>
+        </section>
+
+        <section>
+            <h2>3. การใช้งานที่เหมาะสม</h2>
+            <p>คุณตกลงที่จะส่งเฉพาะไฟล์ที่คุณมีสิทธิ์ตามกฎหมายในการจัดการเท่านั้น ห้ามใช้บริการเพื่อ:</p>
+            <ul>
+                <li>ส่งไฟล์ที่มีมัลแวร์ ไวรัส หรือรหัสที่เป็นอันตราย</li>
+                <li>พยายามเจาะระบบหรือรบกวนการทำงานของเซิร์ฟเวอร์</li>
+                <li>จัดการไฟล์ที่ละเมิดลิขสิทธิ์หรือสิทธิ์ของบุคคลที่สาม</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>4. นโยบายการจัดการไฟล์</h2>
+            <p>เพื่อความเป็นส่วนตัวสูงสุด เรามีนโยบายดังนี้:</p>
+            <ul>
+                <li><strong>ไม่มีการเก็บรักษาถาวร:</strong>
+                    ไฟล์ที่อัปโหลดและไฟล์ที่ประมวลผลแล้วจะถูกลบออกจากเซิร์ฟเวอร์ของเราโดยอัตโนมัติภายใน 1 ชั่วโมง</li>
+                <li><strong>ไม่มีการดูเนื้อหา:</strong> เราไม่มีนโยบายการเข้าตรวจสอบเนื้อหาภายในไฟล์ของผู้ใช้
+                    ยกเว้นกรณีที่กฎหมายกำหนด</li>
+                <li><strong>สิทธิ์ในไฟล์:</strong> คุณยังคงเป็นเจ้าของลิขสิทธิ์และสิทธิ์ทั้งหมดในไฟล์ที่คุณอัปโหลด</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>5. การจำกัดความรับผิดชอบ</h2>
+            <p>MankyFile จะไม่รับผิดชอบต่อความเสียหายใดๆ ที่เกิดขึ้นจากการใช้บริการ รวมถึงแต่ไม่จำกัดเพียง
+                การสูญหายของข้อมูลจากการขัดข้องของระบบ หรือความผิดพลาดในการประมวลผลไฟล์</p>
+        </section>
+
+        <section>
+            <h2>6. การเปลี่ยนแปลงเงื่อนไข</h2>
+            <p>เราขอสงวนสิทธิ์ในการแก้ไขเงื่อนไขเหล่านี้ได้ตลอดเวลาโดยไม่ต้องแจ้งให้ทราบล่วงหน้า
+                การที่คุณใช้งานบริการต่อไปถือว่าคุณยอมรับเงื่อนไขที่เปลี่ยนแปลงนั้น</p>
+        </section>
+    </div>
+</div>
+
+<style>
+    .legal-container {
+        max-width: 900px;
+        width: 100%;
+        margin: 40px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .legal-header {
+        text-align: center;
+        padding: 40px 20px;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 30px;
+    }
+
+    .legal-header h1 {
+        font-size: 32px;
+        color: #1a1a1a;
+        margin-bottom: 10px;
+    }
+
+    .legal-header p {
+        font-size: 18px;
+        color: #666;
+    }
+
+    .legal-content {
+        padding: 0 20px 40px;
+        line-height: 1.8;
+    }
+
+    .legal-content section {
+        margin-bottom: 35px;
+    }
+
+    .legal-content h2 {
+        font-size: 22px;
+        color: #e5322d;
+        margin-bottom: 15px;
+        border-left: 4px solid #e5322d;
+        padding-left: 15px;
+    }
+
+    .legal-content p {
+        color: #444;
+        margin-bottom: 15px;
+    }
+
+    .legal-content ul {
+        padding-left: 20px;
+        color: #444;
+    }
+
+    .legal-content li {
+        margin-bottom: 10px;
+    }
+
+    @media (max-width: 768px) {
+        .legal-container {
+            margin: 20px;
+            border-radius: 0;
+        }
+    }
+</style>
+{% endblock %}

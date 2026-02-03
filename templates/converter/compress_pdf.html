@@ -1,0 +1,518 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="tool-container" style="max-width: 1000px;">
+    <div class="tool-header">
+        <h1>บีบอัด PDF</h1>
+        <p>ลดขนาดไฟล์ PDF ของคุณโดยไม่สูญเสียคุณภาพมากเกินไป</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" id="upload-form">
+        {% csrf_token %}
+
+        <!-- Quality Selection with Modern Design -->
+        <div class="compression-section">
+            <h3 style="text-align: center; margin-bottom: 25px; color: #333; font-size: 18px; font-weight: 600;">
+                🎯 เลือกระดับการบีบอัด
+            </h3>
+
+            <div class="quality-grid">
+                <!-- Low Quality -->
+                <label class="quality-card-modern">
+                    <input type="radio" name="quality" value="low">
+                    <div class="card-content">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <span style="font-size: 28px;">💾</span>
+                        </div>
+                        <h4>ต่ำสุด</h4>
+                        <p class="quality-desc">ขนาดไฟล์เล็กที่สุด</p>
+                        <div class="quality-badge">72 DPI</div>
+                        <div class="quality-info">
+                            <span class="info-item">📉 ลดได้มากสุด</span>
+                            <span class="info-item">🖼️ เหมาะสำหรับเว็บ</span>
+                        </div>
+                    </div>
+                    <div class="card-overlay"></div>
+                </label>
+
+                <!-- Medium Quality (Recommended) -->
+                <label class="quality-card-modern recommended">
+                    <input type="radio" name="quality" value="medium" checked>
+                    <div class="card-content">
+                        <div class="recommended-badge">⭐ แนะนำ</div>
+                        <div class="card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <span style="font-size: 28px;">⚖️</span>
+                        </div>
+                        <h4>ปานกลาง</h4>
+                        <p class="quality-desc">สมดุลระหว่างขนาดและคุณภาพ</p>
+                        <div class="quality-badge">150 DPI</div>
+                        <div class="quality-info">
+                            <span class="info-item">📊 สมดุลดีที่สุด</span>
+                            <span class="info-item">📱 เหมาะสำหรับทั่วไป</span>
+                        </div>
+                    </div>
+                    <div class="card-overlay"></div>
+                </label>
+
+                <!-- High Quality -->
+                <label class="quality-card-modern">
+                    <input type="radio" name="quality" value="high">
+                    <div class="card-content">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <span style="font-size: 28px;">📈</span>
+                        </div>
+                        <h4>สูง</h4>
+                        <p class="quality-desc">คุณภาพดี เหมาะสำหรับพิมพ์</p>
+                        <div class="quality-badge">300 DPI</div>
+                        <div class="quality-info">
+                            <span class="info-item">🖨️ เหมาะสำหรับพิมพ์</span>
+                            <span class="info-item">✨ คุณภาพดี</span>
+                        </div>
+                    </div>
+                    <div class="card-overlay"></div>
+                </label>
+
+                <!-- Maximum Quality -->
+                <label class="quality-card-modern">
+                    <input type="radio" name="quality" value="maximum">
+                    <div class="card-content">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                            <span style="font-size: 28px;">💎</span>
+                        </div>
+                        <h4>สูงสุด</h4>
+                        <p class="quality-desc">คุณภาพสูงสุด ลดขนาดน้อย</p>
+                        <div class="quality-badge">300+ DPI</div>
+                        <div class="quality-info">
+                            <span class="info-item">🎨 คุณภาพสูงสุด</span>
+                            <span class="info-item">📄 เหมาะสำหรับเอกสารสำคัญ</span>
+                        </div>
+                    </div>
+                    <div class="card-overlay"></div>
+                </label>
+            </div>
+        </div>
+
+        <!-- File Upload Area with Enhanced Design -->
+        <div class="upload-section" style="margin-top: 40px;">
+            <div class="upload-area-modern" id="upload-area">
+                <input type="file" name="files" id="file-input" accept=".pdf" style="display: none;">
+                <div class="upload-content">
+                    <div class="upload-icon-modern">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5">
+                            <path
+                                d="M7 18C4.79086 18 3 16.2091 3 14C3 11.7909 4.79086 10 7 10C7 7.23858 9.23858 5 12 5C14.7614 5 17 7.23858 17 10C19.2091 10 21 11.7909 21 14C21 16.2091 19.2091 18 17 18H7Z" />
+                            <path d="M12 12V21M12 12L9 15M12 12L15 15" />
+                        </svg>
+                    </div>
+                    <h3 style="margin: 20px 0 10px; color: #333; font-size: 20px;">เลือกไฟล์ PDF ของคุณ</h3>
+                    <p style="color: #666; margin: 0 0 15px;">คลิกเพื่อเลือกไฟล์ หรือลากไฟล์มาวางที่นี่</p>
+                    <div class="file-format-info">
+                        <span>📄 รองรับ: PDF</span>
+                        <span>📦 ขนาดสูงสุด: 50MB</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="file-preview" style="display: none; margin-top: 25px;">
+                <div class="file-preview-card">
+                    <div class="file-icon">📄</div>
+                    <div class="file-details">
+                        <h4 id="file-name" style="margin: 0 0 5px; color: #333;"></h4>
+                        <p id="file-size" style="margin: 0; color: #666; font-size: 14px;"></p>
+                    </div>
+                    <button type="button" id="remove-file" class="remove-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn-compress" style="display: none;">
+            <span class="btn-icon">🗜️</span>
+            <span class="btn-text">บีบอัดไฟล์ทันที</span>
+        </button>
+    </form>
+</div>
+
+<style>
+    /* Compression Section */
+    .compression-section {
+        background: white;
+        padding: 35px;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        margin-bottom: 30px;
+    }
+
+    /* Quality Grid */
+    .quality-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    /* Modern Quality Card */
+    .quality-card-modern {
+        position: relative;
+        cursor: pointer;
+        display: block;
+    }
+
+    .quality-card-modern input[type="radio"] {
+        display: none;
+    }
+
+    .quality-card-modern .card-content {
+        position: relative;
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 25px 20px;
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 1;
+    }
+
+    .quality-card-modern .card-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(229, 50, 45, 0.05) 0%, rgba(229, 50, 45, 0.1) 100%);
+        border-radius: 16px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        pointer-events: none;
+    }
+
+    .quality-card-modern:hover .card-content {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+        border-color: #e5322d;
+    }
+
+    .quality-card-modern:hover .card-overlay {
+        opacity: 1;
+    }
+
+    .quality-card-modern input:checked+.card-content {
+        border-color: #e5322d;
+        border-width: 3px;
+        box-shadow: 0 8px 20px rgba(229, 50, 45, 0.25);
+        transform: translateY(-2px);
+    }
+
+    .quality-card-modern input:checked~.card-overlay {
+        opacity: 1;
+    }
+
+    .card-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .quality-card-modern h4 {
+        margin: 10px 0 5px;
+        font-size: 18px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .quality-desc {
+        font-size: 13px;
+        color: #6b7280;
+        margin: 0 0 12px;
+        line-height: 1.4;
+    }
+
+    .quality-badge {
+        display: inline-block;
+        background: #f3f4f6;
+        color: #4b5563;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    .quality-info {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: auto;
+        padding-top: 12px;
+    }
+
+    .info-item {
+        font-size: 11px;
+        color: #9ca3af;
+        display: block;
+    }
+
+    .recommended-badge {
+        position: absolute;
+        top: -10px;
+        right: 15px;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+        z-index: 2;
+    }
+
+    /* Upload Section */
+    .upload-section {
+        background: white;
+        padding: 35px;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .upload-area-modern {
+        border: 3px dashed #d1d5db;
+        border-radius: 16px;
+        padding: 50px 30px;
+        text-align: center;
+        background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .upload-area-modern:hover {
+        border-color: #e5322d;
+        background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+        transform: scale(1.01);
+    }
+
+    .upload-area-modern.dragover {
+        border-color: #e5322d;
+        background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+        transform: scale(1.02);
+    }
+
+    .upload-icon-modern {
+        color: #e5322d;
+        margin-bottom: 15px;
+    }
+
+    .file-format-info {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 15px;
+        font-size: 13px;
+        color: #6b7280;
+    }
+
+    /* File Preview Card */
+    .file-preview-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 20px;
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        transition: all 0.3s;
+    }
+
+    .file-preview-card:hover {
+        border-color: #e5322d;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .file-icon {
+        font-size: 40px;
+        flex-shrink: 0;
+    }
+
+    .file-details {
+        flex: 1;
+        text-align: left;
+    }
+
+    .remove-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: none;
+        background: #fee2e2;
+        color: #dc2626;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+        flex-shrink: 0;
+    }
+
+    .remove-btn:hover {
+        background: #dc2626;
+        color: white;
+        transform: rotate(90deg);
+    }
+
+    /* Compress Button */
+    .btn-compress {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        width: 100%;
+        max-width: 400px;
+        margin: 30px auto 0;
+        padding: 18px 40px;
+        background: linear-gradient(135deg, #e5322d 0%, #c41e3a 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 16px rgba(229, 50, 45, 0.3);
+    }
+
+    .btn-compress:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(229, 50, 45, 0.4);
+    }
+
+    .btn-compress:active {
+        transform: translateY(0);
+    }
+
+    .btn-compress:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    .btn-icon {
+        font-size: 24px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .quality-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .compression-section,
+        .upload-section {
+            padding: 25px 20px;
+        }
+
+        .upload-area-modern {
+            padding: 40px 20px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .quality-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-input');
+    const filePreview = document.getElementById('file-preview');
+    const submitBtn = document.getElementById('submit-btn');
+    const uploadForm = document.getElementById('upload-form');
+    const removeFileBtn = document.getElementById('remove-file');
+
+    // Click to upload
+    uploadArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    // Drag and drop
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            displayFile(files[0]);
+        }
+    });
+
+    // File selection
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            displayFile(e.target.files[0]);
+        }
+    });
+
+    // Remove file
+    removeFileBtn.addEventListener('click', () => {
+        fileInput.value = '';
+        filePreview.style.display = 'none';
+        submitBtn.style.display = 'none';
+        uploadArea.style.display = 'block';
+    });
+
+    function displayFile(file) {
+        document.getElementById('file-name').textContent = file.name;
+        document.getElementById('file-size').textContent = formatFileSize(file.size);
+
+        uploadArea.style.display = 'none';
+        filePreview.style.display = 'block';
+        submitBtn.style.display = 'flex';
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    // Form submission
+    uploadForm.addEventListener('submit', (e) => {
+        if (fileInput.files.length === 0) {
+            e.preventDefault();
+            alert('กรุณาเลือกไฟล์ก่อน');
+        } else {
+            submitBtn.disabled = true;
+            submitBtn.querySelector('.btn-text').textContent = 'กำลังบีบอัด...';
+            submitBtn.querySelector('.btn-icon').textContent = '⏳';
+        }
+    });
+</script>
+{% endblock %}

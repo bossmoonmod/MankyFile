@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="simple-converter-container">
+    <div class="converter-content">
+        <h1 class="converter-title">{{ title }}</h1>
+        <p class="converter-subtitle">{{ subtitle }}</p>
+
+        <form method="post" enctype="multipart/form-data" id="upload-form">
+            {% csrf_token %}
+
+            <div class="upload-button-wrapper">
+                <input type="file" name="files" id="file-input" accept="{{ accept }}" style="display: none;">
+                <button type="button" class="btn-select-file" id="select-file-btn">
+                    <span>เลือกไฟล์ {{ file_type }}</span>
+                </button>
+                <p class="file-hint">หรือลากไฟล์มาวางที่นี่</p>
+            </div>
+
+            <div id="file-selected" style="display: none;">
+                <div class="selected-file-info">
+                    <div class="file-icon-simple">📄</div>
+                    <div class="file-info-text">
+                        <p id="file-name" class="file-name-text"></p>
+                        <p id="file-size" class="file-size-text"></p>
+                    </div>
+                    <button type="button" id="remove-file" class="btn-remove-simple">✕</button>
+                </div>
+                <button type="submit" class="btn-convert-simple">
+                    <span>แปลงเป็น {{ output_format }}</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <footer class="simple-footer">
+        <p>© 2026 MankyFile Project • <a href="{% url 'converter:terms' %}">เงื่อนไขการใช้งาน</a> • <a
+                href="{% url 'converter:privacy' %}">นโยบายความเป็นส่วนตัว</a></p>
+    </footer>
+</div>
+
+<style>
+    /* Container */
+    .simple-converter-container {
+        min-height: calc(100vh - 80px);
+        display: flex;
+        flex-direction: column;
+        background: #f8f9fa;
+    }
+
+    .converter-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 20px;
+        max-width: 600px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    /* Title & Subtitle */
+    .converter-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0 0 15px;
+        text-align: center;
+    }
+
+    .converter-subtitle {
+        font-size: 15px;
+        color: #666;
+        margin: 0 0 40px;
+        text-align: center;
+        line-height: 1.6;
+        max-width: 500px;
+    }
+
+    /* Upload Button */
+    .upload-button-wrapper {
+        text-align: center;
+    }
+
+    .btn-select-file {
+        background: #e5322d;
+        color: white;
+        border: none;
+        padding: 16px 40px;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 2px 8px rgba(229, 50, 45, 0.3);
+        font-family: 'Kanit', sans-serif;
+    }
+
+    .btn-select-file:hover {
+        background: #c41e3a;
+        box-shadow: 0 4px 12px rgba(229, 50, 45, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .btn-select-file:active {
+        transform: translateY(0);
+    }
+
+    .file-hint {
+        margin-top: 15px;
+        font-size: 14px;
+        color: #999;
+    }
+
+    /* Selected File Info */
+    #file-selected {
+        margin-top: 30px;
+        width: 100%;
+    }
+
+    .selected-file-info {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .file-icon-simple {
+        font-size: 40px;
+        flex-shrink: 0;
+    }
+
+    .file-info-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .file-name-text {
+        margin: 0 0 5px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #333;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .file-size-text {
+        margin: 0;
+        font-size: 13px;
+        color: #999;
+    }
+
+    .btn-remove-simple {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: none;
+        background: #f5f5f5;
+        color: #666;
+        cursor: pointer;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+        flex-shrink: 0;
+    }
+
+    .btn-remove-simple:hover {
+        background: #e5322d;
+        color: white;
+    }
+
+    /* Convert Button */
+    .btn-convert-simple {
+        width: 100%;
+        background: #e5322d;
+        color: white;
+        border: none;
+        padding: 16px 40px;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 2px 8px rgba(229, 50, 45, 0.3);
+        font-family: 'Kanit', sans-serif;
+    }
+
+    .btn-convert-simple:hover {
+        background: #c41e3a;
+        box-shadow: 0 4px 12px rgba(229, 50, 45, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .btn-convert-simple:active {
+        transform: translateY(0);
+    }
+
+    .btn-convert-simple:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    /* Footer */
+    .simple-footer {
+        background: white;
+        border-top: 1px solid #e0e0e0;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .simple-footer p {
+        margin: 0;
+        font-size: 13px;
+        color: #666;
+    }
+
+    .simple-footer a {
+        color: #666;
+        text-decoration: none;
+    }
+
+    .simple-footer a:hover {
+        color: #e5322d;
+    }
+
+    /* Drag & Drop */
+    .upload-button-wrapper.dragover .btn-select-file {
+        background: #c41e3a;
+        transform: scale(1.05);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .converter-title {
+            font-size: 26px;
+        }
+
+        .converter-subtitle {
+            font-size: 14px;
+        }
+
+        .converter-content {
+            padding: 40px 20px;
+        }
+    }
+</style>
+
+<script>
+    const selectFileBtn = document.getElementById('select-file-btn');
+    const fileInput = document.getElementById('file-input');
+    const fileSelected = document.getElementById('file-selected');
+    const uploadButtonWrapper = document.querySelector('.upload-button-wrapper');
+    const removeFileBtn = document.getElementById('remove-file');
+    const uploadForm = document.getElementById('upload-form');
+
+    // Click to select file
+    selectFileBtn.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    // File input change
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            displayFile(e.target.files[0]);
+        }
+    });
+
+    // Drag and drop on button
+    uploadButtonWrapper.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadButtonWrapper.classList.add('dragover');
+    });
+
+    uploadButtonWrapper.addEventListener('dragleave', () => {
+        uploadButtonWrapper.classList.remove('dragover');
+    });
+
+    uploadButtonWrapper.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadButtonWrapper.classList.remove('dragover');
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            displayFile(files[0]);
+        }
+    });
+
+    // Remove file
+    removeFileBtn.addEventListener('click', () => {
+        fileInput.value = '';
+        uploadButtonWrapper.style.display = 'block';
+        fileSelected.style.display = 'none';
+    });
+
+    // Display selected file
+    function displayFile(file) {
+        document.getElementById('file-name').textContent = file.name;
+        document.getElementById('file-size').textContent = formatFileSize(file.size);
+
+        uploadButtonWrapper.style.display = 'none';
+        fileSelected.style.display = 'block';
+    }
+
+    // Format file size
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    // Form submission
+    uploadForm.addEventListener('submit', (e) => {
+        if (fileInput.files.length === 0) {
+            e.preventDefault();
+            alert('กรุณาเลือกไฟล์ก่อน');
+        } else {
+            const convertBtn = document.querySelector('.btn-convert-simple');
+            convertBtn.disabled = true;
+            convertBtn.innerHTML = '<span>กำลังแปลง...</span>';
+        }
+    });
+</script>
+{% endblock %}

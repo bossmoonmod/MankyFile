@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="hero-section">
+    <h1 class="hero-title">เครื่องมือจัดการ PDF ครบวงจรที่คุณต้องการ</h1>
+    <p class="hero-subtitle">เครื่องมือทั้งหมดที่คุณต้องใช้กับ PDF อยู่ใกล้แค่เอื้อม ฟรีและใช้งานง่าย 100%! รวม, แยก,
+        บีบอัด, แปลง, หมุน, ปลดล็อก และใส่ลายน้ำ PDF ได้ในไม่กี่คลิก</p>
+</div>
+
+<div class="tools-grid">
+    <!-- Row 1: Favorites -->
+    <a href="{% url 'converter:merge_pdf' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+            </svg>
+        </div>
+        <h3>รวมไฟล์ PDF</h3>
+        <p>รวมไฟล์ PDF ตามลำดับที่คุณต้องการด้วยตัวรวม PDF ที่ง่ายที่สุด</p>
+    </a>
+
+    <a href="{% url 'converter:split_pdf' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+            </svg> <!-- Placeholder icon -->
+        </div>
+        <h3>แยกไฟล์ PDF</h3>
+        <p>แยกหน้าหนึ่งหน้าหรือทั้งชุดเพื่อแปลงเป็นไฟล์ PDF อิสระได้อย่างง่ายดาย</p>
+    </a>
+
+    <a href="{% url 'converter:compress_pdf' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+            </svg>
+        </div>
+        <h3>บีบอัด PDF</h3>
+        <p>ลดขนาดไฟล์ในขณะที่รักษาคุณภาพ PDF ให้สูงสุด</p>
+    </a>
+
+    <!-- Row 2: Converters -->
+    <a href="{% url 'converter:pdf_to_word' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+            </svg>
+        </div>
+        <h3>PDF เป็น Word</h3>
+        <p>แปลงไฟล์ PDF ของคุณเป็นเอกสาร DOC และ DOCX ที่แก้ไขได้ง่ายอย่างง่ายดาย</p>
+    </a>
+
+    <a href="{% url 'converter:pdf_to_powerpoint' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+            </svg>
+        </div>
+        <h3>PDF เป็น PowerPoint</h3>
+        <p>เปลี่ยนไฟล์ PDF ของคุณเป็นสไลด์โชว์ PPT และ PPTX ที่แก้ไขได้ง่าย</p>
+    </a>
+
+    <a href="{% url 'converter:pdf_to_excel' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+            </svg>
+        </div>
+        <h3>PDF เป็น Excel</h3>
+        <p>ดึงข้อมูลโดยตรงจาก PDF ลงในสเปรดชีต Excel ในเวลาไม่กี่วินาที</p>
+    </a>
+
+    <a href="{% url 'converter:merge_word' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+            </svg>
+        </div>
+        <h3>รวมไฟล์ Word</h3>
+        <p>รวมไฟล์ Docs และ Docx หลายไฟล์ให้เป็นไฟล์ Word เดียวได้อย่างง่ายดาย</p>
+    </a>
+
+    <!-- Row 3: Word to PDF -->
+    <a href="{% url 'converter:word_to_pdf' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+            </svg>
+        </div>
+        <h3>Word เป็น PDF</h3>
+        <p>ทำให้ไฟล์ DOC และ DOCX อ่านง่ายโดยการแปลงเป็น PDF</p>
+    </a>
+
+    <a href="{% url 'converter:powerpoint_to_pdf' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+            </svg>
+        </div>
+        <h3>PowerPoint เป็น PDF</h3>
+        <p>ทำให้สไลด์โชว์ PPT และ PPTX ดูง่ายโดยการแปลงเป็น PDF</p>
+    </a>
+</div>
+{% endblock %}

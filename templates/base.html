@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MankyFile - เครื่องมือจัดการ PDF ออนไลน์{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+    <header>
+        <a href="{% url 'converter:index' %}" class="logo">
+            I<span>❤</span>MankyFile
+        </a>
+        <nav>
+            <a href="{% url 'converter:merge_pdf' %}">รวม PDF</a>
+            <a href="{% url 'converter:split_pdf' %}">แยก PDF</a>
+            <a href="{% url 'converter:compress_pdf' %}">บีบอัด PDF</a>
+            <a href="{% url 'converter:pdf_to_word' %}">แปลง PDF</a>
+            <a href="{% url 'converter:index' %}">เครื่องมือ PDF ทั้งหมด</a>
+        </nav>
+    </header>
+
+    <!-- Messages Display -->
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            <span class="alert-text">{{ message }}</span>
+            <button class="alert-close" onclick="this.parentElement.remove()">✕</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; {% now "Y" %} MankyFile Project • <a href="{% url 'converter:terms' %}"
+                style="color:#666;text-decoration:none;">เงื่อนไขการใช้งาน</a> •
+            <a href="{% url 'converter:privacy' %}" style="color:#666;text-decoration:none;">นโยบายความเป็นส่วนตัว</a>
+        </p>
+    </footer>
+
+    <script src="{% static 'js/upload_handler.js' %}"></script>
+    <script>
+        // Auto-dismiss messages after 5 seconds
+        document.addEventListener('DOMContentLoaded', function () {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function (alert) {
+                setTimeout(function () {
+                    alert.style.animation = 'slideOut 0.3s ease-out';
+                    setTimeout(function () {
+                        alert.remove();
+                    }, 300);
+                }, 5000);
+            });
+        });
+    </script>
+</body>
+
+</html>
