@@ -1,0 +1,13 @@
+Django==5.0.1
+PyPDF2
+python-docx
+pdf2docx
+django-cleanup
+docxcompose
+reportlab
+fpdf2
+Pillow
+PyMuPDF
+whitenoise
+gunicorn
+requests
