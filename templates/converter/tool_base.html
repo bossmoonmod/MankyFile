@@ -7,6 +7,14 @@
         <p>{{ subtitle }}</p>
     </div>
 
+    <!-- Error Message Display -->
+    {% if error %}
+    <div
+        style="background-color: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ef9a9a; text-align: center;">
+        <strong>เกิดข้อผิดพลาด:</strong> {{ error }}
+    </div>
+    {% endif %}
+
     <!-- Upload Form -->
     <div class="upload-area">
         <form id="upload-form" method="post" enctype="multipart/form-data" action="{{ action_url }}">
