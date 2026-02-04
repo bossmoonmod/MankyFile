@@ -4,7 +4,7 @@ from .views import (
     WordToPDFView, MergeWordView, ArrangeWordView, ArrangePDFView, 
     DownloadFileView, CompressPDFView, PDFToPowerPointView, 
     PDFToExcelView, PowerPointToPDFView, TermsView, PrivacyView,
-    download_file # Import our new function-based view
+    download_file, QRCodeGeneratorView
 )
 
 app_name = 'converter'
@@ -29,4 +29,5 @@ urlpatterns = [
     path('powerpoint-to-pdf/', PowerPointToPDFView.as_view(), name='powerpoint_to_pdf'),
     path('terms/', TermsView.as_view(), name='terms'),
     path('privacy/', PrivacyView.as_view(), name='privacy'),
+    path('qrcode-generator/', QRCodeGeneratorView.as_view(), name='qrcode_generator'),
 ]

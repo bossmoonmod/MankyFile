@@ -1120,3 +1120,93 @@ class PrivacyView(View):
             'title': 'นโยบายความเป็นส่วนตัว',
             'subtitle': 'การคุ้มครองข้อมูลส่วนบุคคลและความเป็นส่วนตัวของผู้ใช้'
         })
+
+
+class QRCodeGeneratorView(View):
+    def get(self, request):
+        from django.urls import reverse
+        context = {
+            'title': 'สร้าง QR Code',
+            'subtitle': 'สร้าง QR Code ฟรีจากลิงก์ ข้อความ หรือเบอร์โทรศัพท์ พร้อมปรับแต่งสีได้ตามใจชอบ',
+            'action_url': reverse('converter:qrcode_generator'),
+        }
+        return render(request, 'converter/qrcode_tool.html', context)
+
+    def post(self, request):
+        import qrcode
+        from PIL import Image
+        import os
+        from django.conf import settings
+        import uuid
+        from django.urls import reverse
+        from .models import UploadedFile, ProcessedFile, DailyStat
+        from django.utils import timezone
+        
+        try:
+            # Get data from form
+            data = request.POST.get('qr_data', '').strip()
+            fill_color = request.POST.get('fill_color', '#000000')
+            back_color = request.POST.get('back_color', '#ffffff')
+            
+            if not data:
+                return redirect('converter:qrcode_generator')
+                
+            # Generate QR Code
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_H,
+                box_size=10,
+                border=4,
+            )
+            qr.add_data(data)
+            qr.make(fit=True)
+            
+            # Create Image with colors
+            try:
+                img = qr.make_image(fill_color=fill_color, back_color=back_color)
+            except ValueError:
+                 # Fallback if invalid color hex
+                img = qr.make_image(fill_color="black", back_color="white")
+            
+            # Save file
+            job_id = str(uuid.uuid4())
+            output_dir = os.path.join(settings.MEDIA_ROOT, 'processed', job_id)
+            os.makedirs(output_dir, exist_ok=True)
+            
+            output_filename = "qrcode.png"
+            output_full_path = os.path.join(output_dir, output_filename)
+            
+            img.save(output_full_path)
+            
+            # Save Record
+            processed_rel_path = f"processed/{job_id}/{output_filename}"
+            processed_file = ProcessedFile(file=processed_rel_path)
+            processed_file.save()
+            
+            # Track Usage
+            try:
+                stat, _ = DailyStat.objects.get_or_create(date=timezone.now().date())
+                stat.usage_count += 1
+                stat.save()
+            except Exception as e:
+                print(f"Stats error: {e}")
+            
+            # Download Link
+            download_url = reverse('converter:download_file', kwargs={'job_id': job_id})
+            
+            context = {
+                'success': True,
+                'file_url': download_url,
+                'file_name': output_filename,
+                'file_type': 'PNG', # Image file
+                'file_size': os.path.getsize(output_full_path)
+            }
+            return render(request, 'converter/result.html', context)
+            
+        except Exception as e:
+            print(f"QR Gen Error: {e}")
+            return render(request, 'converter/qrcode_tool.html', {
+                'title': 'สร้าง QR Code', 
+                'subtitle': 'สร้าง QR Code ฟรีจากลิงก์ ข้อความ หรือเบอร์โทรศัพท์', 
+                'error': f"เกิดข้อผิดพลาด: {str(e)}"
+            })

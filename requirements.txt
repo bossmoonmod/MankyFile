@@ -11,3 +11,4 @@ PyMuPDF
 whitenoise
 gunicorn
 requests
+qrcode
