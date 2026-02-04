@@ -60,7 +60,7 @@ class CloudConvertService:
                     "operation": "convert",
                     "input_format": input_format,
                     "output_format": output_format,
-                    "engine": "office" if input_format in ['doc', 'docx'] else "solid", # Use 'solid' for PDF->Word
+                    "engine": "office" if input_format in ['doc', 'docx'] else "libreoffice", # Try LibreOffice as fallback
                     "input": ["import-1"]
                 },
                 "export-1": {
