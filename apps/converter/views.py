@@ -406,8 +406,8 @@ class WordToPDFView(View):
             # V.2 Strategy: Try CloudConvert API first (Direct REST Mode)
             try:
                 # The service now uses 'requests' internally, so no external SDK import error.
-                print("DEBUG: Importing CloudConvertService...")
-                from utils.cloudconvert_service import CloudConvertService
+                print("DEBUG: Importing CloudConvertService (New)...")
+                from utils.cc_v2_api import CloudConvertService
                 print(f"DEBUG: Service Imported successfully: {CloudConvertService}")
                 print("Attempting CloudConvert V2 API (Direct REST)...")
                 

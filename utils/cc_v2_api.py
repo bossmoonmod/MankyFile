@@ -9,8 +9,9 @@ import uuid
 import mimetypes
 from django.conf import settings
 
+# RENAME FILE TO FORCE CACHE INVALIDATION
 class CloudConvertService:
-    print("DEBUG: Loading CloudConvertService (Native urllib version)")
+    print("DEBUG: Loading cc_v2_api (New File - Pure urllib)")
     def __init__(self):
         self.api_key = settings.CLOUDCONVERT_API_KEY
         self.api_url = "https://api.cloudconvert.com/v2"
@@ -69,7 +70,7 @@ class CloudConvertService:
                     "archive_multiple_files": False
                 }
             },
-            "tag": "mankyfile-v2-native"
+            "tag": "mankyfile-v2-native-renamed"
         }
         
         print("Creating Job...")
