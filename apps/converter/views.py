@@ -73,8 +73,64 @@ class PDFToWordView(View):
         return render(request, 'converter/tool_base.html', context)
 
     def post(self, request):
-        files = request.FILES.getlist('files')
-        return redirect('converter:result')
+        try:
+            if 'file' not in request.FILES:
+                return redirect('converter:index')
+                
+            uploaded_file = request.FILES['file']
+            
+            # Save uploaded file
+            upload_instance = UploadedFile(file=uploaded_file)
+            upload_instance.save()
+            
+            input_path = upload_instance.file.path
+            input_filename = os.path.basename(input_path)
+            filename_only = os.path.splitext(input_filename)[0]
+            output_filename = f"{filename_only}.docx"
+            
+            # Define output path
+            job_id = str(uuid.uuid4())
+            output_dir = os.path.join(settings.MEDIA_ROOT, 'processed', job_id)
+            os.makedirs(output_dir, exist_ok=True)
+            output_full_path = os.path.join(output_dir, output_filename)
+            
+            # Import V2 API Service
+            from utils.cc_v2_api import CloudConvertService
+            print(f"Starting PDF -> Word (API V2) for {input_filename}")
+            
+            converter = CloudConvertService()
+            converter.convert(
+                input_file_path=input_path, 
+                output_format='docx',
+                export_path=output_full_path
+            )
+            
+            # Create ProcessedFile record
+            processed_rel_path = f"processed/{job_id}/{output_filename}"
+            processed_file = ProcessedFile(
+                original_file=upload_instance,
+                file_type='DOCX',
+                file_path=processed_rel_path
+            )
+            processed_file.save()
+            
+            processed_file_url = settings.MEDIA_URL + processed_rel_path
+            
+            context = {
+                'success': True,
+                'file_url': processed_file_url,
+                'file_name': output_filename,
+                'file_size': os.path.getsize(output_full_path) if os.path.exists(output_full_path) else 0
+            }
+            return render(request, 'converter/result.html', context)
+
+        except Exception as e:
+            print(f"Error converting PDF to Word: {e}")
+            context = {
+                'error': f"เกิดข้อผิดพลาดในการแปลงไฟล์: {str(e)}",
+                'title': 'PDF เป็น Word'
+            }
+            return render(request, 'converter/tool_base.html', context)
 
 class CompressPDFView(View):
     def get(self, request):
