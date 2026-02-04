@@ -54,15 +54,89 @@ class SplitPDFView(View):
         context = {
             'title': 'แยกไฟล์ PDF',
             'subtitle': 'แยกหน้าหนึ่งหน้าหรือทั้งชุดเพื่อแปลงเป็นไฟล์ PDF อิสระได้อย่างง่ายดาย',
-            'action_url': '',
+            'action_url': reverse('converter:split_pdf'),
             'file_type': 'PDF',
             'accept': '.pdf'
         }
         return render(request, 'converter/tool_base.html', context)
 
     def post(self, request):
-        files = request.FILES.getlist('files')
-        return redirect('converter:result')
+        try:
+             # Handle multiple files input (name="files") from template
+            if 'files' in request.FILES:
+                uploaded_file = request.FILES.getlist('files')[0]
+            elif 'file' in request.FILES:
+                uploaded_file = request.FILES['file']
+            else:
+                return redirect('converter:index')
+            
+            # Save uploaded file
+            upload_instance = UploadedFile(file=uploaded_file)
+            upload_instance.save()
+            input_path = upload_instance.file.path
+            
+            # Prepare output directory
+            job_id = str(uuid.uuid4())
+            output_dir = os.path.join(settings.MEDIA_ROOT, 'processed', job_id)
+            os.makedirs(output_dir, exist_ok=True)
+            
+            # Split PDF using PyPDF2
+            import PyPDF2
+            import zipfile
+            
+            extracted_files = []
+            filename_base = os.path.splitext(os.path.basename(input_path))[0]
+            
+            with open(input_path, 'rb') as f:
+                reader = PyPDF2.PdfReader(f)
+                total_pages = len(reader.pages)
+                
+                for i in range(total_pages):
+                    writer = PyPDF2.PdfWriter()
+                    writer.add_page(reader.pages[i])
+                    
+                    page_filename = f"{filename_base}_page_{i+1}.pdf"
+                    page_path = os.path.join(output_dir, page_filename)
+                    
+                    with open(page_path, 'wb') as out_f:
+                        writer.write(out_f)
+                    extracted_files.append(page_filename)
+            
+            # Zip all extracted files
+            zip_filename = f"{filename_base}_split.zip"
+            zip_path = os.path.join(output_dir, zip_filename)
+            
+            with zipfile.ZipFile(zip_path, 'w') as zipf:
+                for file in extracted_files:
+                    file_abs_path = os.path.join(output_dir, file)
+                    zipf.write(file_abs_path, arcname=file)
+            
+            # Create ProcessedFile record for the ZIP
+            processed_rel_path = f"processed/{job_id}/{zip_filename}"
+            processed_file = ProcessedFile(
+                file=processed_rel_path
+            )
+            processed_file.save()
+            
+            # Generate ID-only download link
+            download_url = reverse('converter:download_file', kwargs={'job_id': job_id})
+            
+            context = {
+                'success': True,
+                'file_url': download_url,
+                'file_name': zip_filename, # User will download the ZIP
+                'file_type': 'ZIP', # For result template
+                'file_size': os.path.getsize(zip_path)
+            }
+            return render(request, 'converter/result.html', context)
+
+        except Exception as e:
+            print(f"Error splitting PDF: {e}")
+            context = {
+                'error': f"เกิดข้อผิดพลาดในการแยกไฟล์: {str(e)}",
+                'title': 'แยกไฟล์ PDF'
+            }
+            return render(request, 'converter/tool_base.html', context)
 
 class PDFToWordView(View):
     def get(self, request):

@@ -33,7 +33,9 @@
             const baseUrl = "{{ file_url }}";
 
             // Set file extension based on type
-            const extension = fileType === 'PDF' ? '.pdf' : '.docx';
+            let extension = '.docx';
+            if (fileType === 'PDF') extension = '.pdf';
+            if (fileType === 'ZIP') extension = '.zip';
             fileExtSpan.textContent = extension;
 
             // Focus input on load for convenience
