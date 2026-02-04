@@ -1,12 +1,16 @@
 
 import json
-import requests
+import urllib.request
+import urllib.parse
+import urllib.error
 import os
 import time
+import uuid
+import mimetypes
 from django.conf import settings
 
 class CloudConvertService:
-    print("DEBUG: Loading CloudConvertService (Direct V.2)")
+    print("DEBUG: Loading CloudConvertService (Native urllib version)")
     def __init__(self):
         self.api_key = settings.CLOUDCONVERT_API_KEY
         self.api_url = "https://api.cloudconvert.com/v2"
@@ -18,17 +22,34 @@ class CloudConvertService:
         if not self.api_key:
             raise Exception("CloudConvert API Key is not configured")
 
+    def _request(self, method, url, data=None, headers=None, is_json=True):
+        if headers is None:
+            headers = self.headers.copy()
+            
+        if data and is_json:
+            data = json.dumps(data).encode('utf-8')
+        
+        req = urllib.request.Request(url, data=data, headers=headers, method=method)
+        try:
+            with urllib.request.urlopen(req) as response:
+                if response.status in [200, 201, 204]:
+                    resp_data = response.read()
+                    if resp_data:
+                        return json.loads(resp_data)
+                    return {}
+                else:
+                    raise Exception(f"API Error {response.status}")
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode()
+            raise Exception(f"HTTP Error {e.code}: {error_body}")
+
     def convert(self, input_file_path, output_format, export_path=None):
-        """
-        Convert file using CloudConvert REST API (No SDK required)
-        """
-        print(f"Starting CloudConvert Direct API for {input_file_path} -> {output_format}")
+        print(f"Starting convert via urllib for: {input_file_path}")
         
         filename = os.path.basename(input_file_path)
         input_format = os.path.splitext(filename)[1].lstrip('.').lower()
         
         # 1. Create Job with Tasks
-        # We need: Import loop -> Convert -> Export
         job_payload = {
             "tasks": {
                 "import-1": {
@@ -48,68 +69,86 @@ class CloudConvertService:
                     "archive_multiple_files": False
                 }
             },
-            "tag": "mankyfile-v2-direct"
+            "tag": "mankyfile-v2-native"
         }
-
-        # Create Job
-        create_res = requests.post(f"{self.api_url}/jobs", headers=self.headers, json=job_payload)
-        if create_res.status_code != 201:
-            raise Exception(f"Failed to create job: {create_res.text}")
-            
-        job_data = create_res.json()['data']
+        
+        print("Creating Job...")
+        job_res = self._request("POST", f"{self.api_url}/jobs", data=job_payload)
+        job_data = job_res['data']
         job_id = job_data['id']
         
         # 2. Get Upload URL
         upload_task = next(task for task in job_data['tasks'] if task['name'] == 'import-1')
-        upload_task_id = upload_task['id']
         
-        # Use the form parameters provided by CloudConvert for upload
         upload_form = upload_task['result']['form']
         upload_url = upload_form['url']
         upload_params = upload_form['parameters']
         
-        # 3. Upload File
-        print(f"Uploading file to CloudConvert...")
-        with open(input_file_path, 'rb') as f:
-            files = {'file': f}
-            # The upload requires multipart/form-data with specific fields
-            upload_res = requests.post(upload_url, data=upload_params, files=files)
-            
-        if upload_res.status_code not in [200, 201, 204]:
-             raise Exception(f"Upload failed: {upload_res.text}")
-
-        # 4. Wait for Job Completion
-        print("Waiting for conversion...")
-        final_status = None
-        export_task = None
+        # 3. Upload File (Multipart Manual Construction)
+        print("Uploading file...")
+        boundary = uuid.uuid4().hex
+        boundary_bytes = boundary.encode('utf-8')
         
-        # Polling loop
-        for _ in range(60): # Timeout 60 attempts (approx 2 mins)
-            time.sleep(2)
-            check_res = requests.get(f"{self.api_url}/jobs/{job_id}", headers=self.headers)
-            job_data = check_res.json()['data']
-            final_status = job_data['status']
+        parts = []
+        
+        # Add form parameters
+        for key, value in upload_params.items():
+            parts.append(f'--{boundary}'.encode('utf-8'))
+            parts.append(f'Content-Disposition: form-data; name="{key}"'.encode('utf-8'))
+            parts.append(b'')
+            parts.append(str(value).encode('utf-8'))
             
-            if final_status in ['finished', 'error']:
+        # Add file
+        parts.append(f'--{boundary}'.encode('utf-8'))
+        parts.append(f'Content-Disposition: form-data; name="file"; filename="{filename}"'.encode('utf-8'))
+        parts.append(b'Content-Type: application/octet-stream')
+        parts.append(b'')
+        
+        with open(input_file_path, 'rb') as f:
+            file_content = f.read()
+            parts.append(file_content)
+            
+        parts.append(f'--{boundary}--'.encode('utf-8'))
+        parts.append(b'')
+        
+        body = b'\r\n'.join(parts)
+        
+        upload_headers = {
+            "Content-Type": f"multipart/form-data; boundary={boundary}",
+            "Content-Length": str(len(body))
+        }
+        
+        # Post multipart
+        upload_req = urllib.request.Request(upload_url, data=body, headers=upload_headers, method="POST")
+        try:
+            with urllib.request.urlopen(upload_req) as response:
+                pass # Success
+        except urllib.error.HTTPError as e:
+            raise Exception(f"Upload Failed: {e.read().decode()}")
+
+        # 4. Wait for completion
+        print("Waiting for completion...")
+        for _ in range(60):
+            time.sleep(2)
+            check_res = self._request("GET", f"{self.api_url}/jobs/{job_id}")
+            status = check_res['data']['status']
+            if status in ['finished', 'error']:
+                if status == 'error':
+                    raise Exception(f"Job failed: {check_res['data']}")
                 break
         
-        if final_status != 'finished':
-            raise Exception(f"Job not finished. Status: {final_status}")
-
-        # 5. Download Result
-        export_task = next(task for task in job_data['tasks'] if task['name'] == 'export-1')
+        # 5. Download
+        print("Downloading result...")
+        job_res = self._request("GET", f"{self.api_url}/jobs/{job_id}")
+        export_task = next(task for task in job_res['data']['tasks'] if task['name'] == 'export-1')
         file_info = export_task['result']['files'][0]
         download_url = file_info['url']
         result_filename = file_info['filename']
         
-        print(f"Downloading result from {download_url}")
-        download_res = requests.get(download_url)
-        
         if not export_path:
-            output_dir = os.path.dirname(input_file_path)
-            export_path = os.path.join(output_dir, result_filename)
+            export_path = os.path.join(os.path.dirname(input_file_path), result_filename)
             
-        with open(export_path, 'wb') as f:
-            f.write(download_res.content)
+        with urllib.request.urlopen(download_url) as d, open(export_path, 'wb') as f:
+            f.write(d.read())
             
         return export_path
