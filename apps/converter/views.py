@@ -1253,48 +1253,42 @@ class QRCodeGeneratorView(View):
             # Create Image with colors
             try:
                 if use_styled and drawer:
-                    # Convert colors to RGB tuples for StyledImage to prevent errors
-                    fill_rgb = hex_to_rgb(fill_color)
+                    # 1. Generate Styled QR (Black & White first for stability)
+                    img_bw = qr.make_image(
+                        image_factory=StyledImage,
+                        module_drawer=drawer,
+                    ).convert('L') # Convert to Grayscale mask
+                    
+                    # 2. Create Colored Image using the Mask
+                    # Create background
                     back_rgb = hex_to_rgb(back_color)
+                    fill_rgb = hex_to_rgb(fill_color)
                     
-                    img = qr.make_image(
-                        image_factory=StyledImage,
-                        module_drawer=drawer,
-                        # Note: StyledImage often uses different color arguments or needs explicit RGB
-                        # We try standardized styled image creation
-                         color_mask=None, # Use default color mask
-                         embeded_image_path=None
-                    )
-                    # Manually applying color (StyledImage can be tricky with direct color args)
-                    # New approach: Convert to RGBA and colorize or use stock fill/back
-                    # Simpler attempt: Revert to basic create but with drawer
-                    img = qr.make_image(
-                        image_factory=StyledImage, 
-                        module_drawer=drawer,
-                    ).convert('RGB')
+                    bg = Image.new('RGB', img_bw.size, back_rgb)
+                    fg = Image.new('RGB', img_bw.size, fill_rgb)
                     
-                    # Colorize manually if needed (or rely on robust lib features)
-                    # Re-trying with direct color params which usually works if RGB tuples are safe
-                    # But qrcode lib varies. Let's try standard approach again but cleaner.
+                    # Composite: Use QR as mask (Black=0, White=255)
+                    # Note: In PIL L mode, standard QR is: Black modules=0, White bg=255
+                    # We want: Where logic is 1 (Black modules), show FG. Where 0 (White bg), show BG.
+                    # Usually make_image returns White BG (255) and Black Modules (0).
+                    # We need to invert the mask to use it for FG.
                     
-                    # FINAL ATTEMPT for Styled + Color:
-                    # The safest way is creating the image then pasting colors or using SolidFillColorMask
-                    from qrcode.image.styles.colormasks import SolidFillColorMask
-                    
-                    color_mask = SolidFillColorMask(
-                        back_color=hex_to_rgb(back_color),
-                        front_color=hex_to_rgb(fill_color)
-                    )
-                    
-                    img = qr.make_image(
-                        image_factory=StyledImage,
-                        module_drawer=drawer,
-                        color_mask=color_mask
-                    ).convert('RGB')
-                    
+                    from PIL import ImageOps
+                    try:
+                        mask = ImageOps.invert(img_bw)
+                        img = Image.composite(fg, bg, mask)
+                    except Exception as img_err:
+                        print(f"Compositing error: {img_err}, falling back to default styled")
+                        img = img_bw.convert('RGB') # Fallback to B/W styled
                 else:
                     # Standard method
                     img = qr.make_image(fill_color=fill_color, back_color=back_color).convert('RGB')
+            except Exception as e:
+                print(f"QR Generation Error (Style: {pattern_style}): {e}")
+                import traceback
+                traceback.print_exc()
+                # Ultimate Fallback
+                img = qr.make_image(fill_color="black", back_color="white").convert('RGB')
             except Exception as e:
                 print(f"QR Generation Error (Style: {pattern_style}): {e}")
                 import traceback

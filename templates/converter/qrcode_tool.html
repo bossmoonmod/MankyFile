@@ -563,9 +563,31 @@
 </div>
 
 <script>
-    // AJAX Form Handling
+    // --- 1. Tab & Input Handling ---
+    function selectType(element, type) {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+        document.getElementById('selected_qr_type').value = type;
+        document.querySelectorAll('.input-group').forEach(el => el.classList.add('hidden'));
+
+        const targetId = 'input-' + type;
+        const targetGroup = document.getElementById(targetId);
+        if (targetGroup) {
+            targetGroup.classList.remove('hidden');
+        } else {
+            document.getElementById('input-text').classList.remove('hidden');
+        }
+    }
+
+    function updateColorText(input, textId) {
+        document.getElementById(textId).innerText = input.value;
+    }
+
+    // --- 2. AJAX Form Handling (No Refresh) ---
     document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('qr-form');
+        if (!form) return;
+
         const submitBtn = form.querySelector('.btn-create');
         const displayArea = document.getElementById('qr-display-area');
         const placeholder = document.getElementById('qr-placeholder-container');
@@ -599,20 +621,19 @@
                         if (placeholder) placeholder.classList.add('hidden');
 
                         // Update Download Button
-                        downloadBtn.href = data.download_url;
-                        downloadBtn.classList.remove('disabled-link');
-                        downloadBtn.innerText = 'ไฟล์ PNG';
-                        downloadBtn.onclick = null; // Remove onclick handler
-
-                        // Optional: Smooth Scroll or Highlight
-                        // displayImg.scrollIntoView({behavior: 'smooth', block: 'center'});
+                        if (downloadBtn) {
+                            downloadBtn.href = data.download_url;
+                            downloadBtn.classList.remove('disabled-link');
+                            downloadBtn.innerText = 'ไฟล์ PNG';
+                            downloadBtn.onclick = null;
+                        }
                     } else {
                         alert('เกิดข้อผิดพลาด: ' + (data.message || 'Unknown error'));
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+                    // alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
                 })
                 .finally(() => {
                     // Restore Button
@@ -624,21 +645,8 @@
     });
 </script>
 
+{% block extra_css %}
 <style>
-    /* ... (Global Styles remain same) ... */
-    .disabled-link {
-        pointer-events: none;
-        /* Prevent click via CSS if strictly needed, but JS handles logic */
-        /* opacity handled by template logic usually, but here we dynamically update text */
-    }
-
-    .hidden {
-        display: none !important;
-    }
-
-
-    <style>
-
     /* Global Styles */
     body {
         background-color: #eef1f5;
@@ -646,16 +654,23 @@
 
     .qr-tool-container {
         max-width: 1400px;
-        /* ขยายความกว้างรวมให้ใหญ่ขึ้นมาก */
         margin: 60px auto;
         padding: 0 30px;
         font-family: 'Kanit', sans-serif;
     }
 
+    .hidden {
+        display: none !important;
+    }
+
+    .disabled-link {
+        pointer-events: none;
+        opacity: 0.6;
+    }
+
     .qr-layout {
         display: flex;
         gap: 40px;
-        /* เพิ่มระยะห่างระหว่างซ้ายขวา */
         align-items: flex-start;
     }
 
@@ -665,11 +680,10 @@
         min-width: 0;
     }
 
-    /* Navigation Tabs (Menu ใหญ่ขึ้น) */
+    /* Navigation Tabs */
     .qr-nav-tabs {
         background: #e5322d;
         padding: 15px 25px;
-        /* เพิ่ม Padding */
         border-radius: 14px;
         display: flex;
         flex-wrap: wrap;
@@ -682,12 +696,10 @@
     .nav-item {
         color: white;
         padding: 12px 24px;
-        /* ปุ่มใหญ่ขึ้น */
         border-radius: 10px;
         cursor: pointer;
         font-weight: 600;
         font-size: 1.1rem;
-        /* ตัวหนังสือใหญ่ขึ้น */
         transition: all 0.2s;
         white-space: nowrap;
     }
@@ -702,14 +714,12 @@
         font-weight: 800;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         transform: scale(1.05);
-        /* เด้งขึ้นนิดนึงตอนเลือก */
     }
 
     /* Form Card */
     .qr-form-card {
         background: white;
         padding: 45px;
-        /* Padding ใหญ่ขึ้น */
         border-radius: 20px;
         box-shadow: 0 4px 30px rgba(0, 0, 0, 0.04);
     }
@@ -727,7 +737,6 @@
     .form-col label {
         display: block;
         font-size: 1.05rem;
-        /* Label ใหญ่ขึ้น */
         font-weight: 600;
         color: #444;
         margin-bottom: 12px;
@@ -743,7 +752,6 @@
         border: 1px solid #eee;
         transition: border-color 0.2s;
         height: 55px;
-        /* สูงขึ้น */
     }
 
     .color-input-wrapper:hover {
@@ -753,13 +761,11 @@
     input[type="color"] {
         border: none;
         width: 40px;
-        /* สีใหญ่ขึ้น */
         height: 40px;
         background: none;
         cursor: pointer;
         padding: 0;
         border-radius: 50%;
-        /* กลมสวย */
         overflow: hidden;
     }
 
@@ -776,16 +782,14 @@
         margin: 30px 0;
     }
 
-    /* Input Fields (ใหญ่สะใจ) */
+    /* Input Fields */
     .custom-input {
         width: 100%;
         background: #f4f6f8;
         border: 2px solid transparent;
         padding: 18px 20px;
-        /* ช่องใหญ่ขึ้น */
         border-radius: 14px;
         font-size: 1.1rem;
-        /* ตัวหนังสือใหญ่ */
         color: #222;
         transition: all 0.2s;
         font-family: inherit;
@@ -808,14 +812,9 @@
         display: block;
         color: #222;
         font-size: 1.15rem;
-        /* หัวข้อ Input ใหญ่ขึ้น */
     }
 
-    .hidden {
-        display: none;
-    }
-
-    /* Create Button (Button ยักษ์) */
+    /* Create Button */
     .btn-create {
         width: 100%;
         background: linear-gradient(135deg, #ff4742 0%, #d9211c 100%);
@@ -824,7 +823,6 @@
         padding: 22px;
         border-radius: 14px;
         font-size: 1.35rem;
-        /* ตัวหนังสือใหญ่สะใจ */
         font-weight: 800;
         margin-top: 40px;
         cursor: pointer;
@@ -843,7 +841,6 @@
     .qr-preview-panel {
         flex: 1;
         max-width: 500px;
-        /* ขยายขีดจำกัดความกว้าง (เดิม 380) */
     }
 
     .preview-card {
@@ -866,7 +863,6 @@
         justify-content: center;
         border-radius: 16px;
         border: 2px dashed #ddd;
-        /* เส้นประชัดขึ้น */
     }
 
     .qr-svg-placeholder {
@@ -926,33 +922,110 @@
         }
     }
 </style>
+{% endblock %}
 
+{% block extra_js %}
 <script>
+    // --- 1. Tab & Input Handling ---
     function selectType(element, type) {
-        // 1. Update Tab Styles
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        element.classList.add('active');
+        // Update Tabs
+        const tabs = document.querySelectorAll('.nav-item');
+        if (tabs) tabs.forEach(el => el.classList.remove('active'));
+        if (element) element.classList.add('active');
 
-        // 2. Update Hidden Input
-        document.getElementById('selected_qr_type').value = type;
+        // Update Hidden Input
+        const typeInput = document.getElementById('selected_qr_type');
+        if (typeInput) typeInput.value = type;
 
-        // 3. Show/Hide Inputs
-        document.querySelectorAll('.input-group').forEach(el => el.classList.add('hidden'));
+        // Show/Hide Inputs
+        const groups = document.querySelectorAll('.input-group');
+        if (groups) groups.forEach(el => el.classList.add('hidden'));
 
         const targetId = 'input-' + type;
         const targetGroup = document.getElementById(targetId);
-
         if (targetGroup) {
             targetGroup.classList.remove('hidden');
         } else {
-            // Fallback for types sharing inputs or not implemented UI
-            // Default to text if not found
-            document.getElementById('input-text').classList.remove('hidden');
+            // Fallback
+            const textGroup = document.getElementById('input-text');
+            if (textGroup) textGroup.classList.remove('hidden');
         }
     }
 
     function updateColorText(input, textId) {
-        document.getElementById(textId).innerText = input.value;
+        const textSpan = document.getElementById(textId);
+        if (textSpan) textSpan.innerText = input.value;
     }
+
+    // --- 2. AJAX Form Handling ---
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('qr-form');
+        if (!form) return;
+
+        const submitBtn = form.querySelector('.btn-create');
+        const displayArea = document.getElementById('qr-display-area');
+        const placeholder = document.getElementById('qr-placeholder-container');
+        const displayImg = document.getElementById('qr-generated-image');
+        const downloadBtn = document.getElementById('download-btn-png');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // UI Loading State
+            let originalBtnText = 'สร้าง QR CODE';
+            if (submitBtn) {
+                originalBtnText = submitBtn.innerText;
+                submitBtn.innerText = 'กำลังสร้าง...';
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.7';
+            }
+
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update Image
+                        if (displayImg) {
+                            displayImg.src = data.qr_image_url;
+                            displayImg.classList.remove('hidden');
+                        }
+                        if (placeholder) placeholder.classList.add('hidden');
+
+                        // Update Download Button
+                        if (downloadBtn) {
+                            downloadBtn.href = data.download_url;
+                            downloadBtn.classList.remove('disabled-link');
+                            downloadBtn.innerText = 'ไฟล์ PNG';
+                            downloadBtn.onclick = null;
+
+                            // Add animation effect
+                            downloadBtn.style.transform = 'scale(1.1)';
+                            setTimeout(() => downloadBtn.style.transform = 'scale(1)', 200);
+                        }
+                    } else {
+                        alert('เกิดข้อผิดพลาด: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                })
+                .finally(() => {
+                    // Restore Button
+                    if (submitBtn) {
+                        submitBtn.innerText = originalBtnText;
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '1';
+                    }
+                });
+        });
+    });
 </script>
 {% endblock %}
