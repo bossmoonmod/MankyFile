@@ -256,9 +256,10 @@
     }
 
     /* Type Grid */
+    /* Type Grid */
     .type-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
         gap: 15px;
     }
 
@@ -414,7 +415,8 @@
         height: 200px;
         border: 4px solid #333;
         border-radius: 10px;
-        margin: 20px 0;
+        margin: 20px auto;
+        /* Centered margin */
         position: relative;
         background: #f0f0f0;
         display: flex;
