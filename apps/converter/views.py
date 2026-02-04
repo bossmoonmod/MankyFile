@@ -1197,10 +1197,35 @@ class QRCodeGeneratorView(View):
             # 2. Get Design Options
             fill_color = request.POST.get('fill_color', '#000000')
             back_color = request.POST.get('back_color', '#ffffff')
+            pattern_style = request.POST.get('pattern_style', 'square') # square, gapped, circle, rounded, vertical, horizontal
             
             # 3. Generate QR Code
+            import qrcode
+            from qrcode.image.styled.pil import StyledImage
+            from qrcode.image.styles.moduledrawers import (
+                SquareModuleDrawer,
+                GappedSquareModuleDrawer,
+                CircleModuleDrawer,
+                RoundedModuleDrawer,
+                VerticalBarsDrawer,
+                HorizontalBarsDrawer
+            )
+            
+            # Select Drawer based on user input
+            drawer = SquareModuleDrawer() # Default
+            if pattern_style == 'gapped':
+                drawer = GappedSquareModuleDrawer()
+            elif pattern_style == 'circle':
+                drawer = CircleModuleDrawer()
+            elif pattern_style == 'rounded':
+                drawer = RoundedModuleDrawer()
+            elif pattern_style == 'vertical':
+                drawer = VerticalBarsDrawer()
+            elif pattern_style == 'horizontal':
+                drawer = HorizontalBarsDrawer()
+            
             qr = qrcode.QRCode(
-                version=1,
+                version=None, # Auto version
                 error_correction=qrcode.constants.ERROR_CORRECT_H,
                 box_size=20, # Higher quality
                 border=2,
@@ -1208,11 +1233,16 @@ class QRCodeGeneratorView(View):
             qr.add_data(data)
             qr.make(fit=True)
             
-            # Create Image with colors
+            # Create Image with styles
             try:
-                img = qr.make_image(fill_color=fill_color, back_color=back_color).convert('RGB')
+                img = qr.make_image(
+                    image_factory=StyledImage,
+                    module_drawer=drawer,
+                    fill_color=fill_color, 
+                    back_color=back_color
+                ).convert('RGB')
             except ValueError:
-                # Fallback if color is invalid
+                # Fallback
                 img = qr.make_image(fill_color="black", back_color="white").convert('RGB')
 
             # --- LOGO PROCESSING START ---
@@ -1222,19 +1252,14 @@ class QRCodeGeneratorView(View):
                     logo = Image.open(logo_file)
                     
                     # Calculate dimensions
-                    # Logo width should be about 20% of QR code width for readability
-                    basewidth = int(img.size[0] * 0.25)
+                    basewidth = int(img.size[0] * 0.22) # Slightly smaller logo for styled QR
                     wpercent = (basewidth / float(logo.size[0]))
                     hsize = int((float(logo.size[1]) * float(wpercent)))
                     
-                    # Resize logo
                     logo = logo.resize((basewidth, hsize), Image.Resampling.LANCZOS)
                     
-                    # Calculate center position
                     pos = ((img.size[0] - logo.size[0]) // 2, (img.size[1] - logo.size[1]) // 2)
                     
-                    # Paste logo
-                    # If logo has transparency, use it as mask
                     if logo.mode == 'RGBA':
                         img.paste(logo, pos, logo)
                     else:
@@ -1242,7 +1267,6 @@ class QRCodeGeneratorView(View):
                         
                 except Exception as e:
                     print(f"Logo processing error: {e}")
-                    # Continue without logo if error
             # --- LOGO PROCESSING END ---
             
             # 4. Save file
@@ -1269,7 +1293,6 @@ class QRCodeGeneratorView(View):
                 print(f"Stats error: {e}")
             
             # 5. Prepare Context for User
-            # สร้าง URL สำหรับแสดงผล (Media URL) และ Download URL
             qr_image_url = f"{settings.MEDIA_URL}{processed_rel_path}"
             download_url = reverse('converter:download_file', kwargs={'job_id': job_id})
             
@@ -1277,12 +1300,12 @@ class QRCodeGeneratorView(View):
                 'title': 'สร้าง QR Code',
                 'subtitle': 'สร้าง QR Code ฟรีจากลิงก์ ข้อความ หรือเบอร์โทรศัพท์ พร้อมปรับแต่งสีได้ตามใจชอบ',
                 'action_url': reverse('converter:qrcode_generator'),
-                'generated': True,        # Flag to tell template to show image
+                'generated': True,
                 'qr_image_url': qr_image_url,
                 'download_url': download_url,
-                # ส่งค่าเดิมกลับไปด้วย เพื่อให้ Form ยังคงค่าเดิมไว้ (Optional)
                 'fill_color': fill_color,
                 'back_color': back_color,
+                'pattern_style': pattern_style, # Return the selected style
             }
             return render(request, 'converter/qrcode_tool.html', context)
             

@@ -47,19 +47,399 @@
                         </div>
                     </div>
 
-                    <!-- Logo Section -->
-                    <div class="form-row" style="margin-top: -10px;">
+                    <!-- Logo Section (New UI) -->
+                    <div class="form-row" style="margin-top: 10px;">
                         <div class="form-col">
                             <label>เพิ่มโลโก้ (Logo)</label>
-                            <div
-                                style="background: #f4f6f8; padding: 10px; border-radius: 12px; border: 1px solid #eee;">
-                                <input type="file" name="logo" accept="image/*" class="custom-input"
-                                    style="padding: 10px; background: white;">
-                                <p style="font-size: 0.8rem; color: #888; margin-top: 5px;">*แนะนำไฟล์ PNG
-                                    พื้นหลังโปร่งใส</p>
+                            <div class="logo-upload-box" onclick="document.getElementById('logo-input').click()">
+                                <input type="file" name="logo" id="logo-input" accept="image/*" style="display: none;"
+                                    onchange="previewLogo(this)">
+                                <div id="logo-preview-area">
+                                    <div class="upload-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                            <polyline points="17 8 12 3 7 8" />
+                                            <line x1="12" y1="3" x2="12" y2="15" />
+                                        </svg>
+                                    </div>
+                                    <span id="logo-text">คลิกเพื่ออัพโหลดรูปภาพ</span>
+                                    <p style="font-size: 0.8rem; color: #999; margin-top: 5px;">รองรับ JPG, PNG
+                                        (แนะนำพื้นใส)</p>
+                                </div>
+                                <img id="logo-preview-img" class="hidden">
+                                <button type="button" id="remove-logo-btn" class="hidden"
+                                    onclick="removeLogo(event)">✕</button>
                             </div>
                         </div>
                     </div>
+
+                    <div class="divider"></div>
+
+                    <!-- Advanced Design Customization (Accordion) -->
+                    <div class="design-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion()">
+                            <span class="accordion-title" style="display: flex; align-items: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" style="margin-right:8px;">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                    <line x1="12" y1="8" x2="12" y2="16" />
+                                    <line x1="8" y1="12" x2="16" y2="12" />
+                                </svg>
+                                ปรับแต่งการออกแบบ
+                            </span>
+                            <span class="accordion-icon" id="acc-icon">+</span>
+                        </div>
+
+                        <div class="accordion-content" id="design-content">
+                            <!-- Pattern Style -->
+                            <div class="design-section">
+                                <label class="section-label">รูปทรงลายพื้นหลัง (Pattern)</label>
+                                <div class="style-grid">
+                                    <!-- Square -->
+                                    <label class="style-option">
+                                        <input type="radio" name="pattern_style" value="square" checked>
+                                        <div class="style-preview">
+                                            <div class="preview-dot square"></div>
+                                            <div class="preview-dot square"></div>
+                                            <div class="preview-dot square"></div>
+                                            <div class="preview-dot square"></div>
+                                        </div>
+                                    </label>
+
+                                    <!-- Rounded -->
+                                    <label class="style-option">
+                                        <input type="radio" name="pattern_style" value="rounded">
+                                        <div class="style-preview">
+                                            <div class="preview-dot rounded"></div>
+                                            <div class="preview-dot rounded"></div>
+                                            <div class="preview-dot rounded"></div>
+                                            <div class="preview-dot rounded"></div>
+                                        </div>
+                                    </label>
+
+                                    <!-- Circle -->
+                                    <label class="style-option">
+                                        <input type="radio" name="pattern_style" value="circle">
+                                        <div class="style-preview">
+                                            <div class="preview-dot circle"></div>
+                                            <div class="preview-dot circle"></div>
+                                            <div class="preview-dot circle"></div>
+                                            <div class="preview-dot circle"></div>
+                                        </div>
+                                    </label>
+
+                                    <!-- Gapped -->
+                                    <label class="style-option">
+                                        <input type="radio" name="pattern_style" value="gapped">
+                                        <div class="style-preview" style="gap: 4px;">
+                                            <div class="preview-dot square small"></div>
+                                            <div class="preview-dot square small"></div>
+                                            <div class="preview-dot square small"></div>
+                                            <div class="preview-dot square small"></div>
+                                        </div>
+                                    </label>
+
+                                    <!-- Vertical -->
+                                    <label class="style-option">
+                                        <input type="radio" name="pattern_style" value="vertical">
+                                        <div class="style-preview">
+                                            <div class="preview-bar vertical"></div>
+                                            <div class="preview-bar vertical"></div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Eye Frame (Dummy UI) -->
+                            <div class="design-section">
+                                <label class="section-label" style="opacity: 0.6;">รูปทรงกรอบตา (Eye Frame)</label>
+                                <div class="style-grid" style="pointer-events: none; opacity: 0.6;">
+                                    <div class="style-option selected"
+                                        style="border-color: #e5322d; background: #fff5f5;">
+                                        <div class="eye-preview square"></div>
+                                    </div>
+                                    <div class="style-option">
+                                        <div class="eye-preview rounded"></div>
+                                    </div>
+                                    <div class="style-option">
+                                        <div class="eye-preview circle"></div>
+                                    </div>
+                                </div>
+                                <p style="font-size: 0.75rem; color: #999;">*ฟีเจอร์นี้จะเปิดให้ใช้งานเร็วๆ นี้</p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <style>
+                        /* Logo Upload Box */
+                        .logo-upload-box {
+                            border: 2px dashed #ddd;
+                            border-radius: 12px;
+                            padding: 20px;
+                            text-align: center;
+                            cursor: pointer;
+                            background: #fcfcfc;
+                            transition: all 0.2s;
+                            position: relative;
+                            min-height: 120px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            flex-direction: column;
+                        }
+
+                        .logo-upload-box:hover {
+                            border-color: #e5322d;
+                            background: #fff8f8;
+                        }
+
+                        .upload-icon {
+                            color: #e5322d;
+                            margin-bottom: 8px;
+                        }
+
+                        #logo-text {
+                            font-weight: 500;
+                            color: #555;
+                        }
+
+                        #logo-preview-img {
+                            max-width: 100px;
+                            max-height: 100px;
+                            border-radius: 8px;
+                            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+                        }
+
+                        #remove-logo-btn {
+                            position: absolute;
+                            top: 10px;
+                            right: 10px;
+                            background: rgba(0, 0, 0, 0.5);
+                            color: white;
+                            border: none;
+                            width: 24px;
+                            height: 24px;
+                            border-radius: 50%;
+                            cursor: pointer;
+                            font-size: 14px;
+                            line-height: 1;
+                            z-index: 10;
+                        }
+
+                        /* Accordion Styles */
+                        .design-accordion {
+                            border: 1px solid #eee;
+                            border-radius: 12px;
+                            background: white;
+                            margin-bottom: 20px;
+                            overflow: hidden;
+                            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+                        }
+
+                        .accordion-header {
+                            padding: 15px 20px;
+                            background: #f8f9fa;
+                            cursor: pointer;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            font-weight: 600;
+                            color: #333;
+                            transition: background 0.2s;
+                        }
+
+                        .accordion-header:hover {
+                            background: #f0f0f0;
+                        }
+
+                        .accordion-content {
+                            padding: 25px 20px;
+                            display: none;
+                            /* Hidden by default */
+                            border-top: 1px solid #eee;
+                            background: white;
+                        }
+
+                        .accordion-content.show {
+                            display: block;
+                            animation: slideDown 0.3s ease-out;
+                        }
+
+                        @keyframes slideDown {
+                            from {
+                                opacity: 0;
+                                transform: translateY(-10px);
+                            }
+
+                            to {
+                                opacity: 1;
+                                transform: translateY(0);
+                            }
+                        }
+
+                        .accordion-icon {
+                            font-size: 1.2rem;
+                            font-weight: bold;
+                            color: #888;
+                        }
+
+                        /* Style Grid */
+                        .section-label {
+                            display: block;
+                            font-weight: 600;
+                            margin-bottom: 12px;
+                            color: #444;
+                            font-size: 0.95rem;
+                        }
+
+                        .style-grid {
+                            display: flex;
+                            gap: 12px;
+                            flex-wrap: wrap;
+                            margin-bottom: 20px;
+                        }
+
+                        .style-option {
+                            width: 60px;
+                            height: 60px;
+                            border: 2px solid #eee;
+                            border-radius: 10px;
+                            cursor: pointer;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            position: relative;
+                            transition: all 0.2s;
+                            background: white;
+                        }
+
+                        .style-option input {
+                            position: absolute;
+                            opacity: 0;
+                            cursor: pointer;
+                            width: 100%;
+                            height: 100%;
+                            z-index: 5;
+                        }
+
+                        .style-option:has(input:checked) {
+                            border-color: #e5322d;
+                            box-shadow: 0 0 0 3px rgba(229, 50, 45, 0.1);
+                        }
+
+                        .style-option:hover {
+                            border-color: #ccc;
+                            transform: translateY(-2px);
+                        }
+
+                        /* CSS Shape Previews */
+                        .style-preview {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 4px;
+                            width: 32px;
+                            height: 32px;
+                            pointer-events: none;
+                        }
+
+                        .preview-dot {
+                            background: #333;
+                            width: 100%;
+                            height: 100%;
+                        }
+
+                        .preview-dot.square {
+                            border-radius: 0;
+                        }
+
+                        .preview-dot.rounded {
+                            border-radius: 4px;
+                        }
+
+                        .preview-dot.circle {
+                            border-radius: 50%;
+                        }
+
+                        .preview-bar {
+                            background: #333;
+                        }
+
+                        .preview-bar.vertical {
+                            width: 8px;
+                            height: 32px;
+                            margin: 0 4px;
+                            border-radius: 4px;
+                        }
+
+                        /* Eye Preview */
+                        .eye-preview {
+                            width: 30px;
+                            height: 30px;
+                            border: 4px solid #333;
+                            position: relative;
+                        }
+
+                        .eye-preview::after {
+                            content: '';
+                            position: absolute;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            width: 12px;
+                            height: 12px;
+                            background: #333;
+                        }
+
+                        .eye-preview.rounded {
+                            border-radius: 8px;
+                        }
+
+                        .eye-preview.rounded::after {
+                            border-radius: 3px;
+                        }
+
+                        .eye-preview.circle {
+                            border-radius: 50%;
+                        }
+
+                        .eye-preview.circle::after {
+                            border-radius: 50%;
+                        }
+                    </style>
+
+                    <script>
+                        function previewLogo(input) {
+                            if (input.files && input.files[0]) {
+                                var reader = new FileReader();
+                                reader.onload = function (e) {
+                                    document.getElementById('logo-preview-img').src = e.target.result;
+                                    document.getElementById('logo-preview-img').classList.remove('hidden');
+                                    document.getElementById('logo-preview-area').classList.add('hidden');
+                                    document.getElementById('remove-logo-btn').classList.remove('hidden');
+                                }
+                                reader.readAsDataURL(input.files[0]);
+                            }
+                        }
+
+                        function removeLogo(e) {
+                            e.stopPropagation(); // Stop click from triggering parent
+                            document.getElementById('logo-input').value = '';
+                            document.getElementById('logo-preview-img').classList.add('hidden');
+                            document.getElementById('remove-logo-btn').classList.add('hidden');
+                            document.getElementById('logo-preview-area').classList.remove('hidden');
+                        }
+
+                        function toggleAccordion() {
+                            var content = document.getElementById('design-content');
+                            var icon = document.getElementById('acc-icon');
+                            content.classList.toggle('show');
+                            icon.textContent = content.classList.contains('show') ? '-' : '+';
+                        }
+                    </script>
 
                     <hr class="divider">
 
