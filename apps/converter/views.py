@@ -1186,7 +1186,13 @@ class QRCodeGeneratorView(View):
 
             # Validate Data
             if not data:
-                raise ValueError("กรุณากรอกข้อมูลให้ครบถ้วน")
+                # ถ้าข้อมูลไม่ครบ ให้เรนเดอร์กลับไปพร้อม Error
+                context = {
+                    'title': 'สร้าง QR Code',
+                    'error': 'กรุณากรอกข้อมูลให้ครบถ้วน',
+                    'action_url': reverse('converter:qrcode_generator'),
+                }
+                return render(request, 'converter/qrcode_tool.html', context)
                 
             # 2. Get Design Options
             fill_color = request.POST.get('fill_color', '#000000')
@@ -1206,6 +1212,7 @@ class QRCodeGeneratorView(View):
             try:
                 img = qr.make_image(fill_color=fill_color, back_color=back_color).convert('RGB')
             except ValueError:
+                # Fallback if color is invalid
                 img = qr.make_image(fill_color="black", back_color="white").convert('RGB')
             
             # 4. Save file
@@ -1231,7 +1238,34 @@ class QRCodeGeneratorView(View):
             except Exception as e:
                 print(f"Stats error: {e}")
             
+            # 5. Prepare Context for User
+            # สร้าง URL สำหรับแสดงผล (Media URL) และ Download URL
+            qr_image_url = f"{settings.MEDIA_URL}{processed_rel_path}"
             download_url = reverse('converter:download_file', kwargs={'job_id': job_id})
+            
+            context = {
+                'title': 'สร้าง QR Code',
+                'subtitle': 'สร้าง QR Code ฟรีจากลิงก์ ข้อความ หรือเบอร์โทรศัพท์ พร้อมปรับแต่งสีได้ตามใจชอบ',
+                'action_url': reverse('converter:qrcode_generator'),
+                'generated': True,        # Flag to tell template to show image
+                'qr_image_url': qr_image_url,
+                'download_url': download_url,
+                # ส่งค่าเดิมกลับไปด้วย เพื่อให้ Form ยังคงค่าเดิมไว้ (Optional)
+                'fill_color': fill_color,
+                'back_color': back_color,
+            }
+            return render(request, 'converter/qrcode_tool.html', context)
+            
+        except Exception as e:
+            print(f"QR Error: {e}")
+            import traceback
+            traceback.print_exc()
+            context = {
+                'title': 'สร้าง QR Code',
+                'error': f'เกิดข้อผิดพลาด: {str(e)}',
+                'action_url': reverse('converter:qrcode_generator'),
+            }
+            return render(request, 'converter/qrcode_tool.html', context)
             
             context = {
                 'success': True,

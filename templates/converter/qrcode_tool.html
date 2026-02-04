@@ -129,7 +129,12 @@
         <div class="qr-preview-panel">
             <div class="preview-card">
                 <div class="qr-display-area">
-                    <!-- Standard QR Placeholder or Real Image -->
+                    {% if generated and qr_image_url %}
+                    <!-- Show Generated Image -->
+                    <img src="{{ qr_image_url }}" alt="QR Code"
+                        style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
+                    {% else %}
+                    <!-- Standard QR Placeholder -->
                     <svg viewBox="0 0 100 100" class="qr-svg-placeholder">
                         <path d="M0 0h100v100H0z" fill="white" />
                         <path d="M10 10h30v30H10zM60 10h30v30H60zM10 60h30v30H10z" fill="black" />
@@ -138,12 +143,18 @@
                         <circle cx="25" cy="75" r="8" fill="black" />
                         <path d="M50 50h10v10H50zM70 60h10v10H70zM60 80h20v10H60zM40 70h10v10H40z" fill="black" />
                     </svg>
+                    {% endif %}
                 </div>
 
                 <div class="download-buttons">
-                    <button type="button" class="btn-download png" onclick="document.forms['qr-form'].submit()">ไฟล์
-                        PNG</button>
-                    <!-- SVG not strictly implemented in backend yet, but UI is here -->
+                    {% if generated and download_url %}
+                    <a href="{{ download_url }}" class="btn-download png"
+                        style="text-decoration:none; display:inline-block; text-align:center;">ไฟล์ PNG</a>
+                    {% else %}
+                    <button type="button" class="btn-download png"
+                        onclick="document.forms['qr-form'].submit()">สร้างไฟล์ PNG</button>
+                    {% endif %}
+
                     <button type="button" class="btn-download svg" disabled
                         style="opacity:0.5; cursor:not-allowed;">ไฟล์ SVG (เร็วๆ นี้)</button>
                 </div>
