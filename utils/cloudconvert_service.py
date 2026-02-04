@@ -6,6 +6,7 @@ import time
 from django.conf import settings
 
 class CloudConvertService:
+    print("DEBUG: Loading CloudConvertService (Direct V.2)")
     def __init__(self):
         self.api_key = settings.CLOUDCONVERT_API_KEY
         self.api_url = "https://api.cloudconvert.com/v2"
