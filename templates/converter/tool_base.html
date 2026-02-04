@@ -31,6 +31,12 @@
             </a>
 
             <div class="drop-text">หรือวางไฟล์ {{ file_type }} ที่นี่</div>
+
+            <!-- Manual Submit Button (Hidden by default, shown if auto-submit fails or files selected) -->
+            <button type="submit" id="manual-submit-btn" class="btn btn-primary"
+                style="display: none; margin-top: 20px; width: 100%; padding: 15px; font-size: 1.2rem;">
+                แปลงไฟล์เลย! 🚀
+            </button>
         </form>
     </div>
 
@@ -50,11 +56,15 @@
         document.getElementById('file-input').click();
     });
 
-    // Simple auto-submit on change for now (can be enhanced to show list before processing)
+    // Auto-submit logic with UI feedback
     document.getElementById('file-input').addEventListener('change', function () {
         if (this.files.length > 0) {
-            // In a real app, we'd list files first. 
-            // For this matching design, let's just submit the form or show the progress.
+            // Show loading UI immediately
+            document.querySelector('.upload-area').style.display = 'none';
+            document.getElementById('progress-container').style.display = 'block';
+
+            // Try to submit
+            console.log("Auto-submitting form...");
             document.getElementById('upload-form').submit();
         }
     });
