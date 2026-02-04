@@ -74,10 +74,13 @@ class PDFToWordView(View):
 
     def post(self, request):
         try:
-            if 'file' not in request.FILES:
+            # Handle multiple files input (name="files") from template
+            if 'files' in request.FILES:
+                uploaded_file = request.FILES.getlist('files')[0] # Process first file
+            elif 'file' in request.FILES:
+                uploaded_file = request.FILES['file']
+            else:
                 return redirect('converter:index')
-                
-            uploaded_file = request.FILES['file']
             
             # Save uploaded file
             upload_instance = UploadedFile(file=uploaded_file)
@@ -114,7 +117,8 @@ class PDFToWordView(View):
             )
             processed_file.save()
             
-            processed_file_url = settings.MEDIA_URL + processed_rel_path
+            # Ensure URL is correct relative to MEDIA_URL
+            processed_file_url = f"{settings.MEDIA_URL}{processed_rel_path}"
             
             context = {
                 'success': True,
