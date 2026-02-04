@@ -12,6 +12,7 @@
     {% load static %}
     <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
 </head>
 
 <body>
@@ -29,7 +30,7 @@
             <!-- Daily Usage Stats -->
             <div class="usage-badge"
                 style="background: #f0f0f0; padding: 5px 12px; border-radius: 20px; font-size: 14px; color: #555; margin-left: 15px; display: inline-flex; align-items: center; gap: 5px; border: 1px solid #ddd;">
-                <span>📊 ใช้งานวันนี้:</span>
+                <span>ใช้งานวันนี้:</span>
                 <span style="font-weight: bold; color: #e5322d;">{{ daily_usage|default:0 }}</span>
             </div>
         </nav>
@@ -74,6 +75,7 @@
             });
         });
     </script>
+    {% block extra_js %}{% endblock %}
 </body>
 
 </html>
