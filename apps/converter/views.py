@@ -417,9 +417,16 @@ class WordToPDFView(View):
                 
             except Exception as api_error:
                 print(f"CloudConvert API Failed: {api_error}")
+                
+                # Check if we are on a Linux server (Production) where LibreOffice is likely missing
+                # If so, show the API error directly instead of misleading "LibreOffice not found"
+                is_linux = sys.platform != 'win32'
+                if is_linux:
+                     raise Exception(f"CloudConvert Error: {str(api_error)}")
+
                 print("Falling back to local LibreOffice Engine...")
                 
-                # ... Fallback to original LibreOffice logic ...
+                # ... Fallback to original LibreOffice logic (Only for Local/Windows) ...
                 
                 # Try to find LibreOffice installation (Windows and Linux)
                 libreoffice_paths = [
