@@ -75,6 +75,7 @@ class PDFToWordView(View):
         return render(request, 'converter/tool_base.html', context)
 
     def post(self, request):
+        import os  # Force local import to fix NameError
         print("DEBUG: PDFToWordView POST Request Received!")
         print(f"DEBUG: FILES keys: {request.FILES.keys()}")
         try:
