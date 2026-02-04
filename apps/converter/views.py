@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.views import View
 from .services.pdf_service import PDFService
 from .services.word_service import WordService
@@ -66,7 +67,7 @@ class PDFToWordView(View):
         context = {
             'title': 'PDF เป็น Word',
             'subtitle': 'แปลงไฟล์ PDF ของคุณเป็นเอกสาร DOC และ DOCX ที่แก้ไขได้ง่ายอย่างง่ายดาย',
-            'action_url': '',
+            'action_url': reverse('converter:pdf_to_word'),
             'file_type': 'PDF',
             'accept': '.pdf'
         }
