@@ -6,6 +6,7 @@ from .services.word_service import WordService
 from .models import UploadedFile, ProcessedFile
 import uuid
 import sys
+import os
 
 class IndexView(View):
     def get(self, request):
