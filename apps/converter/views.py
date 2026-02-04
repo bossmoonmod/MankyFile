@@ -1213,33 +1213,34 @@ class QRCodeGeneratorView(View):
             drawer = None
             
             if pattern_style and pattern_style != 'square':
-                try:
-                    from qrcode.image.styled.pil import StyledImage
-                    from qrcode.image.styles.moduledrawers import (
-                        SquareModuleDrawer,
-                        GappedSquareModuleDrawer,
-                        CircleModuleDrawer,
-                        RoundedModuleDrawer,
-                        VerticalBarsDrawer,
-                        HorizontalBarsDrawer
-                    )
-                    use_styled = True
-                    
-                    if pattern_style == 'gapped':
-                        drawer = GappedSquareModuleDrawer()
-                    elif pattern_style == 'circle':
-                        drawer = CircleModuleDrawer()
-                    elif pattern_style == 'rounded':
-                        drawer = RoundedModuleDrawer()
-                    elif pattern_style == 'vertical':
-                        drawer = VerticalBarsDrawer()
-                    elif pattern_style == 'horizontal':
-                        drawer = HorizontalBarsDrawer()
-                    else:
-                        drawer = SquareModuleDrawer()
-                except ImportError:
-                    print("Styled QR Code modules not found. Falling back to standard.")
-                    use_styled = False
+                # MUST use styled generation for non-square patterns
+                from qrcode.image.styled.pil import StyledImage
+                from qrcode.image.styles.moduledrawers import (
+                    SquareModuleDrawer,
+                    GappedSquareModuleDrawer,
+                    CircleModuleDrawer,
+                    RoundedModuleDrawer,
+                    VerticalBarsDrawer,
+                    HorizontalBarsDrawer
+                )
+                use_styled = True
+                
+                print(f"[QR DEBUG] Requested pattern: {pattern_style}")
+                
+                if pattern_style == 'gapped':
+                    drawer = GappedSquareModuleDrawer()
+                elif pattern_style == 'circle':
+                    drawer = CircleModuleDrawer()
+                elif pattern_style == 'rounded':
+                    drawer = RoundedModuleDrawer()
+                elif pattern_style == 'vertical':
+                    drawer = VerticalBarsDrawer()
+                elif pattern_style == 'horizontal':
+                    drawer = HorizontalBarsDrawer()
+                else:
+                    drawer = SquareModuleDrawer()
+                
+                print(f"[QR DEBUG] Using drawer: {drawer.__class__.__name__}")
 
             qr = qrcode.QRCode(
                 version=None, # Auto version
