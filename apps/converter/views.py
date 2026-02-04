@@ -1251,35 +1251,38 @@ class QRCodeGeneratorView(View):
             qr.make(fit=True)
             
             # Create Image with colors
+            # Create Image with colors
             try:
                 if use_styled and drawer:
-                    # 1. Generate Styled QR (Black & White first for stability)
-                    img_bw = qr.make_image(
-                        image_factory=StyledImage,
-                        module_drawer=drawer,
-                    ).convert('L') # Convert to Grayscale mask
-                    
-                    # 2. Create Colored Image using the Mask
-                    # Create background
-                    back_rgb = hex_to_rgb(back_color)
-                    fill_rgb = hex_to_rgb(fill_color)
-                    
-                    bg = Image.new('RGB', img_bw.size, back_rgb)
-                    fg = Image.new('RGB', img_bw.size, fill_rgb)
-                    
-                    # Composite: Use QR as mask (Black=0, White=255)
-                    # Note: In PIL L mode, standard QR is: Black modules=0, White bg=255
-                    # We want: Where logic is 1 (Black modules), show FG. Where 0 (White bg), show BG.
-                    # Usually make_image returns White BG (255) and Black Modules (0).
-                    # We need to invert the mask to use it for FG.
-                    
-                    from PIL import ImageOps
+                    # Use SolidFillColorMask for consistent coloring
                     try:
-                        mask = ImageOps.invert(img_bw)
-                        img = Image.composite(fg, bg, mask)
-                    except Exception as img_err:
-                        print(f"Compositing error: {img_err}, falling back to default styled")
-                        img = img_bw.convert('RGB') # Fallback to B/W styled
+                        from qrcode.image.styles.colormasks import SolidFillColorMask
+                        
+                        # Convert hex to RGB tuple for ColorMask
+                        back_rgb = hex_to_rgb(back_color)
+                        fill_rgb = hex_to_rgb(fill_color)
+                        
+                        color_mask = SolidFillColorMask(
+                            back_color=back_rgb,
+                            front_color=fill_rgb
+                        )
+                        
+                        img = qr.make_image(
+                            image_factory=StyledImage,
+                            module_drawer=drawer,
+                            color_mask=color_mask
+                        ).convert('RGB')
+                        
+                    except ImportError:
+                        # Fallback if colormasks module is missing (older versions)
+                        # Try direct color arguments (flaky on some versions)
+                        print("ColorMasks not found, trying direct color args")
+                        img = qr.make_image(
+                            image_factory=StyledImage,
+                            module_drawer=drawer,
+                        ).convert('RGB')
+                        # Note: Colors might be black/white if direct args fail.
+                        
                 else:
                     # Standard method
                     img = qr.make_image(fill_color=fill_color, back_color=back_color).convert('RGB')
