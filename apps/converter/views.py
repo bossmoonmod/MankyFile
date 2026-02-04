@@ -123,8 +123,9 @@ class PDFToWordView(View):
             processed_file.save()
             
             # Ensure URL points to our custom download view (Bypass Media URL issues)
+            # Use only job_id to avoid URL encoding issues with Thai filenames
             from django.urls import reverse
-            download_url = reverse('converter:download_file', kwargs={'job_id': job_id, 'filename': output_filename})
+            download_url = reverse('converter:download_file', kwargs={'job_id': job_id})
             
             context = {
                 'success': True,
@@ -142,18 +143,37 @@ class PDFToWordView(View):
             }
             return render(request, 'converter/tool_base.html', context)
 
-# Direct File Download View (Bypass Media URL issues on Render)
+# Direct File Download View (ID Only - Logic resolves filename)
 from django.http import FileResponse, Http404
-def download_file(request, job_id, filename):
+def download_file(request, job_id):
     import os
     from django.conf import settings
     
-    file_path = os.path.join(settings.MEDIA_ROOT, 'processed', job_id, filename)
+    # Path to the job directory
+    job_dir = os.path.join(settings.MEDIA_ROOT, 'processed', job_id)
     
-    if os.path.exists(file_path):
-        return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=filename)
-    else:
-        raise Http404("File not found")
+    print(f"DEBUG: Attempting download for Job ID: {job_id}")
+    
+    if os.path.exists(job_dir) and os.path.isdir(job_dir):
+        # Find the first file in this directory
+        files = os.listdir(job_dir)
+        if files:
+            filename = files[0]
+            file_path = os.path.join(job_dir, filename)
+            print(f"DEBUG: Found file: {file_path}")
+            
+            try:
+                response = FileResponse(open(file_path, 'rb'), as_attachment=True)
+                # Manually set filename header to handle UTF-8 correctly
+                from urllib.parse import quote
+                response['Content-Disposition'] = f"attachment; filename*=UTF-8''{quote(filename)}"
+                return response
+            except Exception as e:
+                print(f"DEBUG: Error opening file: {e}")
+                raise Http404(f"Error reading file: {e}")
+                
+    print("DEBUG: File or directory not found")
+    raise Http404("File not found on server")
 
 class CompressPDFView(View):
     def get(self, request):

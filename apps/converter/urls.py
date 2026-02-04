@@ -20,8 +20,8 @@ urlpatterns = [
     path('arrange-word/', ArrangeWordView.as_view(), name='arrange_word'),
     path('arrange-pdf/', ArrangePDFView.as_view(), name='arrange_pdf'),
     path('result/', ResultView.as_view(), name='result'),
-    # New direct download path (must accept job_id and filename as strings)
-    path('download-direct/<str:job_id>/<str:filename>/', download_file, name='download_file'),
+    # New direct download path (ID only - safer for Thai filenames)
+    path('download-direct/<str:job_id>/', download_file, name='download_file'),
     # Old path kept for compatibility only if needed (commented out or kept as fallback)
     # path('download/<uuid:file_id>/', DownloadFileView.as_view(), name='download_file_old'), 
     path('pdf-to-powerpoint/', PDFToPowerPointView.as_view(), name='pdf_to_powerpoint'),
