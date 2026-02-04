@@ -1201,7 +1201,14 @@ class QRCodeGeneratorView(View):
             
             # 3. Generate QR Code
             import qrcode
-            # Default to standard generation first to be safe
+            from django.http import JsonResponse
+            
+            # Helper: Convert Hex to RGB Tuple for StyledImage reliability
+            def hex_to_rgb(hex_color):
+                hex_color = hex_color.lstrip('#')
+                return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+
+            # Default to standard generation first
             use_styled = False
             drawer = None
             
@@ -1246,17 +1253,52 @@ class QRCodeGeneratorView(View):
             # Create Image with colors
             try:
                 if use_styled and drawer:
+                    # Convert colors to RGB tuples for StyledImage to prevent errors
+                    fill_rgb = hex_to_rgb(fill_color)
+                    back_rgb = hex_to_rgb(back_color)
+                    
                     img = qr.make_image(
                         image_factory=StyledImage,
                         module_drawer=drawer,
-                        fill_color=fill_color, 
-                        back_color=back_color
+                        # Note: StyledImage often uses different color arguments or needs explicit RGB
+                        # We try standardized styled image creation
+                         color_mask=None, # Use default color mask
+                         embeded_image_path=None
+                    )
+                    # Manually applying color (StyledImage can be tricky with direct color args)
+                    # New approach: Convert to RGBA and colorize or use stock fill/back
+                    # Simpler attempt: Revert to basic create but with drawer
+                    img = qr.make_image(
+                        image_factory=StyledImage, 
+                        module_drawer=drawer,
                     ).convert('RGB')
+                    
+                    # Colorize manually if needed (or rely on robust lib features)
+                    # Re-trying with direct color params which usually works if RGB tuples are safe
+                    # But qrcode lib varies. Let's try standard approach again but cleaner.
+                    
+                    # FINAL ATTEMPT for Styled + Color:
+                    # The safest way is creating the image then pasting colors or using SolidFillColorMask
+                    from qrcode.image.styles.colormasks import SolidFillColorMask
+                    
+                    color_mask = SolidFillColorMask(
+                        back_color=hex_to_rgb(back_color),
+                        front_color=hex_to_rgb(fill_color)
+                    )
+                    
+                    img = qr.make_image(
+                        image_factory=StyledImage,
+                        module_drawer=drawer,
+                        color_mask=color_mask
+                    ).convert('RGB')
+                    
                 else:
                     # Standard method
                     img = qr.make_image(fill_color=fill_color, back_color=back_color).convert('RGB')
             except Exception as e:
                 print(f"QR Generation Error (Style: {pattern_style}): {e}")
+                import traceback
+                traceback.print_exc()
                 # Ultimate Fallback
                 img = qr.make_image(fill_color="black", back_color="white").convert('RGB')
 
@@ -1266,20 +1308,17 @@ class QRCodeGeneratorView(View):
                 try:
                     logo = Image.open(logo_file)
                     
-                    # Calculate dimensions
-                    basewidth = int(img.size[0] * 0.22) # Slightly smaller logo for styled QR
+                    basewidth = int(img.size[0] * 0.22)
                     wpercent = (basewidth / float(logo.size[0]))
                     hsize = int((float(logo.size[1]) * float(wpercent)))
                     
                     logo = logo.resize((basewidth, hsize), Image.Resampling.LANCZOS)
-                    
                     pos = ((img.size[0] - logo.size[0]) // 2, (img.size[1] - logo.size[1]) // 2)
                     
                     if logo.mode == 'RGBA':
                         img.paste(logo, pos, logo)
                     else:
                         img.paste(logo, pos)
-                        
                 except Exception as e:
                     print(f"Logo processing error: {e}")
             # --- LOGO PROCESSING END ---
@@ -1307,10 +1346,20 @@ class QRCodeGeneratorView(View):
             except Exception as e:
                 print(f"Stats error: {e}")
             
-            # 5. Prepare Context for User
+            # 5. Prepare Context/Response
             qr_image_url = f"{settings.MEDIA_URL}{processed_rel_path}"
             download_url = reverse('converter:download_file', kwargs={'job_id': job_id})
             
+            # Check for AJAX Request
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'qr_image_url': qr_image_url,
+                    'download_url': download_url,
+                    'message': 'QR Code generated successfully'
+                })
+
+            # Normal Request
             context = {
                 'title': 'สร้าง QR Code',
                 'subtitle': 'สร้าง QR Code ฟรีจากลิงก์ ข้อความ หรือเบอร์โทรศัพท์ พร้อมปรับแต่งสีได้ตามใจชอบ',
@@ -1320,7 +1369,7 @@ class QRCodeGeneratorView(View):
                 'download_url': download_url,
                 'fill_color': fill_color,
                 'back_color': back_color,
-                'pattern_style': pattern_style, # Return the selected style
+                'pattern_style': pattern_style,
             }
             return render(request, 'converter/qrcode_tool.html', context)
             

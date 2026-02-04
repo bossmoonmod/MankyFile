@@ -522,32 +522,34 @@
         <!-- RIGHT COLUMN: PREVIEW -->
         <div class="qr-preview-panel">
             <div class="preview-card">
-                <div class="qr-display-area">
+                <div class="qr-display-area" id="qr-display-area">
                     {% if generated and qr_image_url %}
-                    <!-- Show Generated Image -->
-                    <img src="{{ qr_image_url }}" alt="QR Code"
+                    <img src="{{ qr_image_url }}" id="qr-generated-image" alt="QR Code"
                         style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
                     {% else %}
-                    <!-- Standard QR Placeholder -->
-                    <svg viewBox="0 0 100 100" class="qr-svg-placeholder">
-                        <path d="M0 0h100v100H0z" fill="white" />
-                        <path d="M10 10h30v30H10zM60 10h30v30H60zM10 60h30v30H10z" fill="black" />
-                        <circle cx="25" cy="25" r="8" fill="black" />
-                        <circle cx="75" cy="25" r="8" fill="black" />
-                        <circle cx="25" cy="75" r="8" fill="black" />
-                        <path d="M50 50h10v10H50zM70 60h10v10H70zM60 80h20v10H60zM40 70h10v10H40z" fill="black" />
-                    </svg>
+                    <!-- Placeholder SVG -->
+                    <div id="qr-placeholder-container">
+                        <svg viewBox="0 0 100 100" class="qr-svg-placeholder">
+                            <path d="M0 0h100v100H0z" fill="white" />
+                            <path d="M10 10h30v30H10zM60 10h30v30H60zM10 60h30v30H10z" fill="black" />
+                            <circle cx="25" cy="25" r="8" fill="black" />
+                            <circle cx="75" cy="25" r="8" fill="black" />
+                            <circle cx="25" cy="75" r="8" fill="black" />
+                            <path d="M50 50h10v10H50zM70 60h10v10H70zM60 80h20v10H60zM40 70h10v10H40z" fill="black" />
+                        </svg>
+                    </div>
+                    <!-- Hidden Image Element for AJAX updates -->
+                    <img id="qr-generated-image" class="hidden" alt="QR Code"
+                        style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
                     {% endif %}
                 </div>
 
                 <div class="download-buttons">
-                    {% if generated and download_url %}
-                    <a href="{{ download_url }}" class="btn-download png"
-                        style="text-decoration:none; display:inline-block; text-align:center;">ไฟล์ PNG</a>
-                    {% else %}
-                    <button type="button" class="btn-download png"
-                        onclick="document.forms['qr-form'].submit()">สร้างไฟล์ PNG</button>
-                    {% endif %}
+                    <a href="{% if generated %}{{ download_url }}{% else %}#{% endif %}" id="download-btn-png"
+                        class="btn-download png {% if not generated %}disabled-link{% endif %}"
+                        onclick="if(!this.href.includes('processed')) { document.forms['qr-form'].dispatchEvent(new Event('submit')); return false; }">
+                        {% if generated %}ไฟล์ PNG{% else %}สร้างไฟล์ PNG{% endif %}
+                    </a>
 
                     <button type="button" class="btn-download svg" disabled
                         style="opacity:0.5; cursor:not-allowed;">ไฟล์ SVG (เร็วๆ นี้)</button>
@@ -560,7 +562,83 @@
     </div>
 </div>
 
+<script>
+    // AJAX Form Handling
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('qr-form');
+        const submitBtn = form.querySelector('.btn-create');
+        const displayArea = document.getElementById('qr-display-area');
+        const placeholder = document.getElementById('qr-placeholder-container');
+        const displayImg = document.getElementById('qr-generated-image');
+        const downloadBtn = document.getElementById('download-btn-png');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // UI Loading State
+            const originalBtnText = submitBtn.innerText;
+            submitBtn.innerText = 'กำลังสร้าง...';
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.7';
+
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update Image
+                        displayImg.src = data.qr_image_url;
+                        displayImg.classList.remove('hidden');
+                        if (placeholder) placeholder.classList.add('hidden');
+
+                        // Update Download Button
+                        downloadBtn.href = data.download_url;
+                        downloadBtn.classList.remove('disabled-link');
+                        downloadBtn.innerText = 'ไฟล์ PNG';
+                        downloadBtn.onclick = null; // Remove onclick handler
+
+                        // Optional: Smooth Scroll or Highlight
+                        // displayImg.scrollIntoView({behavior: 'smooth', block: 'center'});
+                    } else {
+                        alert('เกิดข้อผิดพลาด: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+                })
+                .finally(() => {
+                    // Restore Button
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = '1';
+                });
+        });
+    });
+</script>
+
 <style>
+    /* ... (Global Styles remain same) ... */
+    .disabled-link {
+        pointer-events: none;
+        /* Prevent click via CSS if strictly needed, but JS handles logic */
+        /* opacity handled by template logic usually, but here we dynamically update text */
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+
+    <style>
+
     /* Global Styles */
     body {
         background-color: #eef1f5;
