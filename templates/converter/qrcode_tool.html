@@ -2,552 +2,448 @@
 {% load static %}
 
 {% block content %}
-<div class="tool-container" style="max-width: 1200px; width: 100%; margin: 40px auto; padding: 0 20px;">
+<div class="qr-tool-container">
 
-    <div class="tool-header" style="text-align: center; margin-bottom: 40px;">
-        <h1 style="font-size: 2.5rem; color: #333; margin-bottom: 10px;">{{ title }}</h1>
-        <p style="color: #666; font-size: 1.1rem;">{{ subtitle }}</p>
-    </div>
-
-    {% if error %}
-    <div class="alert alert-error"
-        style="background: #fee2e2; color: #dc2626; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
-        {{ error }}
-    </div>
-    {% endif %}
-
-    <div class="qr-builder-layout">
+    <!-- Main Grid: Left (Controls) & Right (Preview) -->
+    <div class="qr-layout">
 
         <!-- LEFT COLUMN: CONTROLS -->
-        <div class="qr-controls">
-            <form method="post" action="{{ action_url }}" id="qr-form">
-                {% csrf_token %}
-                <input type="hidden" name="qr_type" id="selected_qr_type" value="url">
+        <div class="qr-left-panel">
 
-                <!-- STEP 1: CHOOSE TYPE -->
-                <div class="control-section">
-                    <h3 class="section-title"><span class="step-num">1</span> เลือกประเภท QR Code</h3>
-                    <div class="type-grid">
-                        <div class="type-card active" data-type="url" onclick="selectType('url')">
-                            <span class="type-icon">🔗</span>
-                            <span>เว็บไซต์ (URL)</span>
-                        </div>
-                        <div class="type-card" data-type="text" onclick="selectType('text')">
-                            <span class="type-icon">📝</span>
-                            <span>ข้อความ</span>
-                        </div>
-                        <div class="type-card" data-type="wifi" onclick="selectType('wifi')">
-                            <span class="type-icon">📶</span>
-                            <span>WiFi</span>
-                        </div>
-                        <div class="type-card" data-type="email" onclick="selectType('email')">
-                            <span class="type-icon">📧</span>
-                            <span>อีเมล</span>
-                        </div>
-                        <div class="type-card" data-type="tel" onclick="selectType('tel')">
-                            <span class="type-icon">📞</span>
-                            <span>เบอร์โทร</span>
-                        </div>
-                        <div class="type-card" data-type="sms" onclick="selectType('sms')">
-                            <span class="type-icon">💬</span>
-                            <span>SMS</span>
-                        </div>
-                        <div class="type-card" data-type="whatsapp" onclick="selectType('whatsapp')">
-                            <span class="type-icon">📱</span>
-                            <span>WhatsApp</span>
-                        </div>
-                    </div>
-                </div>
+            <!-- 1. Top Navigation Tabs -->
+            <div class="qr-nav-tabs">
+                <div class="nav-item active" onclick="selectType(this, 'url')">URL</div>
+                <div class="nav-item" onclick="selectType(this, 'text')">ข้อความ</div>
+                <div class="nav-item" onclick="selectType(this, 'email')">Email</div>
+                <div class="nav-item" onclick="selectType(this, 'tel')">เบอร์โทร</div>
+                <div class="nav-item" onclick="selectType(this, 'sms')">SMS</div>
+                <div class="nav-item" onclick="selectType(this, 'whatsapp')">Whatsapp</div>
+                <div class="nav-item" onclick="selectType(this, 'wifi')">WIFI</div>
+            </div>
 
-                <!-- STEP 2: CONTENT (Dynamic Fields) -->
-                <div class="control-section">
-                    <h3 class="section-title"><span class="step-num">2</span> กรอกข้อมูล</h3>
+            <!-- 2. Main Form Card -->
+            <div class="qr-form-card">
+                <form method="post" action="{{ action_url }}" id="qr-form" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="qr_type" id="selected_qr_type" value="url">
 
-                    <!-- URL Input -->
-                    <div class="input-group" id="input-url">
-                        <label>ป้อนลิงก์เว็บไซต์ URL</label>
-                        <input type="url" name="content_url" placeholder="https://www.example.com" class="qr-input">
-                    </div>
-
-                    <!-- Text Input -->
-                    <div class="input-group hidden" id="input-text">
-                        <label>ข้อความที่ต้องการ</label>
-                        <textarea name="content_text" placeholder="พิมพ์ข้อความของคุณที่นี่..." class="qr-input"
-                            rows="4"></textarea>
-                    </div>
-
-                    <!-- WiFi Input -->
-                    <div class="input-group hidden" id="input-wifi">
-                        <label>ชื่อเครือข่าย (SSID)</label>
-                        <input type="text" name="wifi_ssid" placeholder="WiFi Name" class="qr-input">
-
-                        <label>รหัสผ่าน</label>
-                        <input type="text" name="wifi_password" placeholder="Password" class="qr-input">
-
-                        <label>ประเภทความปลอดภัย</label>
-                        <select name="wifi_encryption" class="qr-input">
-                            <option value="WPA">WPA/WPA2</option>
-                            <option value="WEP">WEP</option>
-                            <option value="nopass">ไม่มีรหัสผ่าน</option>
-                        </select>
-
-                        <label style="display:flex; align-items:center; gap:10px; margin-top:10px; cursor:pointer;">
-                            <input type="checkbox" name="wifi_hidden" value="true"> เครือข่ายซ่อนอยู่ (Hidden Network)
-                        </label>
-                    </div>
-
-                    <!-- Email Input -->
-                    <div class="input-group hidden" id="input-email">
-                        <label>อีเมลผู้รับ</label>
-                        <input type="email" name="email_address" placeholder="example@mail.com" class="qr-input">
-                        <label>หัวข้อเรื่อง</label>
-                        <input type="text" name="email_subject" placeholder="Subject" class="qr-input">
-                        <label>ข้อความ</label>
-                        <textarea name="email_body" placeholder="Message..." class="qr-input" rows="3"></textarea>
-                    </div>
-
-                    <!-- Tel Input -->
-                    <div class="input-group hidden" id="input-tel">
-                        <label>เบอร์โทรศัพท์</label>
-                        <input type="tel" name="tel_number" placeholder="0812345678" class="qr-input">
-                    </div>
-
-                    <!-- SMS Input -->
-                    <div class="input-group hidden" id="input-sms">
-                        <label>เบอร์โทรศัพท์</label>
-                        <input type="tel" name="sms_number" placeholder="0812345678" class="qr-input">
-                        <label>ข้อความ SMS</label>
-                        <textarea name="sms_message" placeholder="ข้อความ..." class="qr-input" rows="3"></textarea>
-                    </div>
-
-                    <!-- WhatsApp Input -->
-                    <div class="input-group hidden" id="input-whatsapp">
-                        <label>เบอร์โทรศัพท์ (มีรหัสประเทศรึเปล่า? เช่น 668xxxx)</label>
-                        <input type="tel" name="whatsapp_number" placeholder="66812345678" class="qr-input">
-                        <label>ข้อความเริ่มต้น</label>
-                        <textarea name="whatsapp_message" placeholder="Hello..." class="qr-input" rows="3"></textarea>
-                    </div>
-                </div>
-
-                <!-- STEP 3: DESIGN -->
-                <div class="control-section">
-                    <h3 class="section-title"><span class="step-num">3</span> ปรับแต่งดีไซน์</h3>
-                    <div style="display: flex; gap: 20px;">
-                        <div style="flex:1;">
-                            <label>สี QR Code</label>
-                            <div class="color-picker-wrapper">
-                                <input type="color" name="fill_color" value="#000000" id="fill_color">
-                                <span id="hex_fill">#000000</span>
+                    <!-- Colors Section -->
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label>สีของตัวอักษร</label>
+                            <div class="color-input-wrapper">
+                                <input type="color" name="fill_color" value="#000000"
+                                    oninput="updateColorText(this, 'fill-text')">
+                                <span id="fill-text" class="color-code">#000000</span>
                             </div>
                         </div>
-                        <div style="flex:1;">
-                            <label>สีพื้นหลัง</label>
-                            <div class="color-picker-wrapper">
-                                <input type="color" name="back_color" value="#ffffff" id="back_color">
-                                <span id="hex_back">#ffffff</span>
+                        <div class="form-col">
+                            <label>สีของพื้นหลัง</label>
+                            <div class="color-input-wrapper">
+                                <input type="color" name="back_color" value="#ffffff"
+                                    oninput="updateColorText(this, 'back-text')">
+                                <span id="back-text" class="color-code">#ffffff</span>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div style="margin-top: 30px;">
-                    <button type="submit" class="btn-generate">
-                        ✨ สร้าง QR Code
+                    <hr class="divider">
+
+                    <!-- Dynamic Input Fields -->
+                    <div class="input-container">
+
+                        <!-- URL -->
+                        <div id="input-url" class="input-group">
+                            <label>ระบุ URL ที่ต้องการสร้างคิวอาร์โค้ด</label>
+                            <input type="text" name="content_url" placeholder="https://www.example.com"
+                                class="custom-input">
+                        </div>
+
+                        <!-- Text -->
+                        <div id="input-text" class="input-group hidden">
+                            <label>ระบุข้อความ</label>
+                            <textarea name="content_text" placeholder="พิมพ์ข้อความของคุณที่นี่..." class="custom-input"
+                                rows="3"></textarea>
+                        </div>
+
+                        <!-- Email -->
+                        <div id="input-email" class="input-group hidden">
+                            <label>อีเมล</label>
+                            <input type="email" name="email_address" placeholder="name@example.com"
+                                class="custom-input mb-2">
+                            <input type="text" name="email_subject" placeholder="หัวข้อเรื่อง"
+                                class="custom-input mb-2">
+                            <textarea name="email_body" placeholder="ข้อความ..." class="custom-input"
+                                rows="2"></textarea>
+                        </div>
+
+                        <!-- Tel -->
+                        <div id="input-tel" class="input-group hidden">
+                            <label>เบอร์โทรศัพท์</label>
+                            <input type="tel" name="tel_number" placeholder="081XXXXXXX" class="custom-input">
+                        </div>
+
+                        <!-- SMS -->
+                        <div id="input-sms" class="input-group hidden">
+                            <label>เบอร์โทรศัพท์</label>
+                            <input type="tel" name="sms_number" placeholder="081XXXXXXX" class="custom-input mb-2">
+                            <textarea name="sms_message" placeholder="ข้อความ SMS..." class="custom-input"
+                                rows="2"></textarea>
+                        </div>
+
+                        <!-- Whatsapp -->
+                        <div id="input-whatsapp" class="input-group hidden">
+                            <label>เบอร์ Whatsapp (พร้อมรหัสประเทศ)</label>
+                            <input type="tel" name="whatsapp_number" placeholder="6681XXXXXXX"
+                                class="custom-input mb-2">
+                            <textarea name="whatsapp_message" placeholder="ข้อความ..." class="custom-input"
+                                rows="2"></textarea>
+                        </div>
+
+                        <!-- WiFi -->
+                        <div id="input-wifi" class="input-group hidden">
+                            <label>ชื่อ WiFi (SSID)</label>
+                            <input type="text" name="wifi_ssid" placeholder="WiFi Name" class="custom-input mb-2">
+                            <label>รหัสผ่าน</label>
+                            <input type="text" name="wifi_password" placeholder="Password" class="custom-input mb-2">
+                            <label>ประเภทความปลอดภัย</label>
+                            <select name="wifi_encryption" class="custom-input">
+                                <option value="WPA">WPA/WPA2</option>
+                                <option value="WEP">WEP</option>
+                                <option value="nopass">ไม่มีรหัสผ่าน</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-create">
+                        สร้าง QR CODE
                     </button>
-                    <p style="text-align: center; color: #888; margin-top: 10px; font-size: 0.9rem;">
-                        คลิกเพื่อสร้างไฟล์ภาพ PNG คุณภาพสูง
-                    </p>
-                </div>
+                </form>
+            </div>
 
-            </form>
         </div>
 
         <!-- RIGHT COLUMN: PREVIEW -->
-        <div class="qr-preview-area">
-            <div class="phone-mockup">
-                <div class="phone-notch"></div>
-                <div class="phone-screen">
-                    <div class="preview-header">
-                        <span>9:41</span>
-                        <span>📶 🔋</span>
-                    </div>
-                    <div class="preview-content">
-                        <h2>Scan Me!</h2>
-                        <div class="qr-placeholder">
-                            <!-- Simulated QR using CSS Grid for cool effect -->
-                            <div class="qr-pattern"></div>
-                            <div class="qr-logo-overlay">MankyFile</div>
-                        </div>
-                        <p>ตัวอย่างการแสดงผล</p>
-                        <div class="preview-btn">เปิดลิงก์</div>
-                    </div>
+        <div class="qr-preview-panel">
+            <div class="preview-card">
+                <div class="qr-display-area">
+                    <!-- Standard QR Placeholder or Real Image -->
+                    <svg viewBox="0 0 100 100" class="qr-svg-placeholder">
+                        <path d="M0 0h100v100H0z" fill="white" />
+                        <path d="M10 10h30v30H10zM60 10h30v30H60zM10 60h30v30H10z" fill="black" />
+                        <circle cx="25" cy="25" r="8" fill="black" />
+                        <circle cx="75" cy="25" r="8" fill="black" />
+                        <circle cx="25" cy="75" r="8" fill="black" />
+                        <path d="M50 50h10v10H50zM70 60h10v10H70zM60 80h20v10H60zM40 70h10v10H40z" fill="black" />
+                    </svg>
+                </div>
+
+                <div class="download-buttons">
+                    <button type="button" class="btn-download png" onclick="document.forms['qr-form'].submit()">ไฟล์
+                        PNG</button>
+                    <!-- SVG not strictly implemented in backend yet, but UI is here -->
+                    <button type="button" class="btn-download svg" disabled
+                        style="opacity:0.5; cursor:not-allowed;">ไฟล์ SVG (เร็วๆ นี้)</button>
                 </div>
             </div>
+
+            <p class="preview-note">ตัวอย่าง QR Code (กดสร้างเพื่อดาวน์โหลด)</p>
         </div>
 
     </div>
 </div>
 
 <style>
-    /* CSS Variables */
-    :root {
-        --primary: #e5322d;
-        --border: #e0e0e0;
-        --bg-light: #f9f9f9;
-        --text: #333;
+    /* Global Styles for this page */
+    body {
+        background-color: #eef1f5;
+        /* Light Gray Background like reference */
     }
 
-    /* Layout Main Container */
-    .qr-builder-layout {
+    .qr-tool-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+        font-family: 'Kanit', sans-serif;
+    }
+
+    .qr-layout {
         display: flex;
-        gap: 60px;
-        /* เพิ่มช่องว่างระหว่างซ้ายขวา */
+        gap: 30px;
         align-items: flex-start;
-        /* ให้เริ่มจากบนเสมอ */
-        justify-content: center;
-        max-width: 1000px;
-        /* จำกัดความกว้างรวมเพื่อไม่ให้ห่างกันเกินไป */
-        margin: 0 auto;
     }
 
-    /* Left Column */
-    .qr-controls {
-        flex: 1.2;
-        background: white;
-        padding: 40px;
-        border-radius: 20px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-        border: 1px solid #f0f0f0;
+    /* --- LEFT SIDE --- */
+    .qr-left-panel {
+        flex: 1.5;
     }
 
-    /* Right Column */
-    .qr-preview-area {
-        flex: 0.8;
+    /* Navigation Tabs */
+    .qr-nav-tabs {
+        background: #e5322d;
+        /* Primary Red */
+        padding: 10px 15px;
+        border-radius: 12px;
         display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        padding-top: 20px;
-    }
-
-    /* Section Styling */
-    .control-section {
-        margin-bottom: 35px;
-        padding-bottom: 30px;
-        border-bottom: 2px dashed #f5f5f5;
-    }
-
-    .control-section:last-child {
-        border-bottom: none;
-    }
-
-    .section-title {
-        font-size: 1.1rem;
-        font-weight: 700;
+        flex-wrap: wrap;
+        gap: 10px;
         margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        color: #222;
+        box-shadow: 0 4px 15px rgba(229, 50, 45, 0.3);
     }
 
-    .step-num {
-        background: var(--primary);
+    .nav-item {
         color: white;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-        font-weight: 800;
-        box-shadow: 0 4px 10px rgba(229, 50, 45, 0.3);
-    }
-
-    /* GRID FIX: Force 3 Columns to fill space */
-    .type-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        /* 3 คอลัมน์เป๊ะๆ */
-        gap: 12px;
-    }
-
-    .type-card {
-        border: 2px solid #eee;
-        border-radius: 14px;
-        padding: 15px 5px;
-        text-align: center;
+        padding: 8px 16px;
+        border-radius: 8px;
         cursor: pointer;
-        transition: all 0.2s ease;
+        font-weight: 500;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+
+    .nav-item:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .nav-item.active {
+        background: white;
+        color: #e5322d;
+        font-weight: 700;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Form Card */
+    .qr-form-card {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-row {
         display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 90px;
-    }
-
-    .type-card:hover {
-        border-color: #ffcccb;
-        background: #fff5f5;
-        transform: translateY(-2px);
-    }
-
-    .type-card.active {
-        border-color: var(--primary);
-        background: #fff0f0;
-        color: var(--primary);
-        font-weight: 600;
-        box-shadow: 0 4px 15px rgba(229, 50, 45, 0.15);
-    }
-
-    .type-icon {
-        font-size: 26px;
-        margin-bottom: 8px;
-        display: block;
-    }
-
-    /* Inputs */
-    .input-group {
+        gap: 20px;
         margin-bottom: 20px;
+    }
+
+    .form-col {
+        flex: 1;
+    }
+
+    .form-col label {
+        display: block;
+        font-size: 0.9rem;
+        color: #555;
+        margin-bottom: 8px;
+    }
+
+    .color-input-wrapper {
+        background: #f0f2f5;
+        border-radius: 8px;
+        padding: 5px 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    input[type="color"] {
+        border: none;
+        width: 35px;
+        height: 35px;
+        background: none;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .color-code {
+        font-family: monospace;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .divider {
+        border: 0;
+        border-top: 1px solid #eee;
+        margin: 20px 0;
+    }
+
+    /* Input Fields */
+    .custom-input {
+        width: 100%;
+        background: #f0f2f5;
+        /* Gray Background like reference */
+        border: 1px solid transparent;
+        padding: 15px;
+        border-radius: 8px;
+        font-size: 1rem;
+        color: #333;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+
+    .custom-input:focus {
+        border-color: #ddd;
+        background: white;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .mb-2 {
+        margin-bottom: 10px;
     }
 
     .input-group label {
-        display: block;
-        margin-bottom: 10px;
-        font-size: 0.9rem;
-        color: #555;
         font-weight: 600;
-    }
-
-    .qr-input {
-        width: 100%;
-        padding: 14px;
-        border: 2px solid #eee;
-        border-radius: 12px;
-        font-size: 1rem;
-        transition: border-color 0.3s;
-        background: #fcfcfc;
-    }
-
-    .qr-input:focus {
-        border-color: var(--primary);
-        background: #fff;
-        outline: none;
-        box-shadow: 0 0 0 4px rgba(229, 50, 45, 0.1);
+        margin-bottom: 10px;
+        display: block;
+        color: #333;
     }
 
     .hidden {
         display: none;
     }
 
-    /* Color Picker */
-    .color-picker-wrapper {
-        border: 2px solid #eee;
-        border-radius: 12px;
-        padding: 8px;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        cursor: pointer;
-        transition: border-color 0.2s;
-        background: #fff;
-    }
-
-    .color-picker-wrapper:hover {
-        border-color: #ddd;
-    }
-
-    input[type="color"] {
-        border: none;
-        width: 45px;
-        height: 45px;
-        cursor: pointer;
-        background: none;
-        border-radius: 8px;
-    }
-
-    /* Button */
-    .btn-generate {
+    /* Create Button */
+    .btn-create {
         width: 100%;
-        background: linear-gradient(135deg, #e5322d 0%, #ff5e59 100%);
+        background: #ff4742;
+        /* Bright Red */
         color: white;
         border: none;
-        padding: 18px;
+        padding: 16px;
+        border-radius: 8px;
         font-size: 1.1rem;
-        font-weight: 700;
-        border-radius: 14px;
+        font-weight: 600;
+        margin-top: 30px;
         cursor: pointer;
-        transition: all 0.3s;
-        box-shadow: 0 10px 20px rgba(229, 50, 45, 0.25);
+        box-shadow: 0 4px 15px rgba(255, 71, 66, 0.4);
+        transition: transform 0.2s;
     }
 
-    .btn-generate:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 30px rgba(229, 50, 45, 0.35);
+    .btn-create:hover {
+        transform: translateY(-2px);
+        background: #ff2e29;
     }
 
-    /* Phone Mockup Centering */
-    .phone-mockup {
-        width: 320px;
-        height: 640px;
-        background: #111;
-        border-radius: 50px;
-        border: 10px solid #222;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
-        margin: 0 auto;
-        /* Ensure phone centers in its container */
-    }
 
-    .phone-notch {
-        width: 140px;
-        height: 30px;
-        background: #111;
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        border-radius: 0 0 18px 18px;
-        z-index: 10;
-    }
-
-    .phone-screen {
-        background: white;
-        width: 100%;
-        height: 100%;
-        padding: 50px 25px;
+    /* --- RIGHT SIDE --- */
+    .qr-preview-panel {
+        flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        /* Center content vertically */
-        position: relative;
     }
 
-    .preview-header {
-        position: absolute;
-        top: 15px;
-        left: 30px;
-        right: 30px;
-        display: flex;
-        justify-content: space-between;
-        font-size: 13px;
-        color: #333;
-        font-weight: 600;
+    .preview-card {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        text-align: center;
+        width: 100%;
+        max-width: 400px;
     }
 
-    .qr-placeholder {
-        width: 220px;
-        height: 220px;
-        border: 2px solid #eee;
-        border-radius: 16px;
-        margin: 30px auto;
-        position: relative;
-        background: #fff;
+    .qr-display-area {
+        width: 100%;
+        aspect-ratio: 1/1;
+        background: #f8f9fa;
+        margin-bottom: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        border-radius: 8px;
     }
 
-    .qr-pattern {
-        width: 190px;
-        height: 190px;
-        background-image: radial-gradient(#333 1.5px, transparent 1.5px);
-        background-size: 12px 12px;
-        opacity: 0.7;
+    .qr-svg-placeholder {
+        width: 80%;
+        height: 80%;
+        opacity: 0.1;
     }
 
-    .qr-logo-overlay {
-        position: absolute;
-        background: var(--primary);
-        color: white;
-        padding: 8px 16px;
-        border-radius: 30px;
-        font-size: 13px;
-        font-weight: 800;
-        box-shadow: 0 5px 15px rgba(229, 50, 45, 0.4);
+    .download-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
     }
 
-    .preview-content h2 {
-        font-size: 1.8rem;
-        margin-bottom: 10px;
-        color: #111;
-    }
-
-    .preview-btn {
-        background: #f5f5f5;
-        color: #333;
-        padding: 12px 40px;
-        border-radius: 30px;
-        margin-top: 20px;
-        font-size: 14px;
+    .btn-download {
+        flex: 1;
+        padding: 10px;
+        border-radius: 6px;
+        font-size: 0.9rem;
         font-weight: 600;
-        transition: background 0.2s;
+        cursor: pointer;
+        border: none;
+        transition: opacity 0.2s;
     }
 
-    .preview-btn:hover {
-        background: #e5e5e5;
+    .btn-download.png {
+        background: #fb2c36;
+        /* Pink/Red */
+        color: white;
+    }
+
+    .btn-download.svg {
+        background: #fb2c36;
+        color: white;
+    }
+
+    .btn-download:hover {
+        opacity: 0.9;
+    }
+
+    .preview-note {
+        margin-top: 15px;
+        color: #888;
+        font-size: 0.9rem;
     }
 
     /* Responsive */
     @media (max-width: 900px) {
-        .qr-builder-layout {
-            flex-direction: column-reverse;
-            /* Preview on top on mobile? Or bottom? */
-            align-items: center;
-            gap: 40px;
+        .qr-layout {
+            flex-direction: column;
         }
 
-        .qr-controls {
+        .qr-preview-panel {
             width: 100%;
         }
 
-        .qr-preview-area {
-            width: 100%;
-            margin-bottom: 20px;
-        }
-
-        .type-grid {
-            grid-template-columns: repeat(4, 1fr);
-            /* 4 columns on tablet */
-        }
-    }
-
-    @media (max-width: 600px) {
-        .type-grid {
-            grid-template-columns: repeat(3, 1fr);
-            /* 3 columns on mobile */
+        .preview-card {
+            max-width: 100%;
         }
     }
 </style>
 
 <script>
-    function selectType(type) {
-        // Update Grid UI
-        document.querySelectorAll('.type-card').forEach(el => el.classList.remove('active'));
-        document.querySelector(`.type-card[data-type="${type}"]`).classList.add('active');
+    function selectType(element, type) {
+        // 1. Update Tab Styles
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
 
-        // Update Hidden Input
+        // 2. Update Hidden Input
         document.getElementById('selected_qr_type').value = type;
 
-        // Toggle Inputs
+        // 3. Show/Hide Inputs
         document.querySelectorAll('.input-group').forEach(el => el.classList.add('hidden'));
-        const target = document.getElementById(`input-${type}`);
-        if (target) target.classList.remove('hidden');
-        else {
-            // Fallback for special types sharing inputs if any
-            // For now specific ID maps directly
+
+        const targetId = 'input-' + type;
+        const targetGroup = document.getElementById(targetId);
+
+        if (targetGroup) {
+            targetGroup.classList.remove('hidden');
+        } else {
+            // Fallback for types sharing inputs or not implemented UI
+            // Default to text if not found
+            document.getElementById('input-text').classList.remove('hidden');
         }
     }
 
-    // Initialize Color Value Update
-    document.getElementById('fill_color').addEventListener('input', e => {
-        document.getElementById('hex_fill').textContent = e.target.value;
-    });
-    document.getElementById('back_color').addEventListener('input', e => {
-        document.getElementById('hex_back').textContent = e.target.value;
-    });
+    function updateColorText(input, textId) {
+        document.getElementById(textId).innerText = input.value;
+    }
 </script>
 {% endblock %}
