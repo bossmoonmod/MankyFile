@@ -1201,29 +1201,39 @@ class QRCodeGeneratorView(View):
             
             # 3. Generate QR Code
             import qrcode
-            from qrcode.image.styled.pil import StyledImage
-            from qrcode.image.styles.moduledrawers import (
-                SquareModuleDrawer,
-                GappedSquareModuleDrawer,
-                CircleModuleDrawer,
-                RoundedModuleDrawer,
-                VerticalBarsDrawer,
-                HorizontalBarsDrawer
-            )
+            # Default to standard generation first to be safe
+            use_styled = False
+            drawer = None
             
-            # Select Drawer based on user input
-            drawer = SquareModuleDrawer() # Default
-            if pattern_style == 'gapped':
-                drawer = GappedSquareModuleDrawer()
-            elif pattern_style == 'circle':
-                drawer = CircleModuleDrawer()
-            elif pattern_style == 'rounded':
-                drawer = RoundedModuleDrawer()
-            elif pattern_style == 'vertical':
-                drawer = VerticalBarsDrawer()
-            elif pattern_style == 'horizontal':
-                drawer = HorizontalBarsDrawer()
-            
+            if pattern_style and pattern_style != 'square':
+                try:
+                    from qrcode.image.styled.pil import StyledImage
+                    from qrcode.image.styles.moduledrawers import (
+                        SquareModuleDrawer,
+                        GappedSquareModuleDrawer,
+                        CircleModuleDrawer,
+                        RoundedModuleDrawer,
+                        VerticalBarsDrawer,
+                        HorizontalBarsDrawer
+                    )
+                    use_styled = True
+                    
+                    if pattern_style == 'gapped':
+                        drawer = GappedSquareModuleDrawer()
+                    elif pattern_style == 'circle':
+                        drawer = CircleModuleDrawer()
+                    elif pattern_style == 'rounded':
+                        drawer = RoundedModuleDrawer()
+                    elif pattern_style == 'vertical':
+                        drawer = VerticalBarsDrawer()
+                    elif pattern_style == 'horizontal':
+                        drawer = HorizontalBarsDrawer()
+                    else:
+                        drawer = SquareModuleDrawer()
+                except ImportError:
+                    print("Styled QR Code modules not found. Falling back to standard.")
+                    use_styled = False
+
             qr = qrcode.QRCode(
                 version=None, # Auto version
                 error_correction=qrcode.constants.ERROR_CORRECT_H,
@@ -1233,16 +1243,21 @@ class QRCodeGeneratorView(View):
             qr.add_data(data)
             qr.make(fit=True)
             
-            # Create Image with styles
+            # Create Image with colors
             try:
-                img = qr.make_image(
-                    image_factory=StyledImage,
-                    module_drawer=drawer,
-                    fill_color=fill_color, 
-                    back_color=back_color
-                ).convert('RGB')
-            except ValueError:
-                # Fallback
+                if use_styled and drawer:
+                    img = qr.make_image(
+                        image_factory=StyledImage,
+                        module_drawer=drawer,
+                        fill_color=fill_color, 
+                        back_color=back_color
+                    ).convert('RGB')
+                else:
+                    # Standard method
+                    img = qr.make_image(fill_color=fill_color, back_color=back_color).convert('RGB')
+            except Exception as e:
+                print(f"QR Generation Error (Style: {pattern_style}): {e}")
+                # Ultimate Fallback
                 img = qr.make_image(fill_color="black", back_color="white").convert('RGB')
 
             # --- LOGO PROCESSING START ---
