@@ -110,6 +110,14 @@ class SplitPDFView(View):
                 for file in extracted_files:
                     file_abs_path = os.path.join(output_dir, file)
                     zipf.write(file_abs_path, arcname=file)
+                    
+            # Cleanup: Delete individual PDF pages after zipping
+            # ensures only the ZIP file remains for the download view to find
+            for file in extracted_files:
+                try:
+                    os.remove(os.path.join(output_dir, file))
+                except Exception as cleanup_error:
+                    print(f"Cleanup error: {cleanup_error}")
             
             # Create ProcessedFile record for the ZIP
             processed_rel_path = f"processed/{job_id}/{zip_filename}"
