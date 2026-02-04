@@ -4,6 +4,7 @@ from .services.pdf_service import PDFService
 from .services.word_service import WordService
 from .models import UploadedFile, ProcessedFile
 import uuid
+import sys
 
 class IndexView(View):
     def get(self, request):
