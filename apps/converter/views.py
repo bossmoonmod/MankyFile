@@ -115,12 +115,10 @@ class PDFToWordView(View):
                 export_path=output_full_path
             )
             
-            # Create ProcessedFile record
+            # Create ProcessedFile record (Model only has 'file' field)
             processed_rel_path = f"processed/{job_id}/{output_filename}"
             processed_file = ProcessedFile(
-                original_file=upload_instance,
-                file_type='DOCX',
-                file_path=processed_rel_path
+                file=processed_rel_path
             )
             processed_file.save()
             
