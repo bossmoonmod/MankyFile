@@ -60,7 +60,7 @@ class CloudConvertService:
                     "operation": "convert",
                     "input_format": input_format,
                     "output_format": output_format,
-                    "engine": "office",
+                    # "engine": "office",  <-- Let CloudConvert decide
                     "input": ["import-1"]
                 },
                 "export-1": {
