@@ -76,9 +76,10 @@ class PDFToWordView(View):
         return render(request, 'converter/tool_base.html', context)
 
     def post(self, request):
-        import os  # Force local import to fix NameError
+        import os  # Force local import
+        from django.conf import settings # Force local import of settings
+        
         print("DEBUG: PDFToWordView POST Request Received!")
-        print(f"DEBUG: FILES keys: {request.FILES.keys()}")
         try:
             # Handle multiple files input (name="files") from template
             if 'files' in request.FILES:
@@ -137,7 +138,7 @@ class PDFToWordView(View):
         except Exception as e:
             print(f"Error converting PDF to Word: {e}")
             context = {
-                'error': f"เกิดข้อผิดพลาดในการแปลงไฟล์: {str(e)}",
+                'error': f"เกิดข้อผิดพลาด (V.Fixed): {str(e)}",
                 'title': 'PDF เป็น Word'
             }
             return render(request, 'converter/tool_base.html', context)
