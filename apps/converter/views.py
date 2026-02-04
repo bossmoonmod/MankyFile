@@ -403,10 +403,11 @@ class WordToPDFView(View):
             
             os.makedirs(os.path.dirname(output_full_path), exist_ok=True)
             
-            # V.2 Strategy: Try CloudConvert API first
+            # V.2 Strategy: Try CloudConvert API first (Direct REST Mode)
             try:
+                # The service now uses 'requests' internally, so no external SDK import error.
                 from utils.cloudconvert_service import CloudConvertService
-                print("Attempting CloudConvert V2 API...")
+                print("Attempting CloudConvert V2 API (Direct REST)...")
                 
                 converter = CloudConvertService()
                 converter.convert(

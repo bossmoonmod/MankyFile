@@ -1,36 +1,33 @@
 
-import cloudconvert
-from django.conf import settings
-import os
-import uuid
-import time
+import json
 import requests
+import os
+import time
+from django.conf import settings
 
 class CloudConvertService:
     def __init__(self):
         self.api_key = settings.CLOUDCONVERT_API_KEY
-        self.sandbox = getattr(settings, 'CLOUDCONVERT_SANDBOX', False)
+        self.api_url = "https://api.cloudconvert.com/v2"
+        self.headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
         
         if not self.api_key:
             raise Exception("CloudConvert API Key is not configured")
-            
-        cloudconvert.configure(api_key=self.api_key, sandbox=self.sandbox)
 
     def convert(self, input_file_path, output_format, export_path=None):
         """
-        Convert file using CloudConvert API
-        :param input_file_path: Absolute path to the file to convert
-        :param output_format: 'pdf', 'docx', 'pptx', etc.
-        :param export_path: Optional path to save the output file
-        :return: Path to the converted file
+        Convert file using CloudConvert REST API (No SDK required)
         """
-        print(f"Starting CloudConvert job for {input_file_path} -> {output_format}")
+        print(f"Starting CloudConvert Direct API for {input_file_path} -> {output_format}")
         
-        # Determine format from extension
         filename = os.path.basename(input_file_path)
         input_format = os.path.splitext(filename)[1].lstrip('.').lower()
         
-        # Setup Job
+        # 1. Create Job with Tasks
+        # We need: Import loop -> Convert -> Export
         job_payload = {
             "tasks": {
                 "import-1": {
@@ -41,60 +38,77 @@ class CloudConvertService:
                     "input_format": input_format,
                     "output_format": output_format,
                     "engine": "office",
-                    "input": [
-                        "import-1"
-                    ]
+                    "input": ["import-1"]
                 },
                 "export-1": {
                     "operation": "export/url",
-                    "input": [
-                        "task-1"
-                    ],
+                    "input": ["task-1"],
                     "inline": False,
                     "archive_multiple_files": False
                 }
             },
-            "tag": "mankyfile-v2"
+            "tag": "mankyfile-v2-direct"
         }
 
         # Create Job
-        job = cloudconvert.Job.create(payload=job_payload)
+        create_res = requests.post(f"{self.api_url}/jobs", headers=self.headers, json=job_payload)
+        if create_res.status_code != 201:
+            raise Exception(f"Failed to create job: {create_res.text}")
+            
+        job_data = create_res.json()['data']
+        job_id = job_data['id']
         
-        # Get upload URL
-        upload_task = next(task for task in job['tasks'] if task['name'] == 'import-1')
+        # 2. Get Upload URL
+        upload_task = next(task for task in job_data['tasks'] if task['name'] == 'import-1')
         upload_task_id = upload_task['id']
         
-        # Upload File
+        # Use the form parameters provided by CloudConvert for upload
+        upload_form = upload_task['result']['form']
+        upload_url = upload_form['url']
+        upload_params = upload_form['parameters']
+        
+        # 3. Upload File
         print(f"Uploading file to CloudConvert...")
         with open(input_file_path, 'rb') as f:
-            cloudconvert.Task.upload(file_name=filename, task=upload_task)  # Using built-in upload helper if possibly, else manual
-            # SDK helper is Task.upload(file_name, task)
-        
-        # Wait for completion
-        print("Waiting for conversion...")
-        job = cloudconvert.Job.wait(id=job['id']) # This blocks until finished
-        
-        # Check tasks status
-        export_task = next(task for task in job['tasks'] if task['name'] == 'export-1')
-        
-        if export_task['status'] != 'finished':
-             raise Exception(f"CloudConvert Job Failed: {job}")
-
-        file_url = export_task['result']['files'][0]['url']
-        filename_result = export_task['result']['files'][0]['filename']
-        print(f"Conversion finished. Downloading result from {file_url}")
-        
-        # Download Result
-        if not export_path:
-            # Save to same directory with new extension
-            output_dir = os.path.dirname(input_file_path)
-            export_path = os.path.join(output_dir, filename_result)
+            files = {'file': f}
+            # The upload requires multipart/form-data with specific fields
+            upload_res = requests.post(upload_url, data=upload_params, files=files)
             
-        response = requests.get(file_url)
-        if response.status_code == 200:
-            with open(export_path, 'wb') as f:
-                f.write(response.content)
-            return export_path
-        else:
-            raise Exception("Failed to download converted file")
+        if upload_res.status_code not in [200, 201, 204]:
+             raise Exception(f"Upload failed: {upload_res.text}")
 
+        # 4. Wait for Job Completion
+        print("Waiting for conversion...")
+        final_status = None
+        export_task = None
+        
+        # Polling loop
+        for _ in range(60): # Timeout 60 attempts (approx 2 mins)
+            time.sleep(2)
+            check_res = requests.get(f"{self.api_url}/jobs/{job_id}", headers=self.headers)
+            job_data = check_res.json()['data']
+            final_status = job_data['status']
+            
+            if final_status in ['finished', 'error']:
+                break
+        
+        if final_status != 'finished':
+            raise Exception(f"Job not finished. Status: {final_status}")
+
+        # 5. Download Result
+        export_task = next(task for task in job_data['tasks'] if task['name'] == 'export-1')
+        file_info = export_task['result']['files'][0]
+        download_url = file_info['url']
+        result_filename = file_info['filename']
+        
+        print(f"Downloading result from {download_url}")
+        download_res = requests.get(download_url)
+        
+        if not export_path:
+            output_dir = os.path.dirname(input_file_path)
+            export_path = os.path.join(output_dir, result_filename)
+            
+        with open(export_path, 'wb') as f:
+            f.write(download_res.content)
+            
+        return export_path
