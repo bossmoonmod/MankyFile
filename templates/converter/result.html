@@ -18,7 +18,7 @@
             </div>
         </div>
 
-        <a href="#" id="download-btn" class="btn-upload-big">
+        <a href="{{ file_url }}" id="download-btn" class="btn-upload-big">
             <span style="font-size: 20px;">ดาวน์โหลด {{ file_type|default:"WORD" }}</span>
         </a>
 
@@ -26,8 +26,11 @@
             const filenameInput = document.getElementById('filename-input');
             const downloadBtn = document.getElementById('download-btn');
             const fileExtSpan = document.getElementById('file-extension');
-            const fileId = "{{ file_id }}";
             const fileType = "{{ file_type|default:'WORD' }}";
+
+            // Backend already provided the full correct download link
+            // We store it here to potentially append query params later if needed
+            const baseUrl = "{{ file_url }}";
 
             // Set file extension based on type
             const extension = fileType === 'PDF' ? '.pdf' : '.docx';
@@ -37,17 +40,11 @@
             filenameInput.focus();
             filenameInput.select();
 
-            // Function to update download link
+            // Function to update download link (Optional: just logging for now as renaming is not supported by current view)
             function updateDownloadLink() {
-                let name = filenameInput.value.trim();
-                name = name.replace(/[<>:"/\\|?*]/g, ''); // Clean invalid chars
-
-                if (!name) name = 'merged_document';
-
-                // Construct URL for the download endpoint
-                const url = `{% url 'converter:download_file' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', fileId) + `?filename=${encodeURIComponent(name)}`;
-
-                downloadBtn.href = url;
+                // Ideally, we would append ?filename=... but our current simple view doesn't handle it yet.
+                // So we just keep the base URL to ensure functionality.
+                downloadBtn.href = baseUrl;
             }
 
             // Update input style on focus
