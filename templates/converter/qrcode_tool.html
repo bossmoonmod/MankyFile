@@ -883,6 +883,47 @@
         if (textSpan) textSpan.innerText = input.value;
     }
 
+    function toggleAccordion() {
+        const content = document.getElementById('design-content');
+        const icon = document.getElementById('acc-icon');
+        if (content && icon) {
+            content.classList.toggle('show');
+            icon.textContent = content.classList.contains('show') ? '-' : '+';
+        }
+    }
+
+    function previewLogo(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const previewImg = document.getElementById('logo-preview-img');
+                const previewArea = document.getElementById('logo-preview-area');
+                const removeBtn = document.getElementById('remove-logo-btn');
+
+                if (previewImg) {
+                    previewImg.src = e.target.result;
+                    previewImg.classList.remove('hidden');
+                }
+                if (previewArea) previewArea.classList.add('hidden');
+                if (removeBtn) removeBtn.classList.remove('hidden');
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeLogo(e) {
+        e.stopPropagation();
+        const logoInput = document.getElementById('logo-input');
+        const previewImg = document.getElementById('logo-preview-img');
+        const previewArea = document.getElementById('logo-preview-area');
+        const removeBtn = document.getElementById('remove-logo-btn');
+
+        if (logoInput) logoInput.value = '';
+        if (previewImg) previewImg.classList.add('hidden');
+        if (removeBtn) removeBtn.classList.add('hidden');
+        if (previewArea) previewArea.classList.remove('hidden');
+    }
+
     // --- 2. AJAX Form Handling ---
     document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('qr-form');
