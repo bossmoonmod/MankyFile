@@ -197,35 +197,43 @@
         --text: #333;
     }
 
-    /* Layout */
+    /* Layout Main Container */
     .qr-builder-layout {
         display: flex;
-        gap: 40px;
+        gap: 60px;
+        /* เพิ่มช่องว่างระหว่างซ้ายขวา */
         align-items: flex-start;
+        /* ให้เริ่มจากบนเสมอ */
         justify-content: center;
-        /* Center items if max-width permits */
+        max-width: 1000px;
+        /* จำกัดความกว้างรวมเพื่อไม่ให้ห่างกันเกินไป */
+        margin: 0 auto;
     }
 
+    /* Left Column */
     .qr-controls {
-        flex: 1.5;
+        flex: 1.2;
         background: white;
-        padding: 30px;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        border: 1px solid #f0f0f0;
     }
 
+    /* Right Column */
     .qr-preview-area {
-        flex: 1;
+        flex: 0.8;
         display: flex;
         justify-content: center;
+        align-items: flex-start;
         padding-top: 20px;
     }
 
     /* Section Styling */
     .control-section {
-        margin-bottom: 30px;
-        border-bottom: 1px solid var(--border);
+        margin-bottom: 35px;
         padding-bottom: 30px;
+        border-bottom: 2px dashed #f5f5f5;
     }
 
     .control-section:last-child {
@@ -233,92 +241,99 @@
     }
 
     .section-title {
-        font-size: 1.2rem;
-        font-weight: 600;
+        font-size: 1.1rem;
+        font-weight: 700;
         margin-bottom: 20px;
         display: flex;
         align-items: center;
-        gap: 10px;
-        color: var(--text);
+        gap: 12px;
+        color: #222;
     }
 
     .step-num {
         background: var(--primary);
         color: white;
-        width: 28px;
-        height: 28px;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 0.9rem;
-        font-weight: bold;
+        font-size: 1rem;
+        font-weight: 800;
+        box-shadow: 0 4px 10px rgba(229, 50, 45, 0.3);
     }
 
-    /* Type Grid */
-    /* Type Grid */
+    /* GRID FIX: Force 3 Columns to fill space */
     .type-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-        gap: 15px;
+        grid-template-columns: repeat(3, 1fr);
+        /* 3 คอลัมน์เป๊ะๆ */
+        gap: 12px;
     }
 
     .type-card {
-        border: 2px solid var(--border);
-        border-radius: 12px;
-        padding: 15px 10px;
+        border: 2px solid #eee;
+        border-radius: 14px;
+        padding: 15px 5px;
         text-align: center;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.2s ease;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 8px;
+        justify-content: center;
+        min-height: 90px;
     }
 
     .type-card:hover {
         border-color: #ffcccb;
         background: #fff5f5;
+        transform: translateY(-2px);
     }
 
     .type-card.active {
         border-color: var(--primary);
         background: #fff0f0;
         color: var(--primary);
-        font-weight: 500;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(229, 50, 45, 0.15);
     }
 
     .type-icon {
-        font-size: 24px;
+        font-size: 26px;
+        margin-bottom: 8px;
         display: block;
     }
 
     /* Inputs */
     .input-group {
-        margin-bottom: 15px;
+        margin-bottom: 20px;
     }
 
     .input-group label {
         display: block;
-        margin-bottom: 8px;
-        font-size: 0.95rem;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
         color: #555;
-        font-weight: 500;
+        font-weight: 600;
     }
 
     .qr-input {
         width: 100%;
-        padding: 12px 15px;
-        border: 2px solid var(--border);
-        border-radius: 8px;
+        padding: 14px;
+        border: 2px solid #eee;
+        border-radius: 12px;
         font-size: 1rem;
         transition: border-color 0.3s;
-        font-family: inherit;
+        background: #fcfcfc;
     }
 
     .qr-input:focus {
         border-color: var(--primary);
+        background: #fff;
         outline: none;
+        box-shadow: 0 0 0 4px rgba(229, 50, 45, 0.1);
     }
 
     .hidden {
@@ -327,138 +342,162 @@
 
     /* Color Picker */
     .color-picker-wrapper {
-        border: 2px solid var(--border);
-        border-radius: 8px;
+        border: 2px solid #eee;
+        border-radius: 12px;
         padding: 8px;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 15px;
+        cursor: pointer;
+        transition: border-color 0.2s;
+        background: #fff;
+    }
+
+    .color-picker-wrapper:hover {
+        border-color: #ddd;
     }
 
     input[type="color"] {
         border: none;
-        width: 40px;
-        height: 40px;
+        width: 45px;
+        height: 45px;
         cursor: pointer;
         background: none;
-        padding: 0;
+        border-radius: 8px;
     }
 
-    /* Submit Button */
+    /* Button */
     .btn-generate {
         width: 100%;
-        background: var(--primary);
+        background: linear-gradient(135deg, #e5322d 0%, #ff5e59 100%);
         color: white;
         border: none;
-        padding: 16px;
+        padding: 18px;
         font-size: 1.1rem;
-        font-weight: 600;
-        border-radius: 12px;
+        font-weight: 700;
+        border-radius: 14px;
         cursor: pointer;
-        transition: transform 0.2s, box-shadow 0.2s;
+        transition: all 0.3s;
+        box-shadow: 0 10px 20px rgba(229, 50, 45, 0.25);
     }
 
     .btn-generate:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(229, 50, 45, 0.3);
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(229, 50, 45, 0.35);
     }
 
-    /* Phone Mockup */
+    /* Phone Mockup Centering */
     .phone-mockup {
-        width: 300px;
-        height: 600px;
+        width: 320px;
+        height: 640px;
         background: #111;
-        border-radius: 40px;
-        border: 8px solid #333;
+        border-radius: 50px;
+        border: 10px solid #222;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+        margin: 0 auto;
+        /* Ensure phone centers in its container */
     }
 
     .phone-notch {
-        width: 120px;
-        height: 25px;
+        width: 140px;
+        height: 30px;
         background: #111;
         position: absolute;
         top: 0;
         left: 50%;
         transform: translateX(-50%);
-        border-radius: 0 0 15px 15px;
-        z-index: 2;
+        border-radius: 0 0 18px 18px;
+        z-index: 10;
     }
 
     .phone-screen {
         background: white;
         width: 100%;
         height: 100%;
-        padding: 40px 20px;
+        padding: 50px 25px;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        /* Center content vertically */
+        position: relative;
     }
 
     .preview-header {
         position: absolute;
-        top: 10px;
-        left: 20px;
-        right: 20px;
+        top: 15px;
+        left: 30px;
+        right: 30px;
         display: flex;
         justify-content: space-between;
-        font-size: 12px;
+        font-size: 13px;
         color: #333;
-        font-weight: bold;
+        font-weight: 600;
     }
 
     .qr-placeholder {
-        width: 200px;
-        height: 200px;
-        border: 4px solid #333;
-        border-radius: 10px;
-        margin: 20px auto;
-        /* Centered margin */
+        width: 220px;
+        height: 220px;
+        border: 2px solid #eee;
+        border-radius: 16px;
+        margin: 30px auto;
         position: relative;
-        background: #f0f0f0;
+        background: #fff;
         display: flex;
         align-items: center;
         justify-content: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     }
 
     .qr-pattern {
-        width: 180px;
-        height: 180px;
-        background-image: radial-gradient(#333 2px, transparent 2px);
-        background-size: 10px 10px;
+        width: 190px;
+        height: 190px;
+        background-image: radial-gradient(#333 1.5px, transparent 1.5px);
+        background-size: 12px 12px;
+        opacity: 0.7;
     }
 
     .qr-logo-overlay {
         position: absolute;
         background: var(--primary);
         color: white;
-        padding: 5px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: bold;
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 800;
+        box-shadow: 0 5px 15px rgba(229, 50, 45, 0.4);
     }
 
-    .preview-content {
-        text-align: center;
+    .preview-content h2 {
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+        color: #111;
     }
 
     .preview-btn {
-        background: #f0f0f0;
+        background: #f5f5f5;
         color: #333;
-        padding: 10px 30px;
-        border-radius: 20px;
-        margin-top: 15px;
+        padding: 12px 40px;
+        border-radius: 30px;
+        margin-top: 20px;
         font-size: 14px;
-        font-weight: 500;
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+
+    .preview-btn:hover {
+        background: #e5e5e5;
     }
 
     /* Responsive */
     @media (max-width: 900px) {
         .qr-builder-layout {
-            flex-direction: column;
+            flex-direction: column-reverse;
+            /* Preview on top on mobile? Or bottom? */
+            align-items: center;
+            gap: 40px;
         }
 
         .qr-controls {
@@ -466,8 +505,20 @@
         }
 
         .qr-preview-area {
-            display: none;
-            /* Hide preview on mobile to save space, or move to bottom */
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .type-grid {
+            grid-template-columns: repeat(4, 1fr);
+            /* 4 columns on tablet */
+        }
+    }
+
+    @media (max-width: 600px) {
+        .type-grid {
+            grid-template-columns: repeat(3, 1fr);
+            /* 3 columns on mobile */
         }
     }
 </style>
