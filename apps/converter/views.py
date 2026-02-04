@@ -1251,38 +1251,35 @@ class QRCodeGeneratorView(View):
             qr.make(fit=True)
             
             # Create Image with colors
-            # Create Image with colors
             try:
+                # Debug info
+                print(f"Generating QR with Style: {pattern_style}, Use Styled: {use_styled}")
+                
                 if use_styled and drawer:
-                    # Use SolidFillColorMask for consistent coloring
-                    try:
-                        from qrcode.image.styles.colormasks import SolidFillColorMask
-                        
-                        # Convert hex to RGB tuple for ColorMask
-                        back_rgb = hex_to_rgb(back_color)
-                        fill_rgb = hex_to_rgb(fill_color)
-                        
-                        color_mask = SolidFillColorMask(
-                            back_color=back_rgb,
-                            front_color=fill_rgb
-                        )
-                        
-                        img = qr.make_image(
-                            image_factory=StyledImage,
-                            module_drawer=drawer,
-                            color_mask=color_mask
-                        ).convert('RGB')
-                        
-                    except ImportError:
-                        # Fallback if colormasks module is missing (older versions)
-                        # Try direct color arguments (flaky on some versions)
-                        print("ColorMasks not found, trying direct color args")
-                        img = qr.make_image(
-                            image_factory=StyledImage,
-                            module_drawer=drawer,
-                        ).convert('RGB')
-                        # Note: Colors might be black/white if direct args fail.
-                        
+                    # 1. Generate Grayscale Mask (L Mode)
+                    # This guarantees the shape is drawn correctly as black/white
+                    img_mask = qr.make_image(
+                        image_factory=StyledImage,
+                        module_drawer=drawer,
+                    ).convert('L') 
+                    
+                    # 2. Manual Colorization using ImageOps
+                    # In L mode: 0 is Black (Modules), 255 is White (Background)
+                    # colorize(image, black_point_color, white_point_color)
+                    # So we map 0 -> fill_color, 255 -> back_color
+                    
+                    from PIL import ImageOps
+                    
+                    # Ensure colors are RGB tuples
+                    fill_rgb = hex_to_rgb(fill_color)
+                    back_rgb = hex_to_rgb(back_color)
+                    
+                    # Note: colorize requires 'L' image.
+                    # It maps black (0) to the first color arg, and white (255) to the second.
+                    # Standard QR: Modules are Black (0), Background is White (255)
+                    # So: 0 -> Text Color, 255 -> Background Color
+                    img = ImageOps.colorize(img_mask, black=fill_rgb, white=back_rgb)
+                    
                 else:
                     # Standard method
                     img = qr.make_image(fill_color=fill_color, back_color=back_color).convert('RGB')
