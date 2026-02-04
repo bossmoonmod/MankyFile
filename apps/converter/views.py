@@ -4,8 +4,9 @@ from django.conf import settings
 from django.views import View
 from .services.pdf_service import PDFService
 from .services.word_service import WordService
-from .models import UploadedFile, ProcessedFile
+from .models import UploadedFile, ProcessedFile, DailyStat
 import uuid
+from django.utils import timezone
 import sys
 import os
 
@@ -203,6 +204,14 @@ class PDFToWordView(View):
                 file=processed_rel_path
             )
             processed_file.save()
+            
+            # Track Usage
+            try:
+                stat, _ = DailyStat.objects.get_or_create(date=timezone.now().date())
+                stat.usage_count += 1
+                stat.save()
+            except Exception as e:
+                print(f"Stats error: {e}")
             
             # Ensure URL points to our custom download view (Bypass Media URL issues)
             # Use only job_id to avoid URL encoding issues with Thai filenames
@@ -452,6 +461,14 @@ class PDFToPowerPointView(View):
             processed_file = ProcessedFile(file=processed_rel_path)
             processed_file.save()
             
+            # Track Usage
+            try:
+                stat, _ = DailyStat.objects.get_or_create(date=timezone.now().date())
+                stat.usage_count += 1
+                stat.save()
+            except Exception as e:
+                print(f"Stats error: {e}")
+            
             download_url = reverse('converter:download_file', kwargs={'job_id': job_id})
             
             context = {
@@ -524,6 +541,14 @@ class PDFToExcelView(View):
             processed_file = ProcessedFile(file=processed_rel_path)
             processed_file.save()
             
+            # Track Usage
+            try:
+                stat, _ = DailyStat.objects.get_or_create(date=timezone.now().date())
+                stat.usage_count += 1
+                stat.save()
+            except Exception as e:
+                print(f"Stats error: {e}")
+            
             download_url = reverse('converter:download_file', kwargs={'job_id': job_id})
             
             context = {
@@ -595,6 +620,14 @@ class PowerPointToPDFView(View):
             processed_rel_path = f"processed/{job_id}/{output_filename}"
             processed_file = ProcessedFile(file=processed_rel_path)
             processed_file.save()
+            
+            # Track Usage
+            try:
+                stat, _ = DailyStat.objects.get_or_create(date=timezone.now().date())
+                stat.usage_count += 1
+                stat.save()
+            except Exception as e:
+                print(f"Stats error: {e}")
             
             download_url = reverse('converter:download_file', kwargs={'job_id': job_id})
             

@@ -73,6 +73,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'apps.converter.context_processors.daily_usage_stats',  # Custom Usage Stats
             ],
         },
     },

@@ -25,6 +25,13 @@
             <a href="{% url 'converter:compress_pdf' %}">บีบอัด PDF</a>
             <a href="{% url 'converter:pdf_to_word' %}">แปลง PDF</a>
             <a href="{% url 'converter:index' %}">เครื่องมือ PDF ทั้งหมด</a>
+
+            <!-- Daily Usage Stats -->
+            <div class="usage-badge"
+                style="background: #f0f0f0; padding: 5px 12px; border-radius: 20px; font-size: 14px; color: #555; margin-left: 15px; display: inline-flex; align-items: center; gap: 5px; border: 1px solid #ddd;">
+                <span>📊 ใช้งานวันนี้:</span>
+                <span style="font-weight: bold; color: #e5322d;">{{ daily_usage|default:0 }}</span>
+            </div>
         </nav>
     </header>
 
