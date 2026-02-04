@@ -122,12 +122,13 @@ class PDFToWordView(View):
             )
             processed_file.save()
             
-            # Ensure URL is correct relative to MEDIA_URL
-            processed_file_url = f"{settings.MEDIA_URL}{processed_rel_path}"
+            # Ensure URL points to our custom download view (Bypass Media URL issues)
+            from django.urls import reverse
+            download_url = reverse('converter:download_file', kwargs={'job_id': job_id, 'filename': output_filename})
             
             context = {
                 'success': True,
-                'file_url': processed_file_url,
+                'file_url': download_url,
                 'file_name': output_filename,
                 'file_size': os.path.getsize(output_full_path) if os.path.exists(output_full_path) else 0
             }
@@ -140,6 +141,19 @@ class PDFToWordView(View):
                 'title': 'PDF เป็น Word'
             }
             return render(request, 'converter/tool_base.html', context)
+
+# Direct File Download View (Bypass Media URL issues on Render)
+from django.http import FileResponse, Http404
+def download_file(request, job_id, filename):
+    import os
+    from django.conf import settings
+    
+    file_path = os.path.join(settings.MEDIA_ROOT, 'processed', job_id, filename)
+    
+    if os.path.exists(file_path):
+        return FileResponse(open(file_path, 'rb'), as_attachment=True, filename=filename)
+    else:
+        raise Http404("File not found")
 
 class CompressPDFView(View):
     def get(self, request):

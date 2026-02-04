@@ -3,7 +3,8 @@ from .views import (
     IndexView, ResultView, MergePDFView, SplitPDFView, PDFToWordView, 
     WordToPDFView, MergeWordView, ArrangeWordView, ArrangePDFView, 
     DownloadFileView, CompressPDFView, PDFToPowerPointView, 
-    PDFToExcelView, PowerPointToPDFView, TermsView, PrivacyView
+    PDFToExcelView, PowerPointToPDFView, TermsView, PrivacyView,
+    download_file # Import our new function-based view
 )
 
 app_name = 'converter'
@@ -19,7 +20,10 @@ urlpatterns = [
     path('arrange-word/', ArrangeWordView.as_view(), name='arrange_word'),
     path('arrange-pdf/', ArrangePDFView.as_view(), name='arrange_pdf'),
     path('result/', ResultView.as_view(), name='result'),
-    path('download/<uuid:file_id>/', DownloadFileView.as_view(), name='download_file'),
+    # New direct download path (must accept job_id and filename as strings)
+    path('download-direct/<str:job_id>/<str:filename>/', download_file, name='download_file'),
+    # Old path kept for compatibility only if needed (commented out or kept as fallback)
+    # path('download/<uuid:file_id>/', DownloadFileView.as_view(), name='download_file_old'), 
     path('pdf-to-powerpoint/', PDFToPowerPointView.as_view(), name='pdf_to_powerpoint'),
     path('pdf-to-excel/', PDFToExcelView.as_view(), name='pdf_to_excel'),
     path('powerpoint-to-pdf/', PowerPointToPDFView.as_view(), name='powerpoint_to_pdf'),
