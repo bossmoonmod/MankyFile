@@ -402,78 +402,92 @@ class WordToPDFView(View):
             
             os.makedirs(os.path.dirname(output_full_path), exist_ok=True)
             
-            # Try to find LibreOffice installation (Windows and Linux)
-            libreoffice_paths = [
-                # Windows paths
-                r"C:\Program Files\LibreOffice\program\soffice.exe",
-                r"C:\Program Files (x86)\LibreOffice\program\soffice.exe",
-                r"C:\Program Files\LibreOffice 7\program\soffice.exe",
-                r"C:\Program Files\LibreOffice 24\program\soffice.exe",
-                r"C:\Program Files\LibreOffice 25\program\soffice.exe",
-                # Linux paths (for production server)
-                "/usr/bin/libreoffice",
-                "/usr/bin/soffice",
-                "/snap/bin/libreoffice",
-                "/opt/libreoffice/program/soffice",
-            ]
-            
-            soffice_path = None
-            for path in libreoffice_paths:
-                if os.path.exists(path):
-                    soffice_path = path
-                    print(f"Found LibreOffice at: {path}")
-                    break
-            
-            if not soffice_path:
-                # Try using 'which' command on Linux
-                try:
-                    result = subprocess.run(['which', 'libreoffice'], capture_output=True, text=True)
-                    if result.returncode == 0 and result.stdout.strip():
-                        soffice_path = result.stdout.strip()
-                        print(f"Found LibreOffice via 'which': {soffice_path}")
-                except:
-                    pass
-            
-            if not soffice_path:
-                raise Exception(
-                    "LibreOffice not found. "
-                    "On Linux server, install with: sudo apt-get install libreoffice --no-install-recommends"
+            # V.2 Strategy: Try CloudConvert API first
+            try:
+                from utils.cloudconvert_service import CloudConvertService
+                print("Attempting CloudConvert V2 API...")
+                
+                converter = CloudConvertService()
+                converter.convert(
+                    input_file_path=input_path, 
+                    output_format='pdf',
+                    export_path=output_full_path
                 )
-            
-            # Convert using LibreOffice
-            # --headless: run without GUI
-            # --convert-to pdf: convert to PDF format
-            # --outdir: output directory
-            cmd = [
-                soffice_path,
-                '--headless',
-                '--convert-to',
-                'pdf',
-                '--outdir',
-                os.path.dirname(output_full_path),
-                input_path
-            ]
-            
-            print(f"Running LibreOffice command: {' '.join(cmd)}")
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)  # Increased to 120 seconds
-            print(f"LibreOffice stdout: {result.stdout}")
-            print(f"LibreOffice stderr: {result.stderr}")
-            print(f"LibreOffice return code: {result.returncode}")
-            
-            if result.returncode != 0:
-                raise Exception(f"LibreOffice conversion failed: {result.stderr}")
-            
-            # LibreOffice creates file with same name but .pdf extension
-            temp_output = os.path.join(
-                os.path.dirname(output_full_path),
-                os.path.splitext(os.path.basename(input_path))[0] + '.pdf'
-            )
-            
-            # Rename to our desired filename
-            if os.path.exists(temp_output):
-                os.rename(temp_output, output_full_path)
-            else:
-                raise Exception("Converted PDF file not found")
+                print("CloudConvert V2 API Success!")
+                
+            except Exception as api_error:
+                print(f"CloudConvert API Failed: {api_error}")
+                print("Falling back to local LibreOffice Engine...")
+                
+                # ... Fallback to original LibreOffice logic ...
+                
+                # Try to find LibreOffice installation (Windows and Linux)
+                libreoffice_paths = [
+                    # Windows paths
+                    r"C:\Program Files\LibreOffice\program\soffice.exe",
+                    r"C:\Program Files (x86)\LibreOffice\program\soffice.exe",
+                    r"C:\Program Files\LibreOffice 7\program\soffice.exe",
+                    r"C:\Program Files\LibreOffice 24\program\soffice.exe",
+                    r"C:\Program Files\LibreOffice 25\program\soffice.exe",
+                    # Linux paths (for production server)
+                    "/usr/bin/libreoffice",
+                    "/usr/bin/soffice",
+                    "/snap/bin/libreoffice",
+                    "/opt/libreoffice/program/soffice",
+                ]
+                
+                soffice_path = None
+                for path in libreoffice_paths:
+                    if os.path.exists(path):
+                        soffice_path = path
+                        print(f"Found LibreOffice at: {path}")
+                        break
+                
+                if not soffice_path:
+                    # Try using 'which' command on Linux
+                    try:
+                        result = subprocess.run(['which', 'libreoffice'], capture_output=True, text=True)
+                        if result.returncode == 0 and result.stdout.strip():
+                            soffice_path = result.stdout.strip()
+                            print(f"Found LibreOffice via 'which': {soffice_path}")
+                    except:
+                        pass
+                
+                if not soffice_path:
+                    # Reraise the original API error if local engine also fails
+                    raise Exception(f"CloudConvert failed ({str(api_error)}) and LibreOffice not found.")
+                
+                # Convert using LibreOffice
+                cmd = [
+                    soffice_path,
+                    '--headless',
+                    '--convert-to',
+                    'pdf',
+                    '--outdir',
+                    os.path.dirname(output_full_path),
+                    input_path
+                ]
+                
+                print(f"Running LibreOffice command: {' '.join(cmd)}")
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+                
+                if result.returncode != 0:
+                    raise Exception(f"LibreOffice conversion failed: {result.stderr}")
+                
+                # LibreOffice creates file with same name but .pdf extension
+                temp_output = os.path.join(
+                    os.path.dirname(output_full_path),
+                    os.path.splitext(os.path.basename(input_path))[0] + '.pdf'
+                )
+                
+                # Rename to our desired filename
+                if os.path.exists(temp_output):
+                    # Remove placeholder if created by touch or previous run
+                    if os.path.exists(output_full_path):
+                        os.remove(output_full_path) 
+                    os.rename(temp_output, output_full_path)
+                else:
+                    raise Exception("Converted PDF file not found")
             
             # Save processed file
             processed_file = ProcessedFile(file=output_rel_path)
