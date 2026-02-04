@@ -1214,6 +1214,36 @@ class QRCodeGeneratorView(View):
             except ValueError:
                 # Fallback if color is invalid
                 img = qr.make_image(fill_color="black", back_color="white").convert('RGB')
+
+            # --- LOGO PROCESSING START ---
+            logo_file = request.FILES.get('logo')
+            if logo_file:
+                try:
+                    logo = Image.open(logo_file)
+                    
+                    # Calculate dimensions
+                    # Logo width should be about 20% of QR code width for readability
+                    basewidth = int(img.size[0] * 0.25)
+                    wpercent = (basewidth / float(logo.size[0]))
+                    hsize = int((float(logo.size[1]) * float(wpercent)))
+                    
+                    # Resize logo
+                    logo = logo.resize((basewidth, hsize), Image.Resampling.LANCZOS)
+                    
+                    # Calculate center position
+                    pos = ((img.size[0] - logo.size[0]) // 2, (img.size[1] - logo.size[1]) // 2)
+                    
+                    # Paste logo
+                    # If logo has transparency, use it as mask
+                    if logo.mode == 'RGBA':
+                        img.paste(logo, pos, logo)
+                    else:
+                        img.paste(logo, pos)
+                        
+                except Exception as e:
+                    print(f"Logo processing error: {e}")
+                    # Continue without logo if error
+            # --- LOGO PROCESSING END ---
             
             # 4. Save file
             job_id = str(uuid.uuid4())
