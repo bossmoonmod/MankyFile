@@ -1253,47 +1253,48 @@ class QRCodeGeneratorView(View):
             # Create Image with colors
             try:
                 # Debug info
-                print(f"Generating QR with Style: {pattern_style}, Use Styled: {use_styled}")
+                print(f"DEBUG: Pattern Style requested: '{pattern_style}'")
                 
+                # Check imports explicitly
+                try:
+                    from qrcode.image.styled.pil import StyledImage
+                    from PIL import ImageOps
+                except ImportError as e:
+                    print(f"CRITICAL ERROR: Libraries missing: {e}")
+                    raise e
+
                 if use_styled and drawer:
+                    print(f"DEBUG: Generating Styled QR using drawer: {drawer}")
+                    
                     # 1. Generate Grayscale Mask (L Mode)
-                    # This guarantees the shape is drawn correctly as black/white
-                    img_mask = qr.make_image(
-                        image_factory=StyledImage,
-                        module_drawer=drawer,
-                    ).convert('L') 
+                    try:
+                        img_mask = qr.make_image(
+                            image_factory=StyledImage,
+                            module_drawer=drawer,
+                        ).convert('L') 
+                        print("DEBUG: Styled Mask generated successfully")
+                    except Exception as e:
+                        print(f"ERROR generating styled mask: {e}")
+                        raise e
                     
                     # 2. Manual Colorization using ImageOps
-                    # In L mode: 0 is Black (Modules), 255 is White (Background)
-                    # colorize(image, black_point_color, white_point_color)
-                    # So we map 0 -> fill_color, 255 -> back_color
-                    
-                    from PIL import ImageOps
-                    
-                    # Ensure colors are RGB tuples
-                    fill_rgb = hex_to_rgb(fill_color)
-                    back_rgb = hex_to_rgb(back_color)
-                    
-                    # Note: colorize requires 'L' image.
-                    # It maps black (0) to the first color arg, and white (255) to the second.
-                    # Standard QR: Modules are Black (0), Background is White (255)
-                    # So: 0 -> Text Color, 255 -> Background Color
-                    img = ImageOps.colorize(img_mask, black=fill_rgb, white=back_rgb)
+                    try:
+                        fill_rgb = hex_to_rgb(fill_color)
+                        back_rgb = hex_to_rgb(back_color)
+                        img = ImageOps.colorize(img_mask, black=fill_rgb, white=back_rgb)
+                        print("DEBUG: Colorization successful")
+                    except Exception as e:
+                         print(f"ERROR coloring image: {e}")
+                         raise e
                     
                 else:
-                    # Standard method
+                    print("DEBUG: Using Standard Generation")
                     img = qr.make_image(fill_color=fill_color, back_color=back_color).convert('RGB')
             except Exception as e:
-                print(f"QR Generation Error (Style: {pattern_style}): {e}")
+                print(f"FATAL QR GENERATION ERROR: {e}")
                 import traceback
                 traceback.print_exc()
-                # Ultimate Fallback
-                img = qr.make_image(fill_color="black", back_color="white").convert('RGB')
-            except Exception as e:
-                print(f"QR Generation Error (Style: {pattern_style}): {e}")
-                import traceback
-                traceback.print_exc()
-                # Ultimate Fallback
+                # Return standard black/white as absolute last resort, but LOG IT LOUDLY
                 img = qr.make_image(fill_color="black", back_color="white").convert('RGB')
 
             # --- LOGO PROCESSING START ---
@@ -1350,7 +1351,9 @@ class QRCodeGeneratorView(View):
                     'success': True,
                     'qr_image_url': qr_image_url,
                     'download_url': download_url,
-                    'message': 'QR Code generated successfully'
+                    'message': 'QR Code generated successfully',
+                    'debug_style': pattern_style,
+                    'debug_used_styled': use_styled
                 })
 
             # Normal Request
