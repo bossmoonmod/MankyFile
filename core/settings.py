@@ -16,6 +16,9 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+import os
+import sys
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -23,9 +26,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-*=%kv(gli^8+&1%1*!$n)5)5(w*rx+x9u**pkt=rl%kokgndcf'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+# Automatically disable DEBUG if running on Linux Production Server (simple check)
+if sys.platform != 'win32' and os.path.exists('/home'):
+    DEBUG = False
+    # In production, allow all hosts or specific domains. '*' is for easiest deployment.
+    ALLOWED_HOSTS = ['*']
+else:
+    DEBUG = True
+    ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -43,6 +51,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # Add WhiteNoise for static files!
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -107,7 +116,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Bangkok' # Set to Thailand Time
 
 USE_I18N = True
 
@@ -118,9 +127,25 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Development: where static files are kept
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-# Media files
+# Production: where static files are collected to
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Enable WhiteNoise's compressed static files storage
+# This allows the app to serve its own static files efficiently without Nginx config!
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+# Media files (Uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 

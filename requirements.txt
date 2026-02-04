@@ -8,3 +8,5 @@ reportlab
 fpdf2
 Pillow
 PyMuPDF
+whitenoise
+gunicorn
