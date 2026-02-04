@@ -413,13 +413,63 @@ class PDFToPowerPointView(View):
         return render(request, 'converter/tool_base.html', context)
 
     def post(self, request):
-        files = request.FILES.getlist('files')
-        if not files:
-            return redirect('converter:pdf_to_powerpoint')
+        import os
+        from django.conf import settings
+        import uuid
+        from utils.cc_v2_api import CloudConvertService
+        from django.urls import reverse
         
-        from django.contrib import messages
-        messages.error(request, '❌ ฟีเจอร์นี้ยังไม่พร้อมใช้งาน - การแปลง PDF เป็น PowerPoint ต้องใช้เครื่องมือพิเศษ (Adobe Acrobat, Smallpdf หรือ PDF2Go)')
-        return redirect('converter:pdf_to_powerpoint')
+        try:
+            if 'files' in request.FILES:
+                uploaded_file = request.FILES.getlist('files')[0]
+            elif 'file' in request.FILES:
+                uploaded_file = request.FILES['file']
+            else:
+                return redirect('converter:index')
+            
+            upload_instance = UploadedFile(file=uploaded_file)
+            upload_instance.save()
+            input_path = upload_instance.file.path
+            
+            job_id = str(uuid.uuid4())
+            output_dir = os.path.join(settings.MEDIA_ROOT, 'processed', job_id)
+            os.makedirs(output_dir, exist_ok=True)
+            
+            input_filename = os.path.basename(input_path)
+            filename_only = os.path.splitext(input_filename)[0]
+            output_filename = f"{filename_only}.pptx"
+            output_full_path = os.path.join(output_dir, output_filename)
+            
+            # Use CloudConvert
+            converter = CloudConvertService()
+            converter.convert(
+                input_file_path=input_path, 
+                output_format='pptx',
+                export_path=output_full_path
+            )
+            
+            processed_rel_path = f"processed/{job_id}/{output_filename}"
+            processed_file = ProcessedFile(file=processed_rel_path)
+            processed_file.save()
+            
+            download_url = reverse('converter:download_file', kwargs={'job_id': job_id})
+            
+            context = {
+                'success': True,
+                'file_url': download_url,
+                'file_name': output_filename,
+                'file_type': 'PPTX',
+                'file_size': os.path.getsize(output_full_path) if os.path.exists(output_full_path) else 0
+            }
+            return render(request, 'converter/result.html', context)
+
+        except Exception as e:
+            print(f"Error converting PDF to PPTX: {e}")
+            context = {
+                'error': f"เกิดข้อผิดพลาด: {str(e)}",
+                'title': 'PDF เป็น PowerPoint'
+            }
+            return render(request, 'converter/tool_base.html', context)
 
 
 class PDFToExcelView(View):
@@ -435,13 +485,63 @@ class PDFToExcelView(View):
         return render(request, 'converter/tool_base.html', context)
 
     def post(self, request):
-        files = request.FILES.getlist('files')
-        if not files:
-            return redirect('converter:pdf_to_excel')
+        import os
+        from django.conf import settings
+        import uuid
+        from utils.cc_v2_api import CloudConvertService
+        from django.urls import reverse
         
-        from django.contrib import messages
-        messages.error(request, '❌ ฟีเจอร์นี้ยังไม่พร้อมใช้งาน - การแปลง PDF เป็น Excel ต้องใช้เครื่องมือพิเศษ (Adobe Acrobat, Tabula หรือ PDF2Go)')
-        return redirect('converter:pdf_to_excel')
+        try:
+            if 'files' in request.FILES:
+                uploaded_file = request.FILES.getlist('files')[0]
+            elif 'file' in request.FILES:
+                uploaded_file = request.FILES['file']
+            else:
+                return redirect('converter:index')
+            
+            upload_instance = UploadedFile(file=uploaded_file)
+            upload_instance.save()
+            input_path = upload_instance.file.path
+            
+            job_id = str(uuid.uuid4())
+            output_dir = os.path.join(settings.MEDIA_ROOT, 'processed', job_id)
+            os.makedirs(output_dir, exist_ok=True)
+            
+            input_filename = os.path.basename(input_path)
+            filename_only = os.path.splitext(input_filename)[0]
+            output_filename = f"{filename_only}.xlsx"
+            output_full_path = os.path.join(output_dir, output_filename)
+            
+            # Use CloudConvert
+            converter = CloudConvertService()
+            converter.convert(
+                input_file_path=input_path, 
+                output_format='xlsx',
+                export_path=output_full_path
+            )
+            
+            processed_rel_path = f"processed/{job_id}/{output_filename}"
+            processed_file = ProcessedFile(file=processed_rel_path)
+            processed_file.save()
+            
+            download_url = reverse('converter:download_file', kwargs={'job_id': job_id})
+            
+            context = {
+                'success': True,
+                'file_url': download_url,
+                'file_name': output_filename,
+                'file_type': 'XLSX',
+                'file_size': os.path.getsize(output_full_path) if os.path.exists(output_full_path) else 0
+            }
+            return render(request, 'converter/result.html', context)
+
+        except Exception as e:
+            print(f"Error converting PDF to Excel: {e}")
+            context = {
+                'error': f"เกิดข้อผิดพลาด: {str(e)}",
+                'title': 'PDF เป็น Excel'
+            }
+            return render(request, 'converter/tool_base.html', context)
 
 
 class PowerPointToPDFView(View):
@@ -457,97 +557,63 @@ class PowerPointToPDFView(View):
         return render(request, 'converter/tool_base.html', context)
 
     def post(self, request):
-        files = request.FILES.getlist('files')
-        if not files:
-            return redirect('converter:powerpoint_to_pdf')
-        
-        uploaded_file = UploadedFile.objects.create(
-            file=files[0],
-            original_filename=files[0].name
-        )
+        import os
+        from django.conf import settings
+        import uuid
+        from utils.cc_v2_api import CloudConvertService
+        from django.urls import reverse
         
         try:
-            import subprocess
-            import os
-            from django.conf import settings
+            if 'files' in request.FILES:
+                uploaded_file = request.FILES.getlist('files')[0]
+            elif 'file' in request.FILES:
+                uploaded_file = request.FILES['file']
+            else:
+                return redirect('converter:index')
             
-            input_path = uploaded_file.file.path
-            output_filename = f"converted_{uuid.uuid4()}.pdf"
-            output_rel_path = f"processed/{output_filename}"
-            output_dir = os.path.join(settings.MEDIA_ROOT, 'processed')
-            output_full_path = os.path.join(output_dir, output_filename)
+            upload_instance = UploadedFile(file=uploaded_file)
+            upload_instance.save()
+            input_path = upload_instance.file.path
             
+            job_id = str(uuid.uuid4())
+            output_dir = os.path.join(settings.MEDIA_ROOT, 'processed', job_id)
             os.makedirs(output_dir, exist_ok=True)
             
-            # Find LibreOffice
-            libreoffice_paths = [
-                r"C:\Program Files\LibreOffice\program\soffice.exe",
-                r"C:\Program Files (x86)\LibreOffice\program\soffice.exe",
-                "/usr/bin/libreoffice",
-                "/usr/bin/soffice",
-            ]
+            input_filename = os.path.basename(input_path)
+            filename_only = os.path.splitext(input_filename)[0]
+            output_filename = f"{filename_only}.pdf"
+            output_full_path = os.path.join(output_dir, output_filename)
             
-            soffice_path = None
-            for path in libreoffice_paths:
-                if os.path.exists(path):
-                    soffice_path = path
-                    break
+            # Use CloudConvert
+            converter = CloudConvertService()
+            converter.convert(
+                input_file_path=input_path, 
+                output_format='pdf',
+                export_path=output_full_path
+            )
             
-            if not soffice_path:
-                try:
-                    result = subprocess.run(['which', 'libreoffice'], capture_output=True, text=True)
-                    if result.returncode == 0 and result.stdout.strip():
-                        soffice_path = result.stdout.strip()
-                except:
-                    pass
-            
-            if not soffice_path:
-                raise Exception("LibreOffice not found. Please install LibreOffice first.")
-            
-            # Convert PowerPoint to PDF using LibreOffice
-            cmd = [
-                soffice_path,
-                '--headless',
-                '--convert-to',
-                'pdf',
-                '--outdir',
-                output_dir,
-                input_path
-            ]
-            
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-            
-            if result.returncode != 0:
-                raise Exception(f"LibreOffice conversion failed: {result.stderr}")
-            
-            # LibreOffice creates file with original name + new extension
-            base_name = os.path.splitext(os.path.basename(input_path))[0]
-            libreoffice_output = os.path.join(output_dir, f"{base_name}.pdf")
-            
-            # Rename to our UUID filename
-            if os.path.exists(libreoffice_output):
-                os.rename(libreoffice_output, output_full_path)
-            
-            if not os.path.exists(output_full_path):
-                raise Exception("Converted file not found")
-            
-            # Save processed file
-            processed_file = ProcessedFile(file=output_rel_path)
+            processed_rel_path = f"processed/{job_id}/{output_filename}"
+            processed_file = ProcessedFile(file=processed_rel_path)
             processed_file.save()
             
-            return render(request, 'converter/result.html', {
-                'download_url': processed_file.file.url,
-                'file_id': processed_file.id,
-                'file_type': 'PDF'
-            })
+            download_url = reverse('converter:download_file', kwargs={'job_id': job_id})
             
+            context = {
+                'success': True,
+                'file_url': download_url,
+                'file_name': output_filename,
+                'file_type': 'PDF',
+                'file_size': os.path.getsize(output_full_path) if os.path.exists(output_full_path) else 0
+            }
+            return render(request, 'converter/result.html', context)
+
         except Exception as e:
-            print(f"PowerPoint to PDF conversion error: {e}")
-            import traceback
-            traceback.print_exc()
-            from django.contrib import messages
-            messages.error(request, f'เกิดข้อผิดพลาด: {str(e)}')
-            return redirect('converter:powerpoint_to_pdf')
+            print(f"Error converting PPTX to PDF: {e}")
+            context = {
+                'error': f"เกิดข้อผิดพลาด: {str(e)}",
+                'title': 'PowerPoint เป็น PDF'
+            }
+            return render(request, 'converter/tool_base.html', context)
 
 
 class WordToPDFView(View):
