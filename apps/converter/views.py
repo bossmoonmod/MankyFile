@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.conf import settings
 from django.views import View
 from .services.pdf_service import PDFService
 from .services.word_service import WordService
