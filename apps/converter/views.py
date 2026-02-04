@@ -1143,40 +1143,80 @@ class QRCodeGeneratorView(View):
         from django.utils import timezone
         
         try:
-            # Get data from form
-            data = request.POST.get('qr_data', '').strip()
+            # 1. Get QR Type and Construct Data
+            qr_type = request.POST.get('qr_type', 'url')
+            data = ""
+            
+            if qr_type == 'url':
+                data = request.POST.get('content_url', '').strip()
+                if not data.startswith('http'): data = 'https://' + data
+            
+            elif qr_type == 'text':
+                data = request.POST.get('content_text', '').strip()
+                
+            elif qr_type == 'wifi':
+                ssid = request.POST.get('wifi_ssid', '').strip()
+                password = request.POST.get('wifi_password', '').strip()
+                encryption = request.POST.get('wifi_encryption', 'WPA')
+                hidden = request.POST.get('wifi_hidden', 'false')
+                # Format: WIFI:S:MySSID;T:WPA;P:MyPass;H:false;;
+                data = f"WIFI:S:{ssid};T:{encryption};P:{password};H:{hidden};;"
+            
+            elif qr_type == 'email':
+                email = request.POST.get('email_address', '').strip()
+                subject = request.POST.get('email_subject', '').strip()
+                body = request.POST.get('email_body', '').strip()
+                data = f"mailto:{email}?subject={subject}&body={body}"
+                
+            elif qr_type == 'tel':
+                phone = request.POST.get('tel_number', '').strip()
+                data = f"tel:{phone}"
+                
+            elif qr_type == 'sms':
+                phone = request.POST.get('sms_number', '').strip()
+                message = request.POST.get('sms_message', '').strip()
+                data = f"SMSTO:{phone}:{message}"
+                
+            elif qr_type == 'whatsapp':
+                phone = request.POST.get('whatsapp_number', '').strip()
+                message = request.POST.get('whatsapp_message', '').strip()
+                # Clean phone number
+                phone = ''.join(filter(str.isdigit, phone))
+                data = f"https://wa.me/{phone}?text={message}"
+
+            # Validate Data
+            if not data:
+                raise ValueError("กรุณากรอกข้อมูลให้ครบถ้วน")
+                
+            # 2. Get Design Options
             fill_color = request.POST.get('fill_color', '#000000')
             back_color = request.POST.get('back_color', '#ffffff')
             
-            if not data:
-                return redirect('converter:qrcode_generator')
-                
-            # Generate QR Code
+            # 3. Generate QR Code
             qr = qrcode.QRCode(
                 version=1,
                 error_correction=qrcode.constants.ERROR_CORRECT_H,
-                box_size=10,
-                border=4,
+                box_size=20, # Higher quality
+                border=2,
             )
             qr.add_data(data)
             qr.make(fit=True)
             
             # Create Image with colors
             try:
-                img = qr.make_image(fill_color=fill_color, back_color=back_color)
+                img = qr.make_image(fill_color=fill_color, back_color=back_color).convert('RGB')
             except ValueError:
-                 # Fallback if invalid color hex
-                img = qr.make_image(fill_color="black", back_color="white")
+                img = qr.make_image(fill_color="black", back_color="white").convert('RGB')
             
-            # Save file
+            # 4. Save file
             job_id = str(uuid.uuid4())
             output_dir = os.path.join(settings.MEDIA_ROOT, 'processed', job_id)
             os.makedirs(output_dir, exist_ok=True)
             
-            output_filename = "qrcode.png"
+            output_filename = f"qr_{qr_type}_{job_id[:8]}.png"
             output_full_path = os.path.join(output_dir, output_filename)
             
-            img.save(output_full_path)
+            img.save(output_full_path, format="PNG")
             
             # Save Record
             processed_rel_path = f"processed/{job_id}/{output_filename}"
@@ -1191,22 +1231,22 @@ class QRCodeGeneratorView(View):
             except Exception as e:
                 print(f"Stats error: {e}")
             
-            # Download Link
             download_url = reverse('converter:download_file', kwargs={'job_id': job_id})
             
             context = {
                 'success': True,
                 'file_url': download_url,
                 'file_name': output_filename,
-                'file_type': 'PNG', # Image file
+                'file_type': 'PNG', 
                 'file_size': os.path.getsize(output_full_path)
             }
             return render(request, 'converter/result.html', context)
             
         except Exception as e:
             print(f"QR Gen Error: {e}")
+            # Re-render with error (need to pass previous inputs back ideally, but for now simple error)
             return render(request, 'converter/qrcode_tool.html', {
                 'title': 'สร้าง QR Code', 
-                'subtitle': 'สร้าง QR Code ฟรีจากลิงก์ ข้อความ หรือเบอร์โทรศัพท์', 
+                'subtitle': 'สร้าง QR Code ฟรี ครบทุกรูปแบบ', 
                 'error': f"เกิดข้อผิดพลาด: {str(e)}"
             })
