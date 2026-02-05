@@ -1,6 +1,6 @@
 :root {
+    /* Light Mode Variables */
     --primary-color: #e5322d;
-    /* iLovePDF Red */
     --primary-hover: #c91814;
     --text-main: #333333;
     --text-muted: #666666;
@@ -11,6 +11,22 @@
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
     --font-family: 'Kanit', sans-serif;
     --nav-height: 70px;
+}
+
+/* Dark Mode Variables */
+[data-theme="dark"] {
+    --primary-color: #ff4d4d;
+    /* Brighter red for dark bg */
+    --primary-hover: #ff6666;
+    --text-main: #f0f0f0;
+    --text-muted: #b0b0b0;
+    --bg-body: #121212;
+    /* Very dark grey */
+    --bg-white: #1e1e1e;
+    /* Dark card bg */
+    --border-color: #333333;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 body {
@@ -472,14 +488,430 @@ footer {
     }
 }
 
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+
+/* Theme Toggle Button (Switch Style) */
+.theme-switch {
+    position: relative;
+    width: 140px;
+    /* Increased width to fit text */
+    height: 40px;
+    border-radius: 20px;
+    background-color: #E2E8F0;
+    /* Light Grey (Day) */
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0;
+    transition: background-color 0.4s ease;
+    overflow: hidden;
+    margin-left: 24px;
+    /* Space from Logo */
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+    /* Prevent shrinking in flex container */
+}
+
+.switch-thumb {
+    position: absolute;
+    left: 4px;
+    width: 32px;
+    height: 32px;
+    background-color: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+    z-index: 2;
+}
+
+/* Icons within Switch */
+.theme-icon {
+    width: 18px;
+    height: 18px;
+    position: absolute;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.icon-sun {
+    color: #F59E0B;
+    /* Amber */
+    opacity: 1;
+    transform: rotate(0);
+}
+
+.icon-moon {
+    color: #8B5CF6;
+    /* Purple */
+    opacity: 0;
+    transform: rotate(90deg);
+}
+
+/* Text Labels - Fixed with Absolute Positioning */
+.switch-track {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    /* Essential for absolute children */
+    z-index: 1;
+    font-family: 'Kanit', sans-serif;
+    pointer-events: none;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.switch-text {
+    position: absolute;
+    /* Lock position */
+    top: 50%;
+    transform: translateY(-50%);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    white-space: nowrap;
+}
+
+.text-night {
+    opacity: 0;
+    color: white;
+    left: 14px;
+    /* Fixed Left Position */
+    transform: translateY(-50%) translateX(-10px);
+}
+
+.text-day {
+    opacity: 1;
+    color: #64748B;
+    right: 14px;
+    /* Fixed Right Position */
+    transform: translateY(-50%) translateX(0);
+}
+
+/* --- Dark Mode State --- */
+[data-theme="dark"] .theme-switch {
+    background-color: #1e1e1e;
+    /* Dark Surface */
+    border: 1px solid #333;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .switch-thumb {
+    /* Translate: Container(140) - Thumb(32) - Padding(4) - Start(4) = 100px */
+    transform: translateX(100px);
+    background-color: #333;
+    border: 1px solid #444;
+}
+
+[data-theme="dark"] .icon-sun {
+    opacity: 0;
+    transform: rotate(-90deg);
+}
+
+[data-theme="dark"] .icon-moon {
+    opacity: 1;
+    transform: rotate(0);
+}
+
+[data-theme="dark"] .text-night {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+    /* Align Center Vertical */
+}
+
+[data-theme="dark"] .text-day {
+    opacity: 0;
+    transform: translateY(-50%) translateX(10px);
+    /* Move away */
+}
+
+/* Hidden Utility */
+.hidden {
+    display: none;
+}
+
+/* --- Tool Base Components (Extracted from Inline) --- */
+.error-banner {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #ef9a9a;
+    text-align: center;
+}
+
+.manual-submit-btn {
+    display: none;
+    margin-top: 20px;
+    width: 100%;
+    padding: 15px;
+    font-size: 1.2rem;
+}
+
+.progress-container {
+    display: none;
+    margin-top: 30px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.progress-track {
+    background: #e0e0e0;
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    background: var(--primary-color);
+    width: 0%;
+    height: 100%;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.status-text {
+    margin-top: 10px;
+    color: var(--text-muted);
+}
+
+.drag-active {
+    background-color: rgba(229, 50, 45, 0.05);
+}
+
+/* --- Dark Mode Overrides for Tools & Components --- */
+[data-theme="dark"] .error-banner {
+    background-color: rgba(198, 40, 40, 0.1);
+    color: #ffcdd2;
+    border-color: rgba(239, 154, 154, 0.3);
+}
+
+[data-theme="dark"] .progress-track {
+    background: #333;
+}
+
+[data-theme="dark"] .drag-active {
+    background-color: rgba(229, 50, 45, 0.15);
+}
+
+[data-theme="dark"] .usage-badge {
+    background: #2d2d2d;
+    color: #bbb;
+    border-color: #444;
+}
+
+[data-theme="dark"] footer {
+    background-color: var(--bg-card);
+    border-top-color: var(--border-color);
+}
+
+[data-theme="dark"] .tool-icon {
+    background-color: rgba(229, 50, 45, 0.15);
+    border: 1px solid rgba(229, 50, 45, 0.2);
+}
+
+/* Ensure Tool Inputs/Areas have correct contrast */
+[data-theme="dark"] .btn-upload-big {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .tool-container {
+    background: transparent;
+}
+
+/* --- QR Tool Dark Mode Overrides (Appended) --- */
+
+/* 1. Global Container */
+[data-theme="dark"] body {
+    background-color: #121212 !important;
+    /* Force dark bg */
+}
+
+/* 2. Main Card & Panels */
+[data-theme="dark"] .qr-form-card,
+[data-theme="dark"] .preview-card,
+[data-theme="dark"] .design-accordion,
+[data-theme="dark"] .accordion-content,
+[data-theme="dark"] .accordion-header {
+    background-color: #1e1e1e !important;
+    /* Card background */
+    color: #e0e0e0;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+    border-color: #333;
+}
+
+/* 3. Inputs & text areas */
+[data-theme="dark"] .custom-input,
+[data-theme="dark"] .color-input-wrapper {
+    background-color: #2d2d2d;
+    color: #fff;
+    border-color: #444;
+}
+
+[data-theme="dark"] .custom-input::placeholder {
+    color: #888;
+}
+
+[data-theme="dark"] .custom-input:focus {
+    background-color: #333;
+    border-color: #e5322d;
+}
+
+/* 4. Labels & Text */
+[data-theme="dark"] label,
+[data-theme="dark"] .form-col label,
+[data-theme="dark"] .color-code,
+[data-theme="dark"] .accordion-header,
+[data-theme="dark"] .section-label,
+[data-theme="dark"] #logo-text {
+    color: #d0d0d0 !important;
+}
+
+/* 5. Logo Upload Box */
+[data-theme="dark"] .logo-upload-box {
+    background-color: #2d2d2d;
+    border-color: #444;
+}
+
+[data-theme="dark"] .logo-upload-box:hover {
+    background-color: #333;
+    border-color: #e5322d;
+}
+
+/* 6. Style Options (Patterns) */
+[data-theme="dark"] .style-option {
+    background-color: #2d2d2d;
+    border-color: #444;
+}
+
+[data-theme="dark"] .style-option:hover {
+    border-color: #888;
+}
+
+[data-theme="dark"] .preview-dot,
+[data-theme="dark"] .preview-bar,
+[data-theme="dark"] .eye-preview,
+[data-theme="dark"] .eye-preview::after {
+    background-color: #888 !important;
+    /* Lighter dots for visibility */
+    border-color: #888 !important;
+}
+
+/* 7. Preview Area */
+[data-theme="dark"] .qr-display-area {
+    background-color: #2d2d2d;
+    border-color: #444;
+}
+
+[data-theme="dark"] .preview-note {
+    color: #777;
+}
+
+/* 8. Accordion Icon */
+[data-theme="dark"] .accordion-icon {
+    color: #fff;
+}
+
+/* 9. Dark Mode SVG Icons override */
+[data-theme="dark"] .nav-item {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .nav-item.active {
+    background-color: #e5322d;
+    /* Keep active red */
+    color: white;
+}
+
+/* --- Compress Tool Dark Mode Overrides --- */
+[data-theme="dark"] .compression-section,
+[data-theme="dark"] .upload-section {
+    background-color: #1e1e1e;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .compression-section h3 {
+    color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .quality-card-modern .card-content {
+    background-color: #262626;
+    border-color: #444;
+}
+
+[data-theme="dark"] .quality-card-modern h4 {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .quality-desc {
+    color: #999;
+}
+
+[data-theme="dark"] .quality-badge {
+    background-color: #333;
+    color: #bbb;
+}
+
+[data-theme="dark"] .quality-info {
+    border-top-color: #444;
+}
+
+[data-theme="dark"] .upload-area-modern {
+    background: #262626;
+    border-color: #444;
+}
+
+[data-theme="dark"] .upload-area-modern h3 {
+    color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .upload-area-modern p {
+    color: #999 !important;
+}
+
+[data-theme="dark"] .quality-card-modern:hover .card-content {
+    border-color: #e5322d;
+    background-color: #2d2d2d;
+}
+
+[data-theme="dark"] .quality-card-modern input:checked+.card-content {
+    border-color: #e5322d;
+    background-color: #2d2d2d;
+}
+
+/* --- Upload Area Styles (V2) --- */
+.error-banner {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #ef9a9a;
+    text-align: center;
+}
+
+.upload-area {
+    background: transparent;
+    padding: 0 20px 40px;
+    text-align: center;
+}
+
+
+
+
+
+[data-theme="dark"] .error-banner {
+    background-color: #3d1a1a;
+    color: #ff6b6b;
+    border-color: #5a2828;
+}
+
+[data-theme="dark"] .upload-area {
+    background-color: transparent;
+}
+
+[data-theme="dark"] .drop-text {
+    color: #9ca3af;
 }

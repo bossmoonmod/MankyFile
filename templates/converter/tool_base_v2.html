@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/progress.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="tool-container">
+    <div class="tool-header">
+        <h1>{{ title }}</h1>
+        <p>{{ subtitle }}</p>
+    </div>
+
+    <!-- Error Message Display -->
+    {% if error %}
+    <div class="error-banner">
+        <strong>เกิดข้อผิดพลาด:</strong> {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Upload Form -->
+    <div class="upload-area" id="upload-area">
+        <form id="upload-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% if accept %}
+            <input type="file" id="file-input" name="files" multiple style="display: none;" accept="{{ accept }}">
+            {% else %}
+            <input type="file" id="file-input" name="files" multiple style="display: none;">
+            {% endif %}
+
+            <a href="#" id="select-files-btn" class="btn-upload-big">
+                <span>เลือกไฟล์ {{ file_type }}</span>
+            </a>
+
+            <div class="drop-text">หรือวางไฟล์ {{ file_type }} ที่นี่</div>
+        </form>
+    </div>
+</div>
+
+<script src="{% static 'js/progress.js' %}"></script>
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+    let currentJobId = null;
+
+    document.getElementById('select-files-btn').addEventListener('click', function (e) {
+        e.preventDefault();
+        document.getElementById('file-input').click();
+    });
+
+    document.getElementById('upload-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const fileInput = document.getElementById('file-input');
+        if (fileInput.files.length === 0) {
+            alert('กรุณาเลือกไฟล์ก่อน');
+            return;
+        }
+
+        const formData = new FormData();
+        for (let i = 0; i < fileInput.files.length; i++) {
+            formData.append('files', fileInput.files[i]);
+        }
+
+        try {
+            const response = await fetch(window.location.href + '?ajax=true', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                currentJobId = data.job_id;
+
+                new ProgressBar(data.task_id, {
+                    onComplete: () => {
+                        if (currentJobId) {
+                            window.location.href = `/download-direct/${currentJobId}/`;
+                        }
+                    },
+                    onError: (error) => {
+                        alert('เกิดข้อผิดพลาด: ' + error.message);
+                        location.reload();
+                    }
+                });
+            } else {
+                alert('เกิดข้อผิดพลาด: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('เกิดข้อผิดพลาดในการอัปโหลด');
+        }
+    });
+
+    document.getElementById('file-input').addEventListener('change', function () {
+        if (this.files.length > 0) {
+            document.getElementById('upload-form').dispatchEvent(new Event('submit'));
+        }
+    });
+
+    const dropZone = document.querySelector('.tool-container');
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.backgroundColor = 'rgba(229, 50, 45, 0.05)';
+    });
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.style.backgroundColor = 'transparent';
+    });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.backgroundColor = 'transparent';
+        document.getElementById('file-input').files = e.dataTransfer.files;
+        document.getElementById('upload-form').dispatchEvent(new Event('submit'));
+    });
+</script>
+{% endblock %}

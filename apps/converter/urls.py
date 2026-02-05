@@ -1,11 +1,14 @@
 from django.urls import path
 from .views import (
-    IndexView, ResultView, MergePDFView, SplitPDFView, PDFToWordView, 
+    IndexView, ResultView, MergePDFView, SplitPDFView,
     WordToPDFView, MergeWordView, ArrangeWordView, ArrangePDFView, 
     DownloadFileView, CompressPDFView, PDFToPowerPointView, 
     PDFToExcelView, PowerPointToPDFView, TermsView, PrivacyView,
     download_file, QRCodeGeneratorView, DeleteInstantView
 )
+from .api_views import ProgressAPIView, ProgressTestAPIView
+from .async_views import PDFToWordAsyncView
+from django.views.generic import TemplateView
 
 app_name = 'converter'
 
@@ -13,7 +16,10 @@ urlpatterns = [
     path('', IndexView.as_view(), name='index'),
     path('merge-pdf/', MergePDFView.as_view(), name='merge_pdf'),
     path('split-pdf/', SplitPDFView.as_view(), name='split_pdf'),
-    path('pdf-to-word/', PDFToWordView.as_view(), name='pdf_to_word'),
+    
+    # Use async version with progress bar (IMPORTANT: This enables real-time progress)
+    path('pdf-to-word/', PDFToWordAsyncView.as_view(), name='pdf_to_word'),
+    
     path('compress-pdf/', CompressPDFView.as_view(), name='compress_pdf'),
     path('word-to-pdf/', WordToPDFView.as_view(), name='word_to_pdf'),
     path('merge-word/', MergeWordView.as_view(), name='merge_word'),
@@ -31,4 +37,11 @@ urlpatterns = [
     path('privacy/', PrivacyView.as_view(), name='privacy'),
     path('qrcode-generator/', QRCodeGeneratorView.as_view(), name='qrcode_generator'),
     path('delete-instant/', DeleteInstantView.as_view(), name='delete_instant'),
+    
+    # Progress Demo
+    path('progress-demo/', TemplateView.as_view(template_name='converter/progress_demo.html'), name='progress_demo'),
+    
+    # API Endpoints
+    path('api/progress/<str:task_id>/', ProgressAPIView.as_view(), name='api_progress'),
+    path('api/progress/test/', ProgressTestAPIView.as_view(), name='api_progress_test'),
 ]
