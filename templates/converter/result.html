@@ -74,7 +74,7 @@
         <div style="margin-top: 40px; display: flex; gap: 20px; justify-content: center;">
             <a href="{% url 'converter:index' %}"
                 style="color: #666; text-decoration: none; border: 1px solid #ccc; padding: 10px 20px; border-radius: 6px;">กลับหน้าหลัก</a>
-            <a href="#"
+            <a href="{% url 'converter:delete_instant' %}" onclick="return confirm('ยืนยันลบไฟล์ทันที?');"
                 style="color: #666; text-decoration: none; border: 1px solid #ccc; padding: 10px 20px; border-radius: 6px;">ลบไฟล์ทันที</a>
         </div>
     </div>

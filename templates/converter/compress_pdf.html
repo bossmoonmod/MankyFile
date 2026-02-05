@@ -431,8 +431,229 @@
     }
 
     @media (max-width: 480px) {
+        .tool-container {
+            padding: 0 15px;
+        }
+
+        .tool-header h1 {
+            font-size: 24px;
+        }
+
         .quality-grid {
             grid-template-columns: 1fr;
+            /* Force single column on mobile */
+            gap: 12px;
+        }
+
+        .quality-card-modern .card-content {
+            padding: 15px;
+            flex-direction: row;
+            /* Horizontal layout for compact view */
+            text-align: left;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .card-icon {
+            margin: 0;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            /* Smaller icon text */
+        }
+
+        .card-icon span {
+            font-size: 20px !important;
+        }
+
+        .quality-card-modern h4 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .quality-desc {
+            margin: 2px 0 5px;
+            font-size: 12px;
+        }
+
+        .quality-info {
+            display: none;
+            /* Hide detailed info on mobile to save space */
+        }
+
+        .quality-badge {
+            margin: 0;
+            font-size: 10px;
+            padding: 2px 8px;
+        }
+
+        .recommended-badge {
+            font-size: 10px;
+            padding: 3px 10px;
+            right: 10px;
+        }
+
+        /* Upload Area */
+        .upload-area-modern {
+            padding: 30px 15px;
+        }
+
+        .btn-compress {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+        }
+    }
+
+    /* Redesigned Mobile Layout */
+    @media (max-width: 600px) {
+        .tool-container {
+            padding: 0 15px;
+            max-width: 100%;
+        }
+
+        .compression-section {
+            padding: 20px;
+            background: transparent;
+            /* Remove container background on mobile for cleaner look */
+            box-shadow: none;
+        }
+
+        .tool-header h1 {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        /* Stack cards properly with gap */
+        .quality-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Card Restyling */
+        .quality-card-modern {
+            margin-bottom: 0;
+            width: 100%;
+        }
+
+        .quality-card-modern .card-content {
+            flex-direction: row;
+            align-items: center;
+            padding: 15px;
+            text-align: left;
+            min-height: 80px;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            /* Soft shadow */
+            border: 1px solid #eee;
+            gap: 15px;
+        }
+
+        /* Icon */
+        .card-icon {
+            margin: 0;
+            width: 45px;
+            height: 45px;
+            min-width: 45px;
+            /* Prevent shrinking */
+            border-radius: 10px;
+            /* Softer shape */
+        }
+
+        .card-icon span {
+            font-size: 20px !important;
+        }
+
+        /* Text Content */
+        .quality-card-modern h4 {
+            font-size: 16px;
+            margin: 0;
+            line-height: 1.2;
+            color: #333;
+        }
+
+        .quality-desc {
+            font-size: 12px;
+            margin: 4px 0 0 0;
+            color: #777;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 160px;
+            /* Prevent text overflow */
+        }
+
+        /* Right Side Badge */
+        .quality-badge {
+            margin-left: auto;
+            /* Push to right */
+            margin-bottom: 0;
+            font-size: 10px;
+            padding: 4px 8px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        /* Info & Overlays */
+        .quality-info,
+        .card-overlay {
+            display: none;
+            /* Hide unnecessary elements on mobile */
+        }
+
+        /* Recommended Badge Positioning */
+        .recommended-badge {
+            top: -8px;
+            right: 10px;
+            font-size: 9px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            z-index: 10;
+        }
+
+        /* Active State */
+        .quality-card-modern input:checked+.card-content {
+            border-color: #e5322d;
+            background: #fffafa;
+            box-shadow: 0 4px 8px rgba(229, 50, 45, 0.15);
+            transform: none;
+            /* Disable shift on mobile */
+        }
+
+        /* Upload Area */
+        .upload-section {
+            padding: 0;
+            background: transparent;
+            box-shadow: none;
+            margin-top: 20px;
+        }
+
+        .upload-area-modern {
+            background: white;
+            border-radius: 12px;
+            padding: 30px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-compress {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            width: auto;
+            max-width: none;
+            margin: 0;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Add padding to bottom of page so content isn't hidden behind fixed button */
+        .tool-container {
+            padding-bottom: 100px;
         }
     }
 </style>

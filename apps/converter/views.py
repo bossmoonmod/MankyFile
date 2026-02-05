@@ -354,8 +354,8 @@ class CompressPDFView(View):
                         # Replace image in PDF
                         compressed_image = output_buffer.getvalue()
                         
-                        # Update image in PDF
-                        doc._deleteObject(xref)
+                        # Update the existing stream with the compressed image
+                        doc.update_stream(xref, compressed_image)
                         
                     except Exception as e:
                         print(f"Error compressing image {img_index} on page {page_num}: {e}")
@@ -1409,3 +1409,12 @@ class QRCodeGeneratorView(View):
                 'subtitle': 'สร้าง QR Code ฟรี ครบทุกรูปแบบ', 
                 'error': f"เกิดข้อผิดพลาด: {str(e)}"
             })
+
+class DeleteInstantView(View):
+    def get(self, request):
+        """
+        Handle 'Delete Immediately' request.
+        For now, this simply redirects to the index page, essentially 'discarding' the result.
+        Actual file cleanup is handled by the background scheduler/cron job.
+        """
+        return redirect('converter:index')
