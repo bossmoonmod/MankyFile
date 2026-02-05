@@ -4,11 +4,15 @@ from django.conf import settings
 from django.views import View
 from .services.pdf_service import PDFService
 from .services.word_service import WordService
-from .models import UploadedFile, ProcessedFile, DailyStat
+import os
+import random
+import string
+import sys
 import uuid
 from django.utils import timezone
-import sys
-import os
+from django.http import JsonResponse
+from .models import UploadedFile, ProcessedFile, DailyStat, ShortLink
+from utils.file_cleanup import cleanup_old_files, cleanup_expired_links_db
 
 class IndexView(View):
     def get(self, request):
@@ -1481,3 +1485,90 @@ class DeleteInstantView(View):
         Actual file cleanup is handled by the background scheduler/cron job.
         """
         return redirect('converter:index')
+
+# --- Shorten URL Views ---
+class ShortenURLView(View):
+    def get(self, request):
+        return render(request, 'converter/shorten_link.html')
+    
+    def post(self, request):
+        original_url = request.POST.get('url')
+        expiry_option = request.POST.get('expiry') # 24h, 7d
+        
+        if not original_url:
+            return render(request, 'converter/shorten_link.html', {'error': 'กรุณาระบุ URL'})
+        
+        # Generate Short Code
+        def generate_code(length=6):
+            return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+        
+        short_code = generate_code()
+        while ShortLink.objects.filter(short_code=short_code).exists():
+            short_code = generate_code()
+        
+        # Calculate Expiry
+        from datetime import timedelta
+        now = timezone.now()
+        if expiry_option == '7d':
+            expires_at = now + timedelta(days=7)
+        else: # Default 24h
+            expires_at = now + timedelta(hours=24)
+            
+        link = ShortLink.objects.create(
+            original_url=original_url,
+            short_code=short_code,
+            expires_at=expires_at
+        )
+        
+        # Build absolute URL
+        short_url = request.build_absolute_uri(f'/s/{short_code}/')
+        
+        return render(request, 'converter/shorten_link.html', {
+            'short_url': short_url,
+            'original_url': original_url,
+            'expires_at': expires_at,
+            'short_code': short_code
+        })
+
+class RedirectShortLinkView(View):
+    def get(self, request, short_code):
+        try:
+            link = ShortLink.objects.get(short_code=short_code)
+            
+            # Check Expiry
+            if timezone.now() > link.expires_at:
+                return render(request, 'converter/redirect_page.html', {'error': 'ลิงก์นี้หมดอายุแล้ว (Expired link)'})
+            
+            # Update clicks
+            link.clicks += 1
+            link.save()
+            
+            # Render interstitial page
+            return render(request, 'converter/redirect_page.html', {
+                'original_url': link.original_url,
+                'short_code': short_code
+            })
+            
+        except ShortLink.DoesNotExist:
+            return render(request, 'converter/redirect_page.html', {'error': 'ไม่พบลิงก์ที่คุณต้องการ (Link not found)'})
+
+class SystemCleanupView(View):
+    def get(self, request):
+        # Security check (Simple key)
+        key = request.GET.get('key')
+        if key != settings.SECRET_KEY: # Use Django secret key or a specific one
+            return JsonResponse({'status': 'error', 'message': 'Invalid Key'}, status=403)
+            
+        # Run Cleanup
+        try:
+            files_deleted = cleanup_old_files(hours=1)
+            links_deleted = cleanup_expired_links_db()
+            
+            return JsonResponse({
+                'status': 'success', 
+                'files_deleted': files_deleted,
+                'links_deleted': links_deleted,
+                'message': 'System cleanup completed successfully'
+            })
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

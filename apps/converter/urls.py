@@ -4,7 +4,8 @@ from .views import (
     WordToPDFView, MergeWordView, ArrangeWordView, ArrangePDFView, 
     DownloadFileView, CompressPDFView, PDFToPowerPointView, 
     PDFToExcelView, PowerPointToPDFView, TermsView, PrivacyView,
-    download_file, QRCodeGeneratorView, DeleteInstantView
+    download_file, QRCodeGeneratorView, DeleteInstantView,
+    ShortenURLView, RedirectShortLinkView, SystemCleanupView
 )
 from .api_views import ProgressAPIView, ProgressTestAPIView
 from .async_views import PDFToWordAsyncView
@@ -38,6 +39,13 @@ urlpatterns = [
     path('privacy/', PrivacyView.as_view(), name='privacy'),
     path('qrcode-generator/', QRCodeGeneratorView.as_view(), name='qrcode_generator'),
     path('delete-instant/', DeleteInstantView.as_view(), name='delete_instant'),
+    
+    # URL Shortener
+    path('shorten-url/', ShortenURLView.as_view(), name='shorten_url'),
+    path('s/<str:short_code>/', RedirectShortLinkView.as_view(), name='redirect_short_link'),
+    
+    # System Cleanup (For Cron/Render)
+    path('cleanup-system/', SystemCleanupView.as_view(), name='cleanup_system'),
     
     # Progress Demo
     path('progress-demo/', TemplateView.as_view(template_name='converter/progress_demo.html'), name='progress_demo'),

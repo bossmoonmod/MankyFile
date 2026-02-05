@@ -23,17 +23,35 @@ import sys
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-*=%kv(gli^8+&1%1*!$n)5)5(w*rx+x9u**pkt=rl%kokgndcf'
+# Try to get from Environment (Render), fallback to insecure key for local dev only
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-*=%kv(gli^8+&1%1*!$n)5)5(w*rx+x9u**pkt=rl%kokgndcf')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# Automatically disable DEBUG if running on Linux Production Server (simple check)
-if sys.platform != 'win32' and os.path.exists('/home'):
-    DEBUG = False
-    # In production, allow all hosts or specific domains. '*' is for easiest deployment.
-    ALLOWED_HOSTS = ['*']
-else:
-    DEBUG = True
-    ALLOWED_HOSTS = ['*']
+# On Render, set DEBUG environment variable to 'False'
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+
+# Allowed Hosts
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+
+# --- PRODUCTION SECURITY HARDENING ---
+if not DEBUG:
+    # 1. Force HTTPS
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    
+    # 2. HSTS (HTTP Strict Transport Security)
+    # Tells browsers to ONLY use HTTPS for the next year
+    SECURE_HSTS_SECONDS = 31536000 
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    
+    # 3. Trust Proxy Headers (Required for Render/Cloudflare)
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    
+    # 4. CSRF Trusted Origins (For Render)
+    if 'RENDER_EXTERNAL_URL' in os.environ:
+        CSRF_TRUSTED_ORIGINS = [os.environ.get('RENDER_EXTERNAL_URL')]
 
 
 # Application definition

@@ -1,0 +1,519 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="page-wrapper">
+
+    <!-- Section 1: Hero & Tool -->
+    <div class="hero-section">
+        <div class="hero-text">
+            <h1>ย่อลิงก์ (URL Shortener)</h1>
+            <p>ย่อลิงก์ยาวๆ ให้สั้น กระชับ แชร์ง่าย <br>พร้อมระบบความปลอดภัยและหมดอายุอัตโนมัติ</p>
+        </div>
+
+        <!-- Main Form Card -->
+        <div class="shortener-card">
+            <form method="post" action="{% url 'converter:shorten_url' %}">
+                {% csrf_token %}
+
+                <!-- URL Input -->
+                <div class="input-container">
+                    <div class="input-icon">🔗</div>
+                    <input type="url" id="url-input" name="url" placeholder="วางลิงก์ยาวของคุณที่นี่ (https://...)"
+                        class="custom-input" required value="{{ original_url|default:'' }}">
+                </div>
+
+                <!-- Expiry Options -->
+                <div class="settings-row">
+                    <span class="settings-label">อายุลิงก์:</span>
+                    <div class="expiry-options">
+                        <label class="expiry-option">
+                            <input type="radio" name="expiry" value="24h" checked>
+                            <span class="opt-btn">24 ชม.</span>
+                        </label>
+                        <label class="expiry-option">
+                            <input type="radio" name="expiry" value="7d">
+                            <span class="opt-btn">7 วัน</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-shorten">
+                    ย่อลิงก์เลย! ✨
+                </button>
+            </form>
+
+            <!-- Result Section -->
+            {% if short_url %}
+            <div class="result-box">
+                <div class="success-icon">🎉</div>
+                <h3>ลิงก์ย่อของคุณพร้อมแล้ว!</h3>
+
+                <div class="short-url-wrapper">
+                    <input type="text" value="{{ short_url }}" id="short-url-input" readonly>
+                    <button onclick="copyToClipboard()" class="btn-copy">คัดลอก</button>
+                </div>
+
+                <div class="result-meta">
+                    <span>📅 หมดอายุ: {{ expires_at|date:"d M Y H:i" }}</span>
+                    <span>🔗 <a href="{{ short_url }}" target="_blank">ทดสอบลิงก์</a></span>
+                </div>
+
+                <a href="{% url 'converter:shorten_url' %}" class="btn-reset">ย่อลิงก์อื่น</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Section 2: Why Choose Us -->
+    <div class="features-section">
+        <h2 class="section-title">ทำไมต้องใช้ Manky Shortener?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="f-icon">🛡️</div>
+                <h3>ปลอดภัยหายห่วง</h3>
+                <p>มีหน้าตรวจสอบก่อนเข้าเว็บจริง ป้องกัน Phishing และเว็บอันตราย</p>
+            </div>
+            <div class="feature-card">
+                <div class="f-icon">⏳</div>
+                <h3>หมดอายุอัตโนมัติ</h3>
+                <p>ลิงก์จะถูกลบเองเมื่อครบกำหนด ไม่ต้องกังวลเรื่อง Digital Footprint ตกค้าง</p>
+            </div>
+            <div class="feature-card">
+                <div class="f-icon">⚡</div>
+                <h3>รวดเร็วทันใจ</h3>
+                <p>ระบบทำงานไว ไม่ต้องรอนาน ย่อปุ๊บ ใช้ได้ปั๊บ ใช้งานง่ายสุดๆ</p>
+            </div>
+            <div class="feature-card">
+                <div class="f-icon">🎓</div>
+                <h3>เพื่อการศึกษา</h3>
+                <p>เปิดให้ใช้งานฟรี 100% สำหรับนักเรียน นักศึกษา และบุคลากรทางการศึกษา</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: How it Works & Rules -->
+    <div class="info-section">
+        <div class="info-col">
+            <h3>📝 วิธีใช้งาน</h3>
+            <ul class="step-list">
+                <li><span class="step-num">1</span> วางลิงก์ยาวๆ ที่ต้องการย่อ</li>
+                <li><span class="step-num">2</span> เลือกอายุของลิงก์ (24 ชม. หรือ 7 วัน)</li>
+                <li><span class="step-num">3</span> กดปุ่ม "ย่อลิงก์" และนำไปใช้งานได้เลย</li>
+            </ul>
+        </div>
+        <div class="info-col">
+            <h3>⚠️ ข้อกำหนดการใช้งาน</h3>
+            <ul class="rule-list">
+                <li>❌ ห้ามใช้ย่อลิงก์เว็บพนัน, สื่อลามก หรือสิ่งผิดกฎหมาย</li>
+                <li>❌ ห้ามใช้เพื่อการหลอกลวง (Phishing) หรือ Spam</li>
+                <li>ℹ️ ลิงก์ที่หมดอายุแล้ว จะไม่สามารถกู้คืนได้</li>
+                <li>ℹ️ เราเป็นเพียงตัวกลาง ไม่รับผิดชอบต่อเนื้อหาปลายทาง</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Layout Wrapper */
+    .page-wrapper {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 40px 20px 80px;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        text-align: center;
+        margin-bottom: 60px;
+    }
+
+    .hero-text h1 {
+        font-size: 2.8rem;
+        color: var(--text-main);
+        margin-bottom: 15px;
+    }
+
+    .hero-text p {
+        font-size: 1.2rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin-bottom: 40px;
+    }
+
+    /* Shortener Card (The Tool) */
+    .shortener-card {
+        background: var(--bg-white);
+        padding: 40px;
+        border-radius: 24px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+        max-width: 700px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 10;
+        border: 1px solid var(--border-color);
+    }
+
+    [data-theme="dark"] .shortener-card {
+        background: #1e1e1e;
+        border-color: #333;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Form Styles */
+    .input-container {
+        position: relative;
+        margin-bottom: 25px;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.2rem;
+        opacity: 0.5;
+    }
+
+    .custom-input {
+        width: 100%;
+        padding: 20px 20px 20px 55px;
+        font-size: 1.1rem;
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        background: #f9fafb;
+        transition: all 0.3s;
+        box-sizing: border-box;
+    }
+
+    [data-theme="dark"] .custom-input {
+        background: #2d2d2d;
+        border-color: #444;
+        color: white;
+    }
+
+    .custom-input:focus {
+        border-color: var(--primary-color);
+        background: white;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(229, 50, 45, 0.1);
+    }
+
+    [data-theme="dark"] .custom-input:focus {
+        background: #333;
+    }
+
+    /* Expiry Setting */
+    .settings-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+    .settings-label {
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    .expiry-options {
+        display: flex;
+        gap: 10px;
+        background: #f1f3f5;
+        padding: 5px;
+        border-radius: 10px;
+    }
+
+    [data-theme="dark"] .expiry-options {
+        background: #2d2d2d;
+    }
+
+    .expiry-option input {
+        display: none;
+    }
+
+    .opt-btn {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        transition: all 0.2s;
+    }
+
+    .expiry-option input:checked+.opt-btn {
+        background: white;
+        color: var(--primary-color);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        font-weight: bold;
+    }
+
+    [data-theme="dark"] .expiry-option input:checked+.opt-btn {
+        background: #444;
+        color: white;
+    }
+
+    .btn-shorten {
+        width: 100%;
+        padding: 18px;
+        border: none;
+        border-radius: 12px;
+        background: var(--primary-color);
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s, background 0.2s;
+        box-shadow: 0 10px 20px rgba(229, 50, 45, 0.25);
+    }
+
+    .btn-shorten:hover {
+        background: var(--primary-hover);
+        transform: translateY(-3px);
+    }
+
+    /* Result Box */
+    .result-box {
+        margin-top: 30px;
+        padding-top: 30px;
+        border-top: 2px dashed var(--border-color);
+        animation: slideDown 0.4s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .success-icon {
+        font-size: 3rem;
+        margin-bottom: 10px;
+    }
+
+    .result-box h3 {
+        color: #10b981;
+        margin: 0 0 20px;
+    }
+
+    .short-url-wrapper {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    #short-url-input {
+        flex: 1;
+        padding: 12px 15px;
+        border: 2px solid #10b981;
+        border-radius: 10px;
+        color: #10b981;
+        font-weight: bold;
+        font-size: 1.1rem;
+        text-align: center;
+        background: rgba(16, 185, 129, 0.05);
+    }
+
+    .btn-copy {
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 0 25px;
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-copy:hover {
+        opacity: 0.9;
+    }
+
+    .result-meta {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .result-meta a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .btn-reset {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        text-decoration: underline;
+    }
+
+    /* Features Section */
+    .features-section {
+        margin-bottom: 60px;
+    }
+
+    .section-title {
+        text-align: center;
+        font-size: 1.8rem;
+        color: var(--text-main);
+        margin-bottom: 30px;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+    }
+
+    .feature-card {
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        text-align: center;
+        border: 1px solid var(--border-color);
+        transition: transform 0.3s;
+    }
+
+    [data-theme="dark"] .feature-card {
+        background: #1e1e1e;
+        border-color: #333;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .f-icon {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+    }
+
+    .feature-card h3 {
+        margin: 0 0 10px;
+        color: var(--text-main);
+    }
+
+    .feature-card p {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    /* Info Section (How to & Rules) */
+    .info-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        background: white;
+        padding: 50px;
+        border-radius: 24px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    }
+
+    [data-theme="dark"] .info-section {
+        background: #1e1e1e;
+        box-shadow: none;
+        border: 1px solid #333;
+    }
+
+    .info-col h3 {
+        color: var(--text-main);
+        margin-bottom: 25px;
+        font-size: 1.4rem;
+        border-bottom: 2px solid var(--primary-color);
+        display: inline-block;
+        padding-bottom: 5px;
+    }
+
+    .step-list,
+    .rule-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .step-list li,
+    .rule-list li {
+        margin-bottom: 15px;
+        color: var(--text-muted);
+        line-height: 1.6;
+        display: flex;
+        align-items: start;
+        gap: 10px;
+    }
+
+    .step-num {
+        background: var(--primary-color);
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: bold;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .info-section {
+            grid-template-columns: 1fr;
+            padding: 30px;
+        }
+
+        .hero-text h1 {
+            font-size: 2rem;
+        }
+
+        .shortener-card {
+            padding: 25px;
+        }
+
+        .short-url-wrapper {
+            flex-direction: column;
+        }
+
+        .btn-copy {
+            padding: 12px;
+        }
+    }
+</style>
+
+<script>
+    function copyToClipboard() {
+        var copyText = document.getElementById("short-url-input");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(copyText.value);
+
+        const btn = document.querySelector('.btn-copy');
+        const originalText = btn.innerText;
+        btn.innerText = 'คัดลอกแล้ว!';
+        btn.style.background = '#059669';
+
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.style.background = '#10b981';
+        }, 2000);
+    }
+</script>
+{% endblock %}

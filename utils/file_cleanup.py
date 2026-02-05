@@ -2,6 +2,9 @@ import os
 import time
 from django.conf import settings
 from pathlib import Path
+from django.utils import timezone
+# We need to import models inside function or securely to avoid circular imports if models import utils
+# But usually utils don't import models at top level if not needed.
 
 def cleanup_old_files(hours=1):
     """
@@ -69,3 +72,16 @@ def cleanup_all_files():
     
     print(f"✅ Deleted {deleted_count} files.")
     return deleted_count
+
+def cleanup_expired_links_db():
+    """
+    Delete expired ShortLink records from database
+    """
+    from apps.converter.models import ShortLink
+    now = timezone.now()
+    expired_links = ShortLink.objects.filter(expires_at__lt=now)
+    count = expired_links.count()
+    if count > 0:
+        expired_links.delete()
+        print(f"✅ Deleted {count} expired short links.")
+    return count
