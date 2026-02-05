@@ -5,6 +5,9 @@
     <div class="tool-header">
         <h1>ประมวลผลไฟล์สำเร็จ!</h1>
         <p>ไฟล์ {{ file_type|default:"WORD" }} ของคุณถูกสร้างเรียบร้อยแล้ว</p>
+        {% if extra_message %}
+        <p style="color: #28a745; font-weight: bold; margin-top: 5px;">{{ extra_message }}</p>
+        {% endif %}
     </div>
 
     <div class="upload-area">

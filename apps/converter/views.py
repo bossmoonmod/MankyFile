@@ -13,6 +13,7 @@ from django.utils import timezone
 from django.http import JsonResponse
 from .models import UploadedFile, ProcessedFile, DailyStat, ShortLink
 from utils.file_cleanup import cleanup_old_files, cleanup_expired_links_db
+from .views_unlock import UnlockPDFView
 
 class IndexView(View):
     def get(self, request):

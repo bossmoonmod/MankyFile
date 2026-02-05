@@ -5,7 +5,7 @@ from .views import (
     DownloadFileView, CompressPDFView, PDFToPowerPointView, 
     PDFToExcelView, PowerPointToPDFView, TermsView, PrivacyView,
     download_file, QRCodeGeneratorView, DeleteInstantView,
-    ShortenURLView, RedirectShortLinkView, SystemCleanupView
+    ShortenURLView, RedirectShortLinkView, SystemCleanupView, UnlockPDFView
 )
 from .api_views import ProgressAPIView, ProgressTestAPIView
 from .async_views import PDFToWordAsyncView
@@ -39,6 +39,7 @@ urlpatterns = [
     path('privacy/', PrivacyView.as_view(), name='privacy'),
     path('qrcode-generator/', QRCodeGeneratorView.as_view(), name='qrcode_generator'),
     path('delete-instant/', DeleteInstantView.as_view(), name='delete_instant'),
+    path('unlock-pdf/', UnlockPDFView.as_view(), name='unlock_pdf'),
     
     # URL Shortener
     path('shorten-url/', ShortenURLView.as_view(), name='shorten_url'),
