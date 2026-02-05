@@ -417,6 +417,7 @@ footer {
     border: none;
     cursor: pointer;
     padding: 5px;
+    color: var(--text-main);
 }
 
 /* Desktop Nav Styles (Default) */
@@ -486,6 +487,34 @@ footer {
         justify-content: center;
         box-sizing: border-box;
     }
+}
+
+/* Dark Mode Overrides for Mobile Navigation */
+[data-theme="dark"] .nav-links {
+    background-color: #1e1e1e;
+    border-top-color: #333;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .nav-links a {
+    background-color: #2d2d2d;
+    color: #f0f0f0;
+}
+
+[data-theme="dark"] .nav-links a:hover,
+[data-theme="dark"] .nav-links a.active {
+    background-color: rgba(229, 50, 45, 0.15);
+    color: var(--primary-color);
+}
+
+[data-theme="dark"] .menu-toggle {
+    color: #f0f0f0;
+}
+
+[data-theme="dark"] .usage-badge {
+    background: #1e1e1e;
+    border-color: #333;
+    color: #bbb;
 }
 
 

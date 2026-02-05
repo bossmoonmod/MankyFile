@@ -21,6 +21,12 @@
                 <label class="quality-card-modern">
                     <input type="radio" name="quality" value="low">
                     <div class="card-content">
+                        <div class="selection-check">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="3">
+                                <path d="M20 6L9 17L4 12" />
+                            </svg>
+                        </div>
                         <div class="card-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                             <span style="font-size: 28px;">💾</span>
                         </div>
@@ -32,13 +38,18 @@
                             <span class="info-item">🖼️ เหมาะสำหรับเว็บ</span>
                         </div>
                     </div>
-                    <div class="card-overlay"></div>
                 </label>
 
                 <!-- Medium Quality (Recommended) -->
                 <label class="quality-card-modern recommended">
                     <input type="radio" name="quality" value="medium" checked>
                     <div class="card-content">
+                        <div class="selection-check">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="3">
+                                <path d="M20 6L9 17L4 12" />
+                            </svg>
+                        </div>
                         <div class="recommended-badge">⭐ แนะนำ</div>
                         <div class="card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                             <span style="font-size: 28px;">⚖️</span>
@@ -51,13 +62,18 @@
                             <span class="info-item">📱 เหมาะสำหรับทั่วไป</span>
                         </div>
                     </div>
-                    <div class="card-overlay"></div>
                 </label>
 
                 <!-- High Quality -->
                 <label class="quality-card-modern">
                     <input type="radio" name="quality" value="high">
                     <div class="card-content">
+                        <div class="selection-check">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="3">
+                                <path d="M20 6L9 17L4 12" />
+                            </svg>
+                        </div>
                         <div class="card-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
                             <span style="font-size: 28px;">📈</span>
                         </div>
@@ -69,13 +85,18 @@
                             <span class="info-item">✨ คุณภาพดี</span>
                         </div>
                     </div>
-                    <div class="card-overlay"></div>
                 </label>
 
                 <!-- Maximum Quality -->
                 <label class="quality-card-modern">
                     <input type="radio" name="quality" value="maximum">
                     <div class="card-content">
+                        <div class="selection-check">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="3">
+                                <path d="M20 6L9 17L4 12" />
+                            </svg>
+                        </div>
                         <div class="card-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
                             <span style="font-size: 28px;">💎</span>
                         </div>
@@ -87,7 +108,6 @@
                             <span class="info-item">📄 เหมาะสำหรับเอกสารสำคัญ</span>
                         </div>
                     </div>
-                    <div class="card-overlay"></div>
                 </label>
             </div>
         </div>
@@ -139,16 +159,33 @@
 </div>
 
 <style>
-    /* Compression Section */
-    .compression-section {
-        background: white;
-        padding: 35px;
-        border-radius: 16px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        margin-bottom: 30px;
+    :root {
+        --card-bg: #ffffff;
+        --card-border: #e5e7eb;
+        --card-text: #1f2937;
+        --card-desc: #666;
+        --card-shadow: rgba(0, 0, 0, 0.06);
     }
 
-    /* Quality Grid */
+    [data-theme="dark"] {
+        --card-bg: #262626;
+        --card-border: #444;
+        --card-text: #f0f0f0;
+        --card-desc: #999;
+        --card-shadow: rgba(0, 0, 0, 0.4);
+    }
+
+    /* --- Base Selection Styles --- */
+    .compression-section {
+        background: var(--card-bg);
+        padding: 30px;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px var(--card-shadow);
+        margin-bottom: 30px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
     .quality-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -157,13 +194,12 @@
         margin: 0 auto;
     }
 
-    /* Modern Quality Card */
     .quality-card-modern {
         position: relative;
         cursor: pointer;
         display: block;
         min-height: 280px;
-        /* Ensure uniform height */
+        /* Default for desktop */
     }
 
     .quality-card-modern input[type="radio"] {
@@ -172,141 +208,135 @@
 
     .quality-card-modern .card-content {
         position: relative;
-        background: white;
-        border: 2px solid #e5e7eb;
+        background: var(--card-bg);
+        border: 2px solid var(--card-border);
         border-radius: 16px;
         padding: 25px 20px;
         text-align: center;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.3s ease;
         height: 100%;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: flex-start;
-        /* Align to top */
-        z-index: 1;
         box-sizing: border-box;
-        /* Include padding in height */
+        z-index: 1;
+        color: var(--card-text);
     }
 
-    .quality-card-modern .card-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, rgba(229, 50, 45, 0.05) 0%, rgba(229, 50, 45, 0.1) 100%);
-        border-radius: 16px;
-        opacity: 0;
-        transition: opacity 0.3s;
-        pointer-events: none;
-    }
-
-    .quality-card-modern:hover .card-content {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
-        border-color: #e5322d;
-    }
-
-    .quality-card-modern:hover .card-overlay {
-        opacity: 1;
-    }
-
+    /* Selection State */
     .quality-card-modern input:checked+.card-content {
         border-color: #e5322d;
         border-width: 3px;
-        box-shadow: 0 8px 20px rgba(229, 50, 45, 0.25);
-        transform: translateY(-2px);
-        padding: 24px 19px;
-        /* adjust for border width to prevent jump */
+        box-shadow: 0 10px 25px rgba(229, 50, 45, 0.25);
+        background-color: var(--card-bg);
+        transform: scale(1.02);
     }
 
-    .quality-card-modern input:checked~.card-overlay {
-        opacity: 1;
+    [data-theme="light"] .quality-card-modern input:checked+.card-content {
+        background-color: #fffafa;
     }
 
-    .card-icon {
-        width: 60px;
-        /* Slightly smaller */
-        height: 60px;
-        min-height: 60px;
-        /* Fixed size */
+    /* Selection Check Icon */
+    .selection-check {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: 22px;
+        height: 22px;
+        background: #10b981;
+        color: white;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 15px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        transform: scale(0);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 10;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .quality-card-modern input:checked+.card-content .selection-check {
+        opacity: 1;
+        transform: scale(1);
+        animation: checkPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes checkPop {
+        0% {
+            transform: scale(0);
+        }
+
+        70% {
+            transform: scale(1.2);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    /* Elements */
+    .card-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 15px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
 
     .quality-card-modern h4 {
-        margin: 5px 0 5px;
+        margin: 5px 0;
         font-size: 18px;
         font-weight: 700;
-        color: #1f2937;
+        color: var(--card-text);
     }
 
     .quality-desc {
         font-size: 13px;
-        color: #6b7280;
-        margin: 0 0 12px;
-        line-height: 1.4;
+        color: var(--card-desc);
+        margin-bottom: 10px;
         min-height: 36px;
-        /* Reserve line height to line up badges */
     }
 
     .quality-badge {
         display: inline-block;
         background: #f3f4f6;
-        color: #4b5563;
         padding: 4px 12px;
         border-radius: 12px;
         font-size: 12px;
         font-weight: 600;
-        margin-bottom: 12px;
     }
 
-    .quality-info {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        margin-top: auto;
-        /* Push to bottom */
-        padding-top: 12px;
-        width: 100%;
-        border-top: 1px dashed #eee;
-        /* Divider */
-    }
-
-    .info-item {
-        font-size: 11px;
-        color: #9ca3af;
-        display: block;
+    [data-theme="dark"] .quality-badge {
+        background: #333;
+        color: #bbb;
     }
 
     .recommended-badge {
         position: absolute;
         top: -10px;
-        right: 50%;
-        transform: translateX(50%);
-        /* Center badge */
+        left: 50%;
+        transform: translateX(-50%);
         background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         color: white;
-        padding: 5px 15px;
+        padding: 4px 12px;
         border-radius: 20px;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
-        box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
-        z-index: 2;
-        width: max-content;
+        z-index: 5;
+        white-space: nowrap;
     }
 
-    /* Upload Section */
+    /* --- Upload Section Styles --- */
     .upload-section {
-        background: white;
+        background: var(--card-bg);
         padding: 35px;
         border-radius: 16px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        box-shadow: 0 2px 8px var(--card-shadow);
     }
 
     .upload-area-modern {
@@ -429,251 +459,93 @@
         box-shadow: none;
     }
 
-    .btn-icon {
-        font-size: 24px;
-    }
-
-    /* Responsive */
+    /* --- MOBILE OVERRIDES (Aggressive Fix) --- */
     @media (max-width: 768px) {
-        .quality-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
 
-        .compression-section,
-        .upload-section {
-            padding: 25px 20px;
-        }
-
-        .upload-area-modern {
-            padding: 40px 20px;
-        }
-    }
-
-    @media (max-width: 480px) {
+        /* Force container to start from top and not grow */
         .tool-container {
-            padding: 0 15px;
-        }
-
-        .tool-header h1 {
-            font-size: 24px;
-        }
-
-        .quality-grid {
-            grid-template-columns: 1fr;
-            /* Force single column on mobile */
-            gap: 12px;
-        }
-
-        .quality-card-modern .card-content {
-            padding: 15px;
-            flex-direction: row;
-            /* Horizontal layout for compact view */
-            text-align: left;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .card-icon {
-            margin: 0;
-            width: 50px;
-            height: 50px;
-            font-size: 20px;
-            /* Smaller icon text */
-        }
-
-        .card-icon span {
-            font-size: 20px !important;
-        }
-
-        .quality-card-modern h4 {
-            margin: 0;
-            font-size: 16px;
-        }
-
-        .quality-desc {
-            margin: 2px 0 5px;
-            font-size: 12px;
-        }
-
-        .quality-info {
-            display: none;
-            /* Hide detailed info on mobile to save space */
-        }
-
-        .quality-badge {
-            margin: 0;
-            font-size: 10px;
-            padding: 2px 8px;
-        }
-
-        .recommended-badge {
-            font-size: 10px;
-            padding: 3px 10px;
-            right: 10px;
-        }
-
-        /* Upload Area */
-        .upload-area-modern {
-            padding: 30px 15px;
-        }
-
-        .btn-compress {
-            width: 100%;
-            padding: 15px;
-            font-size: 16px;
-        }
-    }
-
-    /* Redesigned Mobile Layout */
-    @media (max-width: 600px) {
-        .tool-container {
-            padding: 0 15px;
-            max-width: 100%;
+            padding-top: 20px !important;
+            padding-bottom: 40px !important;
+            justify-content: flex-start !important;
+            /* Move to top */
+            min-height: 0 !important;
         }
 
         .compression-section {
-            padding: 20px;
-            background: transparent;
-            /* Remove container background on mobile for cleaner look */
-            box-shadow: none;
+            padding: 15px !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            margin-bottom: 0 !important;
         }
 
-        .tool-header h1 {
-            font-size: 22px;
-            margin-bottom: 10px;
-        }
-
-        /* Stack cards properly with gap */
         .quality-grid {
-            grid-template-columns: 1fr;
-            gap: 15px;
-            display: flex;
-            flex-direction: column;
+            display: block !important;
+            /* No gaps from grid/flex */
+            margin: 0 !important;
+            padding: 0 !important;
+            height: auto !important;
+            min-height: 0 !important;
         }
 
-        /* Card Restyling */
         .quality-card-modern {
-            margin-bottom: 0;
-            width: 100%;
+            min-height: 0 !important;
+            height: auto !important;
+            margin: 0 0 15px 0 !important;
+            /* Controlled spacing */
+            padding: 0 !important;
+            display: block !important;
+            position: relative !important;
         }
 
         .quality-card-modern .card-content {
-            flex-direction: row;
-            align-items: center;
-            padding: 15px;
-            text-align: left;
-            min-height: 80px;
-            border-radius: 12px;
-            background: white;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            /* Soft shadow */
-            border: 1px solid #eee;
-            gap: 15px;
+            flex-direction: row !important;
+            /* Horizontal layout */
+            text-align: left !important;
+            padding: 15px !important;
+            height: auto !important;
+            min-height: 80px !important;
+            align-items: center !important;
+            box-shadow: 0 4px 10px var(--card-shadow) !important;
+            background: var(--card-bg) !important;
+            border-color: var(--card-border) !important;
         }
 
-        /* Icon */
         .card-icon {
-            margin: 0;
-            width: 45px;
-            height: 45px;
-            min-width: 45px;
-            /* Prevent shrinking */
-            border-radius: 10px;
-            /* Softer shape */
-        }
-
-        .card-icon span {
-            font-size: 20px !important;
-        }
-
-        /* Text Content */
-        .quality-card-modern h4 {
-            font-size: 16px;
-            margin: 0;
-            line-height: 1.2;
-            color: #333;
+            margin: 0 15px 0 0 !important;
+            width: 50px !important;
+            height: 50px !important;
+            min-width: 50px !important;
         }
 
         .quality-desc {
-            font-size: 12px;
-            margin: 4px 0 0 0;
-            color: #777;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 160px;
-            /* Prevent text overflow */
+            min-height: 0 !important;
+            margin: 2px 0 0 0 !important;
+            display: block !important;
         }
 
-        /* Right Side Badge */
         .quality-badge {
-            margin-left: auto;
+            margin-left: auto !important;
             /* Push to right */
-            margin-bottom: 0;
-            font-size: 10px;
-            padding: 4px 8px;
-            background: #f0f0f0;
-            border-radius: 6px;
-            white-space: nowrap;
         }
 
-        /* Info & Overlays */
-        .quality-info,
-        .card-overlay {
-            display: none;
-            /* Hide unnecessary elements on mobile */
+        /* Hide desktop-only info on mobile to keep items compact */
+        .quality-info {
+            display: none !important;
         }
 
-        /* Recommended Badge Positioning */
         .recommended-badge {
-            top: -8px;
-            right: 10px;
-            font-size: 9px;
-            padding: 2px 8px;
-            border-radius: 10px;
-            z-index: 10;
+            left: auto !important;
+            right: 15px !important;
+            transform: none !important;
+            top: -8px !important;
         }
 
-        /* Active State */
-        .quality-card-modern input:checked+.card-content {
-            border-color: #e5322d;
-            background: #fffafa;
-            box-shadow: 0 4px 8px rgba(229, 50, 45, 0.15);
-            transform: none;
-            /* Disable shift on mobile */
-        }
-
-        /* Upload Area */
-        .upload-section {
-            padding: 0;
-            background: transparent;
-            box-shadow: none;
-            margin-top: 20px;
-        }
-
-        .upload-area-modern {
-            background: white;
-            border-radius: 12px;
-            padding: 30px 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-
+        /* Fixed Button at Bottom to avoid taking up vertical space between items */
         .btn-compress {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            width: auto;
-            max-width: none;
-            margin: 0;
-            z-index: 100;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Add padding to bottom of page so content isn't hidden behind fixed button */
-        .tool-container {
-            padding-bottom: 100px;
+            width: 100% !important;
+            margin-top: 20px !important;
+            position: relative !important;
+            bottom: auto !important;
         }
     }
 </style>
