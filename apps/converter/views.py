@@ -127,12 +127,20 @@ class SplitPDFView(View):
             )
             processed_file.save()
             
+            # Track usage statistics
+            try:
+                stat, _ = DailyStat.objects.get_or_create(date=timezone.now().date())
+                stat.usage_count += 1
+                stat.save()
+            except Exception as e:
+                print(f"Stats error: {e}")
+            
             # Generate ID-only download link
             download_url = reverse('converter:download_file', kwargs={'job_id': job_id})
             
             context = {
                 'success': True,
-                'file_url': download_url,
+                'download_url': download_url,
                 'file_name': zip_filename, # User will download the ZIP
                 'file_type': 'ZIP', # For result template
                 'file_size': os.path.getsize(zip_path)
@@ -220,8 +228,9 @@ class PDFToWordView(View):
             
             context = {
                 'success': True,
-                'file_url': download_url,
+                'download_url': download_url,
                 'file_name': output_filename,
+                'file_type': 'WORD',
                 'file_size': os.path.getsize(output_full_path) if os.path.exists(output_full_path) else 0
             }
             return render(request, 'converter/result.html', context)
@@ -391,6 +400,14 @@ class CompressPDFView(View):
             processed_file = ProcessedFile(file=output_rel_path)
             processed_file.save()
             
+            # Track usage statistics
+            try:
+                stat, _ = DailyStat.objects.get_or_create(date=timezone.now().date())
+                stat.usage_count += 1
+                stat.save()
+            except Exception as e:
+                print(f"Stats error: {e}")
+            
             return render(request, 'converter/result.html', {
                 'download_url': processed_file.file.url,
                 'file_id': processed_file.id,
@@ -553,7 +570,7 @@ class PDFToExcelView(View):
             
             context = {
                 'success': True,
-                'file_url': download_url,
+                'download_url': download_url,
                 'file_name': output_filename,
                 'file_type': 'XLSX',
                 'file_size': os.path.getsize(output_full_path) if os.path.exists(output_full_path) else 0
@@ -633,7 +650,7 @@ class PowerPointToPDFView(View):
             
             context = {
                 'success': True,
-                'file_url': download_url,
+                'download_url': download_url,
                 'file_name': output_filename,
                 'file_type': 'PDF',
                 'file_size': os.path.getsize(output_full_path) if os.path.exists(output_full_path) else 0
@@ -783,6 +800,14 @@ class WordToPDFView(View):
             # Save processed file
             processed_file = ProcessedFile(file=output_rel_path)
             processed_file.save()
+            
+            # Track usage statistics
+            try:
+                stat, _ = DailyStat.objects.get_or_create(date=timezone.now().date())
+                stat.usage_count += 1
+                stat.save()
+            except Exception as e:
+                print(f"Stats error: {e}")
             
             return render(request, 'converter/result.html', {
                 'download_url': processed_file.file.url,
@@ -969,6 +994,14 @@ class ArrangeWordView(View):
             processed_file = ProcessedFile(file=output_rel_path)
             processed_file.save()
             
+            # Track usage statistics
+            try:
+                stat, _ = DailyStat.objects.get_or_create(date=timezone.now().date())
+                stat.usage_count += 1
+                stat.save()
+            except Exception as e:
+                print(f"Stats error: {e}")
+            
             # Cleanup session
             if 'merge_word_file_ids' in request.session:
                 del request.session['merge_word_file_ids']
@@ -1053,6 +1086,15 @@ class ArrangePDFView(View):
             processed_file = ProcessedFile(file=output_rel_path)
             processed_file.save()
             
+            # Track usage statistics
+            try:
+                from django.utils import timezone
+                stat, _ = DailyStat.objects.get_or_create(date=timezone.now().date())
+                stat.usage_count += 1
+                stat.save()
+            except Exception as e:
+                print(f"Stats error: {e}")
+            
             if 'merge_pdf_file_ids' in request.session:
                 del request.session['merge_pdf_file_ids']
                 
@@ -1068,6 +1110,18 @@ class ArrangePDFView(View):
 
 class ResultView(View):
     def get(self, request):
+        job_id = request.GET.get('job_id')
+        file_type = request.GET.get('file_type', 'WORD')
+        
+        if job_id:
+            # Construct download URL for the result page button
+            download_url = reverse('converter:download_file_direct', kwargs={'job_id': job_id})
+            return render(request, 'converter/result.html', {
+                'download_url': download_url,
+                'file_type': file_type,
+                'job_id': job_id
+            })
+            
         return render(request, 'converter/result.html')
 
 from django.http import FileResponse, Http404
@@ -1379,6 +1433,15 @@ class QRCodeGeneratorView(View):
                 'back_color': back_color,
                 'pattern_style': pattern_style,
             }
+
+            # Track usage statistics
+            try:
+                stat, _ = DailyStat.objects.get_or_create(date=timezone.now().date())
+                stat.usage_count += 1
+                stat.save()
+            except Exception as e:
+                print(f"Stats error: {e}")
+
             return render(request, 'converter/qrcode_tool.html', context)
             
         except Exception as e:

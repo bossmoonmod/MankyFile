@@ -18,7 +18,7 @@
             </div>
         </div>
 
-        <a href="{{ file_url }}" id="download-btn" class="btn-upload-big">
+        <a href="#" id="download-btn" class="btn-upload-big">
             <span style="font-size: 20px;">ดาวน์โหลด {{ file_type|default:"WORD" }}</span>
         </a>
 
@@ -29,25 +29,62 @@
             const fileType = "{{ file_type|default:'WORD' }}";
 
             // Backend already provided the full correct download link
-            // We store it here to potentially append query params later if needed
-            const baseUrl = "{{ file_url }}";
+            // Handle both variable names for maximum compatibility
+            const baseUrl = "{{ download_url }}" || "{{ file_url }}";
 
             // Set file extension based on type
             let extension = '.docx';
             if (fileType === 'PDF') extension = '.pdf';
             if (fileType === 'ZIP') extension = '.zip';
+            if (fileType === 'WORD') extension = '.docx';
+            if (fileType === 'PPTX') extension = '.pptx';
+            if (fileType === 'XLSX') extension = '.xlsx';
             fileExtSpan.textContent = extension;
 
             // Focus input on load for convenience
             filenameInput.focus();
             filenameInput.select();
 
-            // Function to update download link (Optional: just logging for now as renaming is not supported by current view)
-            function updateDownloadLink() {
-                // Ideally, we would append ?filename=... but our current simple view doesn't handle it yet.
-                // So we just keep the base URL to ensure functionality.
-                downloadBtn.href = baseUrl;
-            }
+            // Download with custom filename using fetch + blob
+            downloadBtn.addEventListener('click', async function (e) {
+                e.preventDefault();
+
+                const customFilename = (filenameInput.value.trim() || 'merged_document') + extension;
+
+                try {
+                    // Show loading state
+                    downloadBtn.style.opacity = '0.6';
+                    downloadBtn.style.pointerEvents = 'none';
+
+                    // Fetch the file
+                    const response = await fetch(baseUrl);
+                    if (!response.ok) throw new Error('Download failed');
+
+                    // Convert to blob
+                    const blob = await response.blob();
+
+                    // Create download link
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = customFilename;
+                    document.body.appendChild(a);
+                    a.click();
+
+                    // Cleanup
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+
+                    // Restore button state
+                    downloadBtn.style.opacity = '1';
+                    downloadBtn.style.pointerEvents = 'auto';
+                } catch (error) {
+                    console.error('Download error:', error);
+                    alert('เกิดข้อผิดพลาดในการดาวน์โหลด');
+                    downloadBtn.style.opacity = '1';
+                    downloadBtn.style.pointerEvents = 'auto';
+                }
+            });
 
             // Update input style on focus
             filenameInput.addEventListener('focus', () => {
@@ -57,11 +94,6 @@
             filenameInput.addEventListener('blur', () => {
                 filenameInput.style.borderColor = '#ddd';
             });
-
-            filenameInput.addEventListener('input', updateDownloadLink);
-
-            // Initialize link
-            updateDownloadLink();
 
             // Allow enter key to trigger download
             filenameInput.addEventListener('keypress', function (e) {

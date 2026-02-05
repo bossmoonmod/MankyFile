@@ -26,10 +26,11 @@ urlpatterns = [
     path('arrange-word/', ArrangeWordView.as_view(), name='arrange_word'),
     path('arrange-pdf/', ArrangePDFView.as_view(), name='arrange_pdf'),
     path('result/', ResultView.as_view(), name='result'),
-    # New direct download path (ID only - safer for Thai filenames)
-    path('download-direct/<uuid:job_id>/', download_file, name='download_file'),
-    # Old path kept for compatibility only if needed (commented out or kept as fallback)
-    # path('download/<uuid:file_id>/', DownloadFileView.as_view(), name='download_file_old'), 
+    
+    # Download routes (both old and new for compatibility)
+    path('download/<uuid:file_id>/', DownloadFileView.as_view(), name='download_file'),
+    path('download-direct/<uuid:job_id>/', download_file, name='download_file_direct'),
+    
     path('pdf-to-powerpoint/', PDFToPowerPointView.as_view(), name='pdf_to_powerpoint'),
     path('pdf-to-excel/', PDFToExcelView.as_view(), name='pdf_to_excel'),
     path('powerpoint-to-pdf/', PowerPointToPDFView.as_view(), name='powerpoint_to_pdf'),

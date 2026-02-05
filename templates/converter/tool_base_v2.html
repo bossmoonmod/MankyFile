@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
 
+<!-- DEBUG: This is tool_base_v2.html with AJAX Progress Bar -->
+<script>console.log('✅ Using tool_base_v2.html with AJAX Progress Bar');</script>
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/progress.css' %}">
 {% endblock %}
@@ -40,6 +43,8 @@
 
 <script src="{% static 'js/progress.js' %}"></script>
 <script>
+    console.log('🚀 Tool Base V2 Script Loaded');
+
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -58,18 +63,28 @@
     const csrftoken = getCookie('csrftoken');
     let currentJobId = null;
 
+    console.log('🔑 CSRF Token:', csrftoken ? 'Found' : 'Missing');
+
     document.getElementById('select-files-btn').addEventListener('click', function (e) {
         e.preventDefault();
+        console.log('📁 Select files button clicked');
         document.getElementById('file-input').click();
     });
 
     document.getElementById('upload-form').addEventListener('submit', async function (e) {
         e.preventDefault();
+        console.log('📤 Form submit triggered');
 
         const fileInput = document.getElementById('file-input');
         if (fileInput.files.length === 0) {
+            console.warn('⚠️ No files selected');
             alert('กรุณาเลือกไฟล์ก่อน');
             return;
+        }
+
+        console.log(`📦 Files selected: ${fileInput.files.length}`);
+        for (let i = 0; i < fileInput.files.length; i++) {
+            console.log(`  - ${fileInput.files[i].name} (${(fileInput.files[i].size / 1024 / 1024).toFixed(2)} MB)`);
         }
 
         const formData = new FormData();
@@ -78,39 +93,57 @@
         }
 
         try {
-            const response = await fetch(window.location.href + '?ajax=true', {
+            const url = window.location.href + '?ajax=true';
+            console.log('🌐 Sending AJAX request to:', url);
+
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'X-CSRFToken': csrftoken },
                 body: formData
             });
 
+            console.log(`📡 Response status: ${response.status}`);
             const data = await response.json();
+            console.log('📊 Response data:', data);
 
             if (data.success) {
                 currentJobId = data.job_id;
+                console.log(`✅ Task started! Task ID: ${data.task_id}, Job ID: ${currentJobId}`);
 
+                console.log('🎬 Initializing ProgressBar...');
                 new ProgressBar(data.task_id, {
                     onComplete: () => {
+                        console.log('🎉 Conversion complete! Redirecting to download...');
                         if (currentJobId) {
-                            window.location.href = `/download-direct/${currentJobId}/`;
+                            // Redirect to result page instead of direct download
+                            // This allows users to set a custom filename
+                            const resultPageUrl = `/result/?job_id=${currentJobId}\u0026file_type=WORD`;
+                            console.log('🔗 Redirecting to Result Page:', resultPageUrl);
+                            window.location.href = resultPageUrl;
+                        } else {
+                            console.error('❌ No job_id available for download');
                         }
                     },
                     onError: (error) => {
+                        console.error('❌ Progress error:', error);
                         alert('เกิดข้อผิดพลาด: ' + error.message);
                         location.reload();
                     }
                 });
             } else {
+                console.error('❌ Server returned error:', data.message);
                 alert('เกิดข้อผิดพลาด: ' + data.message);
             }
         } catch (error) {
-            console.error('Upload error:', error);
+            console.error('❌ Upload error:', error);
             alert('เกิดข้อผิดพลาดในการอัปโหลด');
         }
     });
 
     document.getElementById('file-input').addEventListener('change', function () {
+        console.log('📂 File input changed, files:', this.files.length);
         if (this.files.length > 0) {
+            console.log('🚀 Auto-submitting form...');
             document.getElementById('upload-form').dispatchEvent(new Event('submit'));
         }
     });
@@ -125,9 +158,12 @@
     });
     dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
+        console.log('📥 Files dropped');
         dropZone.style.backgroundColor = 'transparent';
         document.getElementById('file-input').files = e.dataTransfer.files;
         document.getElementById('upload-form').dispatchEvent(new Event('submit'));
     });
+
+    console.log('✅ All event listeners attached successfully');
 </script>
 {% endblock %}
