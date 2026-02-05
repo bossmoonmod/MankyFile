@@ -11,29 +11,41 @@
         rel="stylesheet">
     {% load static %}
     <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2.1">
     {% block extra_css %}{% endblock %}
 </head>
 
 <body>
     <header>
-        <a href="{% url 'converter:index' %}" class="logo">
-            I<span>❤</span>MankyFile
-        </a>
-        <nav>
-            <a href="{% url 'converter:merge_pdf' %}">รวม PDF</a>
-            <a href="{% url 'converter:split_pdf' %}">แยก PDF</a>
-            <a href="{% url 'converter:compress_pdf' %}">บีบอัด PDF</a>
-            <a href="{% url 'converter:pdf_to_word' %}">แปลง PDF</a>
-            <a href="{% url 'converter:index' %}">เครื่องมือ PDF ทั้งหมด</a>
+        <div class="nav-container">
+            <a href="{% url 'converter:index' %}" class="logo">
+                I<span>❤</span>MankyFile
+            </a>
 
-            <!-- Daily Usage Stats -->
-            <div class="usage-badge"
-                style="background: #f0f0f0; padding: 5px 12px; border-radius: 20px; font-size: 14px; color: #555; margin-left: 15px; display: inline-flex; align-items: center; gap: 5px; border: 1px solid #ddd;">
-                <span>ใช้งานวันนี้:</span>
-                <span style="font-weight: bold; color: #e5322d;">{{ daily_usage|default:0 }}</span>
-            </div>
-        </nav>
+            <!-- Mobile Menu Button -->
+            <button class="menu-toggle" aria-label="Toggle Navigation">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 12H21" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M3 6H21" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M3 18H21" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </button>
+
+            <!-- Navigation Links -->
+            <nav class="nav-links">
+                <a href="{% url 'converter:merge_pdf' %}">รวม PDF</a>
+                <a href="{% url 'converter:split_pdf' %}">แยก PDF</a>
+                <a href="{% url 'converter:compress_pdf' %}">บีบอัด PDF</a>
+                <a href="{% url 'converter:pdf_to_word' %}">แปลง PDF</a>
+                <a href="{% url 'converter:index' %}">เครื่องมือ PDF ทั้งหมด</a>
+
+                <!-- Daily Usage Stats (Moved inside nav for mobile Layout) -->
+                <div class="usage-badge">
+                    <span>ใช้งานวันนี้:</span>
+                    <span class="usage-count">{{ daily_usage|default:0 }}</span>
+                </div>
+            </nav>
+        </div>
     </header>
 
     <!-- Messages Display -->
@@ -73,6 +85,19 @@
                     }, 300);
                 }, 5000);
             });
+        });
+
+        // Mobile Menu Toggle
+        document.addEventListener('DOMContentLoaded', function () {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const navLinks = document.querySelector('.nav-links');
+
+            if (menuToggle && navLinks) {
+                menuToggle.addEventListener('click', function () {
+                    navLinks.classList.toggle('active');
+                    this.classList.toggle('active'); // Optional: transform hamburger to X
+                });
+            }
         });
     </script>
     {% block extra_js %}{% endblock %}
