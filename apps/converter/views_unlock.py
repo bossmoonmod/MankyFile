@@ -96,12 +96,14 @@ class UnlockPDFView(View):
 
                 except Exception as worker_error:
                     print(f"❌ Worker Connection Failed: {worker_error}")
-                    # Fallback to Local Cracking (Low Power)
-                    from utils.pdf_cracker import brute_force_pdf
-                    print(f"⚠️ Fallback to Local Crack V5 for {input_path}")
-                    final_password = brute_force_pdf(input_path, output_full_path)
+                    # STOP: Do not fallback to local cracking on Render!
+                    return render(request, 'converter/unlock_pdf.html', {
+                        'error': f"ไม่สามารถเชื่อมต่อกับ Server ประมวลผลได้ (Worker Node Error): {worker_error}"
+                    })
             
             if final_password is not None:
+                # This block only runs if verify_password (local mode) succeeded
+                # ... (rest of success logic)
                 # Same Success Logic as before (for Local/Known mode)
                 original_size = os.path.getsize(input_path)
                 new_size = os.path.getsize(output_full_path)
