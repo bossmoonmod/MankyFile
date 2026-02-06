@@ -172,8 +172,8 @@ class PDFToWordView(View):
         return render(request, 'converter/tool_base.html', context)
 
     def post(self, request):
-        import os  # Force local import
-        from django.conf import settings # Force local import of settings
+        import requests
+        from django.conf import settings
         
         print("DEBUG: PDFToWordView POST Request Received!")
         try:
@@ -185,66 +185,114 @@ class PDFToWordView(View):
             else:
                 return redirect('converter:index')
             
-            # Save uploaded file
+            # Save uploaded file locally first
             upload_instance = UploadedFile(file=uploaded_file)
             upload_instance.save()
-            
             input_path = upload_instance.file.path
-            input_filename = os.path.basename(input_path)
-            filename_only = os.path.splitext(input_filename)[0]
-            output_filename = f"{filename_only}.docx"
             
-            # Define output path
-            job_id = str(uuid.uuid4())
-            output_dir = os.path.join(settings.MEDIA_ROOT, 'processed', job_id)
-            os.makedirs(output_dir, exist_ok=True)
-            output_full_path = os.path.join(output_dir, output_filename)
+            # Worker Configuration
+            WORKER_URL = 'https://blilnk.shop/api.php'
+            API_KEY = 'MANKY_SECRET_KEY_12345'
             
-            # Import V2 API Service
-            from utils.cc_v2_api import CloudConvertService
-            print(f"Starting PDF -> Word (API V2) for {input_filename}")
-            
-            converter = CloudConvertService()
-            converter.convert(
-                input_file_path=input_path, 
-                output_format='docx',
-                export_path=output_full_path
-            )
-            
-            # Create ProcessedFile record (Model only has 'file' field)
-            processed_rel_path = f"processed/{job_id}/{output_filename}"
-            processed_file = ProcessedFile(
-                file=processed_rel_path
-            )
-            processed_file.save()
-            
-            # Track Usage
-            try:
-                stat, _ = DailyStat.objects.get_or_create(date=timezone.now().date())
-                stat.usage_count += 1
-                stat.save()
-            except Exception as e:
-                print(f"Stats error: {e}")
-            
-            # Ensure URL points to our custom download view (Bypass Media URL issues)
-            # Use only job_id to avoid URL encoding issues with Thai filenames
-            from django.urls import reverse
-            download_url = reverse('converter:download_file', kwargs={'job_id': job_id})
-            
-            context = {
-                'success': True,
-                'download_url': download_url,
-                'file_name': output_filename,
-                'file_type': 'WORD',
-                'file_size': os.path.getsize(output_full_path) if os.path.exists(output_full_path) else 0
-            }
-            return render(request, 'converter/result.html', context)
+            # Send to Worker
+            print(f"📡 Dispatching PDF->Word to Worker: {WORKER_URL}")
+            with open(input_path, 'rb') as f:
+                # PDF mime type
+                mime = 'application/pdf'
+                files = {'file': (uploaded_file.name, f, mime)}
+                headers = {'X-API-KEY': API_KEY}
+                data = {'type': 'pdf-to-word'}
+                
+                target_url = f"{WORKER_URL}?key={API_KEY}"
+                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=60, verify=False)
+                
+                if response.status_code == 200:
+                    res_data = response.json()
+                    task_id = res_data.get('task_id')
+                    if task_id:
+                        return render(request, 'converter/worker_wait.html', {
+                            'task_id': task_id,
+                            'worker_host': 'https://blilnk.shop',
+                            'file_name': uploaded_file.name,
+                            'task_type': 'WORD' # Expected output type
+                        })
+                    else:
+                        raise Exception("Worker did not return Task ID")
+                else:
+                    raise Exception(f"Worker Error: {response.status_code} - {response.text}")
 
         except Exception as e:
             print(f"Error converting PDF to Word: {e}")
             context = {
-                'error': f"เกิดข้อผิดพลาด (V.Fixed): {str(e)}",
+                'error': f"เกิดข้อผิดพลาด: {str(e)}",
                 'title': 'PDF เป็น Word'
+            }
+            return render(request, 'converter/tool_base.html', context)
+
+class WordToPDFView(View):
+    def get(self, request):
+        context = {
+            'title': 'Word เป็น PDF',
+            'subtitle': 'แปลงเอกสาร Word ของคุณเป็น PDF ได้อย่างง่ายดาย',
+            'action_url': reverse('converter:word_to_pdf'),
+            'file_type': 'WORD',
+            'accept': '.doc,.docx'
+        }
+        return render(request, 'converter/tool_base.html', context)
+
+    def post(self, request):
+        import requests
+        from django.conf import settings
+        
+        try:
+            if 'files' in request.FILES:
+                uploaded_file = request.FILES.getlist('files')[0]
+            elif 'file' in request.FILES:
+                uploaded_file = request.FILES['file']
+            else:
+                return redirect('converter:index')
+            
+            # Save upload locally first
+            upload_instance = UploadedFile(file=uploaded_file)
+            upload_instance.save()
+            input_path = upload_instance.file.path
+            
+            # Worker Configuration
+            WORKER_URL = 'https://blilnk.shop/api.php'
+            API_KEY = 'MANKY_SECRET_KEY_12345'
+            
+            # Send to Worker
+            print(f"📡 Dispatching Word->PDF to Worker: {WORKER_URL}")
+            with open(input_path, 'rb') as f:
+                # Word files (doc/docx) mime type
+                mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                files = {'file': (uploaded_file.name, f, mime)}
+                headers = {'X-API-KEY': API_KEY}
+                data = {'type': 'word-to-pdf'}
+                
+                target_url = f"{WORKER_URL}?key={API_KEY}"
+                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=60, verify=False)
+                
+                if response.status_code == 200:
+                    res_data = response.json()
+                    task_id = res_data.get('task_id')
+                    if task_id:
+                        return render(request, 'converter/worker_wait.html', {
+                            'task_id': task_id,
+                            'worker_host': 'https://blilnk.shop',
+                            'file_name': uploaded_file.name,
+                            'task_type': 'PDF'
+                        })
+                    else:
+                        raise Exception("Worker did not return Task ID")
+                else:
+                    raise Exception(f"Worker Error: {response.status_code} - {response.text}")
+
+        except Exception as e:
+            print(f"Error converting Word to PDF: {e}")
+            context = {
+                'error': f"เกิดข้อผิดพลาด: {str(e)}",
+                'title': 'Word เป็น PDF'
             }
             return render(request, 'converter/tool_base.html', context)
 
