@@ -39,12 +39,13 @@ urlpatterns = [
     path('privacy/', PrivacyView.as_view(), name='privacy'),
     path('qrcode-generator/', QRCodeGeneratorView.as_view(), name='qrcode_generator'),
     path('delete-instant/', DeleteInstantView.as_view(), name='delete_instant'),
-    path('unlock-pdf/', UnlockPDFView.as_view(), name='unlock_pdf'),
-    
+    path('unlock-pdf/', views_unlock.UnlockPDFView.as_view(), name='unlock_pdf'),
+    path('check-worker-status/', views_unlock.check_worker_status, name='check_worker_status'),
+
     # URL Shortener
     path('shorten-url/', ShortenURLView.as_view(), name='shorten_url'),
     path('s/<str:short_code>/', RedirectShortLinkView.as_view(), name='redirect_short_link'),
-    
+
     # System Cleanup (For Cron/Render)
     path('cleanup-system/', SystemCleanupView.as_view(), name='cleanup_system'),
     

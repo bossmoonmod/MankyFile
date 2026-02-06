@@ -166,7 +166,8 @@
     const consoleLog = document.getElementById('console-log');
 
     function checkStatus() {
-        fetch(`${workerHost}/check_status.php?task_id=${taskId}`)
+        // Use local Django Proxy to bypass CORS/SSL issues
+        fetch(`/converter/check-worker-status/?task_id=${taskId}`)
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'completed') {

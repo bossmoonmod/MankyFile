@@ -147,3 +147,25 @@ class UnlockPDFView(View):
             return render(request, 'converter/unlock_pdf.html', {
                 'error': f"เกิดข้อผิดพลาด: {str(e)}"
             })
+
+from django.http import JsonResponse
+import requests
+
+def check_worker_status(request):
+    """Proxy view to check worker status without CORS/SSL issues on client side"""
+    task_id = request.GET.get('task_id')
+    # Use direct IP or domain provided by user
+    # If connection fails, client-side retry
+    worker_host = 'https://blilnk.shop'
+    
+    if not task_id:
+        return JsonResponse({'error': 'No task_id provided'}, status=400)
+    
+    try:
+        # Proxy Request (Server-side)
+        url = f"{worker_host}/check_status.php?task_id={task_id}"
+        response = requests.get(url, timeout=10, verify=False)
+        return JsonResponse(response.json())
+    except Exception as e:
+        # Return processing status so client keeps waiting
+        return JsonResponse({'status': 'processing', 'proxy_error': str(e)})
