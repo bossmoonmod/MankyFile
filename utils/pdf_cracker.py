@@ -126,8 +126,9 @@ def brute_force_pdf(input_path, output_path):
             if i % 2000 == 0 and (time.time() - start_time > TIMEOUT): return # Check timeout periodically
             if check_solution(f"{i:06d}"): return
 
-    # EXECUTE THREADS
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    # EXECUTE THREADS (Low Resource Mode)
+    # Reduced workers to 2 to prevent OOM/502 on Render Free Tier
+    with ThreadPoolExecutor(max_workers=2) as executor:
         futures = [
             executor.submit(generate_dates_smart),     # Prio 1: Birthdays (AD/BE)
             executor.submit(generate_dates_with_sep),  # Prio 2: Separators
