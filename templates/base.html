@@ -87,14 +87,7 @@
                 <a href="{% url 'converter:unlock_pdf' %}" data-i18n="nav_unlock">ปลดล็อค PDF</a>
             </nav>
 
-            <!-- Mobile Menu Links -->
-            <div class="mobile-menu">
-                <a href="{% url 'converter:merge_pdf' %}" data-i18n="nav_merge">รวม PDF</a>
-                <a href="{% url 'converter:split_pdf' %}" data-i18n="nav_split">แยก PDF</a>
-                <a href="{% url 'converter:pdf_to_word' %}" data-i18n="nav_pdf_word">PDF เป็น Word</a>
-                <a href="{% url 'converter:word_to_pdf' %}" data-i18n="nav_word_pdf">Word เป็น PDF</a>
-                <a href="{% url 'converter:unlock_pdf' %}" data-i18n="nav_unlock">ปลดล็อค PDF</a>
-            </div>
+
         </div>
     </header>
 
@@ -149,7 +142,7 @@
 
         // --- Mobile Menu Logic ---
         const menuToggle = document.querySelector('.menu-toggle');
-        const mobileMenu = document.querySelector('.mobile-menu');
+        const mobileMenu = document.querySelector('.nav-links'); // Target nav-links directly
 
         menuToggle.addEventListener('click', () => {
             mobileMenu.classList.toggle('active');
