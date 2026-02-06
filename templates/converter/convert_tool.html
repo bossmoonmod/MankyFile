@@ -3,8 +3,8 @@
 {% block content %}
 <div class="simple-converter-container">
     <div class="converter-content">
-        <h1 class="converter-title">{{ title }}</h1>
-        <p class="converter-subtitle">{{ subtitle }}</p>
+        <h1 class="converter-title" id="tool-title-heading">{{ title }}</h1>
+        <p class="converter-subtitle" id="tool-subtitle-text">{{ subtitle }}</p>
 
         <form method="post" enctype="multipart/form-data" id="upload-form">
             {% csrf_token %}
@@ -12,9 +12,9 @@
             <div class="upload-button-wrapper">
                 <input type="file" name="files" id="file-input" accept="{{ accept }}" style="display: none;">
                 <button type="button" class="btn-select-file" id="select-file-btn">
-                    <span>เลือกไฟล์ {{ file_type }}</span>
+                    <span data-i18n="btn_select_file">เลือกไฟล์ {{ file_type }}</span>
                 </button>
-                <p class="file-hint">หรือลากไฟล์มาวางที่นี่</p>
+                <p class="file-hint" data-i18n="drag_drop_hint">หรือลากไฟล์มาวางที่นี่</p>
             </div>
 
             <div id="file-selected" style="display: none;">
@@ -34,8 +34,9 @@
     </div>
 
     <footer class="simple-footer">
-        <p>© 2026 MankyFile Project • <a href="{% url 'converter:terms' %}">เงื่อนไขการใช้งาน</a> • <a
-                href="{% url 'converter:privacy' %}">นโยบายความเป็นส่วนตัว</a></p>
+        <p>© 2026 MankyFile Project • <a href="{% url 'converter:terms' %}"
+                data-i18n="footer_terms">เงื่อนไขการใช้งาน</a> • <a href="{% url 'converter:privacy' %}"
+                data-i18n="footer_privacy">นโยบายความเป็นส่วนตัว</a></p>
     </footer>
 </div>
 

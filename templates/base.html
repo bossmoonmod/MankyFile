@@ -194,7 +194,13 @@
                 'card_url_title': 'URL Shortener',
                 'card_url_desc': 'Shorten long links for easy sharing. Includes stats and 24h/7d expiry.',
                 'card_unlock_title': 'Unlock PDF',
-                'card_unlock_desc': 'Remove passwords from PDFs to access and edit them immediately.'
+                'card_unlock_desc': 'Remove passwords from PDFs to access and edit them immediately.',
+
+                // Tool UI
+                'btn_select_file': 'Select File',
+                'drag_drop_hint': 'or drag and drop here',
+                'footer_terms': 'Terms of Use',
+                'footer_privacy': 'Privacy Policy'
             },
             'ja': {
                 'nav_merge': 'PDF結合',
@@ -232,7 +238,13 @@
                 'card_url_title': 'URL短縮',
                 'card_url_desc': '長いリンクを短縮して共有しやすくします。統計と自動期限切れ（24時間/7日）付き。',
                 'card_unlock_title': 'PDFロック解除',
-                'card_unlock_desc': 'PDFからパスワードを削除して、すぐにアクセスして編集できるようにします。'
+                'card_unlock_desc': 'PDFからパスワードを削除して、すぐにアクセスして編集できるようにします。',
+
+                // Tool UI
+                'btn_select_file': 'ファイルを選択',
+                'drag_drop_hint': 'またはここにドラッグ＆ドロップ',
+                'footer_terms': '利用規約',
+                'footer_privacy': 'プライバシーポリシー'
             },
             'th': {
                 'nav_merge': 'รวม PDF',
@@ -270,20 +282,27 @@
                 'card_url_title': 'ย่อลิงก์',
                 'card_url_desc': 'ย่อลิงก์ยาวให้สั้น แชร์ง่าย พร้อมระบบหมดอายุอัตโนมัติ (24ชม./7วัน)',
                 'card_unlock_title': 'ปลดล็อค PDF',
-                'card_unlock_desc': 'ลบรหัสผ่านออกจากไฟล์ PDF เพื่อให้เข้าถึงและแก้ไขได้ทันที'
+                'card_unlock_desc': 'ลบรหัสผ่านออกจากไฟล์ PDF เพื่อให้เข้าถึงและแก้ไขได้ทันที',
+
+                // Tool UI
+                'btn_select_file': 'เลือกไฟล์',
+                'drag_drop_hint': 'หรือลากไฟล์มาวางที่นี่',
+                'footer_terms': 'เงื่อนไขการใช้งาน',
+                'footer_privacy': 'นโยบายความเป็นส่วนตัว'
             }
         };
 
         function updateLanguage() {
             // Detect language from URL (e.g., /en/...) or use default 'th'
+            // Using Django context logic if possible, otherwise URL fallback
+            let lang = "{{ LANGUAGE_CODE|default:'th' }}";
             const path = window.location.pathname;
-            let lang = 'th';
 
+            // Strict URL check for purely client-side switches
             if (path.includes('/en/')) lang = 'en';
-            else if (path.includes('/zh-hans/')) lang = 'zh-hans';
             else if (path.includes('/ja/')) lang = 'ja';
 
-            // Apply translations
+            // Apply translations to data-i18n elements
             const elements = document.querySelectorAll('[data-i18n]');
             elements.forEach(el => {
                 const key = el.getAttribute('data-i18n');
@@ -292,9 +311,38 @@
                 }
             });
 
+            // --- Dynamic Tool Title Logic ---
+            // If we are on a specific tool page, override the title/subtitle using the 'card' keys
+            const toolTitleEl = document.getElementById('tool-title-heading');
+            const toolSubtitleEl = document.getElementById('tool-subtitle-text');
+
+            if (toolTitleEl && translations[lang]) {
+                let toolKey = null;
+                // Match URL to tool keys
+                if (path.includes('/merge-pdf')) toolKey = 'merge';
+                else if (path.includes('/split-pdf')) toolKey = 'split';
+                else if (path.includes('/compress-pdf')) toolKey = 'compress';
+                else if (path.includes('/pdf-to-word')) toolKey = 'pdf_word';
+                else if (path.includes('/pdf-to-powerpoint')) toolKey = 'pdf_ppt';
+                else if (path.includes('/pdf-to-excel')) toolKey = 'pdf_excel';
+                else if (path.includes('/word-to-pdf')) toolKey = 'word_pdf';
+                else if (path.includes('/powerpoint-to-pdf')) toolKey = 'ppt_pdf';
+                else if (path.includes('/unlock-pdf')) toolKey = 'unlock';
+                else if (path.includes('/merge-word')) toolKey = 'merge_word';
+                else if (path.includes('/generate-qrcode')) toolKey = 'qrcode';
+                else if (path.includes('/shorten-url')) toolKey = 'url';
+
+                if (toolKey) {
+                    const titleKey = `card_${toolKey}_title`;
+                    const descKey = `card_${toolKey}_desc`;
+
+                    if (translations[lang][titleKey]) toolTitleEl.textContent = translations[lang][titleKey];
+                    if (toolSubtitleEl && translations[lang][descKey]) toolSubtitleEl.textContent = translations[lang][descKey];
+                }
+            }
+
             // Update Dropdown Selection UI
             if (langSelect) {
-                // Find option with value equal to current lang and select it
                 for (let i = 0; i < langSelect.options.length; i++) {
                     if (langSelect.options[i].value === lang) {
                         langSelect.selectedIndex = i;
