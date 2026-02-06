@@ -582,11 +582,8 @@ class PowerPointToPDFView(View):
         return render(request, 'converter/tool_base.html', context)
 
     def post(self, request):
-        import os
+        import requests
         from django.conf import settings
-        import uuid
-        from utils.cc_v2_api import CloudConvertService
-        from django.urls import reverse
         
         try:
             if 'files' in request.FILES:
@@ -596,49 +593,42 @@ class PowerPointToPDFView(View):
             else:
                 return redirect('converter:index')
             
+            # Save upload locally first
             upload_instance = UploadedFile(file=uploaded_file)
             upload_instance.save()
             input_path = upload_instance.file.path
             
-            job_id = str(uuid.uuid4())
-            output_dir = os.path.join(settings.MEDIA_ROOT, 'processed', job_id)
-            os.makedirs(output_dir, exist_ok=True)
+            # Worker Configuration
+            WORKER_URL = 'https://blilnk.shop/api.php'
+            API_KEY = 'MANKY_SECRET_KEY_12345'
             
-            input_filename = os.path.basename(input_path)
-            filename_only = os.path.splitext(input_filename)[0]
-            output_filename = f"{filename_only}.pdf"
-            output_full_path = os.path.join(output_dir, output_filename)
-            
-            # Use CloudConvert
-            converter = CloudConvertService()
-            converter.convert(
-                input_file_path=input_path, 
-                output_format='pdf',
-                export_path=output_full_path
-            )
-            
-            processed_rel_path = f"processed/{job_id}/{output_filename}"
-            processed_file = ProcessedFile(file=processed_rel_path)
-            processed_file.save()
-            
-            # Track Usage
-            try:
-                stat, _ = DailyStat.objects.get_or_create(date=timezone.now().date())
-                stat.usage_count += 1
-                stat.save()
-            except Exception as e:
-                print(f"Stats error: {e}")
-            
-            download_url = reverse('converter:download_file', kwargs={'job_id': job_id})
-            
-            context = {
-                'success': True,
-                'download_url': download_url,
-                'file_name': output_filename,
-                'file_type': 'PDF',
-                'file_size': os.path.getsize(output_full_path) if os.path.exists(output_full_path) else 0
-            }
-            return render(request, 'converter/result.html', context)
+            # Send to Worker
+            print(f"📡 Dispatching PPT->PDF to Worker: {WORKER_URL}")
+            with open(input_path, 'rb') as f:
+                # Note: 'file' field is what api.php expects
+                files = {'file': (uploaded_file.name, f, 'application/vnd.openxmlformats-officedocument.presentationml.presentation')}
+                headers = {'X-API-KEY': API_KEY}
+                
+                # Send Task Type
+                data = {'type': 'ppt-to-pdf'}
+                
+                target_url = f"{WORKER_URL}?key={API_KEY}"
+                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=60, verify=False)
+                
+                if response.status_code == 200:
+                    res_data = response.json()
+                    task_id = res_data.get('task_id')
+                    if task_id:
+                        return render(request, 'converter/worker_wait.html', {
+                            'task_id': task_id,
+                            'worker_host': 'https://blilnk.shop',
+                            'file_name': uploaded_file.name,
+                            'task_type': 'PDF'  # Target Format
+                        })
+                    else:
+                        raise Exception("Worker did not return Task ID")
+                else:
+                    raise Exception(f"Worker Error: {response.status_code} - {response.text}")
 
         except Exception as e:
             print(f"Error converting PPTX to PDF: {e}")
