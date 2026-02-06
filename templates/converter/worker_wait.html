@@ -167,7 +167,9 @@
 
     function checkStatus() {
         // Use local Django Proxy to bypass CORS/SSL issues
-        fetch(`/converter/check-worker-status/?task_id=${taskId}`)
+        // Use Django URL tag to guarantee correct path
+        const statusUrl = "{% url 'converter:check_worker_status' %}";
+        fetch(`${statusUrl}?task_id=${taskId}`)
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'completed') {
