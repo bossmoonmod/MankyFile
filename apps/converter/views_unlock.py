@@ -77,7 +77,8 @@ class UnlockPDFView(View):
                         headers = {'X-API-KEY': API_KEY}
                         print(f"📡 Sending task to Worker Node: {WORKER_URL}")
                         
-                        response = requests.post(WORKER_URL, files=files, headers=headers, timeout=60)
+                        # Disable SSL Verify strictly for worker node temporary fix
+                        response = requests.post(WORKER_URL, files=files, headers=headers, timeout=60, verify=False)
                         
                         if response.status_code == 200:
                             data = response.json()
