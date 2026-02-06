@@ -1,8 +1,15 @@
 from django.urls import path
-from . import views, views_unlock, views_merge, views_split_pdf
+from .views import (
+    IndexView, ResultView, MergePDFView, SplitPDFView,
+    MergeWordView, ArrangeWordView, ArrangePDFView, 
+    DownloadFileView, CompressPDFView, PDFToPowerPointView, 
+    PDFToExcelView, PowerPointToPDFView, PDFToWordView, WordToPDFView,
+    TermsView, PrivacyView, QRCodeGeneratorView, DeleteInstantView,
+    ShortenURLView, RedirectShortLinkView, SystemCleanupView,
+    download_file
+)
+from . import views_unlock
 from .api_views import ProgressAPIView, ProgressTestAPIView
-from .async_views import PDFToWordAsyncView
-from . import views_unlock  # Import the module explicitly
 from django.views.generic import TemplateView
 
 app_name = 'converter'
@@ -12,8 +19,8 @@ urlpatterns = [
     path('merge-pdf/', MergePDFView.as_view(), name='merge_pdf'),
     path('split-pdf/', SplitPDFView.as_view(), name='split_pdf'),
     
-    # Use async version with progress bar (IMPORTANT: This enables real-time progress)
-    path('pdf-to-word/', PDFToWordAsyncView.as_view(), name='pdf_to_word'),
+    # Use standard version with Worker Node
+    path('pdf-to-word/', PDFToWordView.as_view(), name='pdf_to_word'),
     
     path('compress-pdf/', CompressPDFView.as_view(), name='compress_pdf'),
     path('word-to-pdf/', WordToPDFView.as_view(), name='word_to_pdf'),
