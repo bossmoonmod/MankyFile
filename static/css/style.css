@@ -1056,18 +1056,6 @@ footer {
         /* ลดความกว้าง */
         height: 34px;
         margin-left: 10px;
-        background-color: #cbd5e1;
-        /* ให้พื้นหลังชัดขึ้นในโหมดสว่าง */
-    }
-
-    /* แก้ไขระยะการเลื่อนของวงกลมในมือถือให้พอดีกับ 100px */
-    [data-theme="dark"] .switch-thumb {
-        transform: translateX(66px) !important;
-    }
-
-    [data-theme="dark"] .theme-switch {
-        background-color: #334155 !important;
-        border: 1px solid #475569;
     }
 
     .switch-thumb {
@@ -1079,6 +1067,11 @@ footer {
     .theme-icon {
         width: 14px;
         height: 14px;
+    }
+
+    /* Fix Dark Mode Thumb position for Mobile (Container 100px - Thumb 26px - Left 4px - Margin 4px = 66px) */
+    [data-theme="dark"] .switch-thumb {
+        transform: translateX(66px);
     }
 
     /* ซ่อน Text Day/Night ในมือถือเพื่อประหยัดที่ */
