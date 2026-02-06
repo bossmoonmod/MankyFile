@@ -427,6 +427,11 @@ footer {
     gap: 15px;
 }
 
+/* Hide Mobile Menu Container on Desktop */
+.mobile-menu {
+    display: none;
+}
+
 /* Mobile Breakpoint */
 @media screen and (max-width: 900px) {
     header {

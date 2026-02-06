@@ -33,11 +33,9 @@
                         {% get_current_language as LANGUAGE_CODE %}
                         {% get_available_languages as LANGUAGES %}
                         {% get_language_info_list for LANGUAGES as languages %}
-                        {% for language in languages %}
-                        <option value="{{ language.code }}">
-                            {{ language.code|upper }}
-                        </option>
-                        {% endfor %}
+                        <option value="th">TH</option>
+                        <option value="en">EN</option>
+                        <option value="ja">JA</option>
                     </select>
                 </form>
             </div>
@@ -158,7 +156,7 @@
             }
         });
 
-        // --- Client-Side Translation (Temporary Mockup) ---
+        // --- Client-Side Translation ---
         const translations = {
             'en': {
                 'nav_merge': 'Merge PDF',
@@ -166,15 +164,37 @@
                 'nav_pdf_word': 'PDF to Word',
                 'nav_word_pdf': 'Word to PDF',
                 'nav_unlock': 'Unlock PDF',
-                'footer_text': '© 2024 MankyFile - Easy PDF Tools for Everyone'
-            },
-            'zh-hans': {
-                'nav_merge': '合并 PDF',
-                'nav_split': '拆分 PDF',
-                'nav_pdf_word': 'PDF 转 Word',
-                'nav_word_pdf': 'Word 转 PDF',
-                'nav_unlock': '解锁 PDF',
-                'footer_text': '© 2024 MankyFile - 适合所有人的简易 PDF 工具'
+                'footer_text': '© 2024 MankyFile - Easy PDF Tools for Everyone',
+
+                // Hero
+                'hero_title': 'The All-in-One PDF Tool You Need',
+                'hero_subtitle': 'All the tools you need for PDFs at your fingertips. 100% Free and Easy to use! Merge, Split, Compress, Convert, Rotate, Unlock, and Watermark PDFs in just a few clicks.',
+
+                // Cards
+                'card_merge_title': 'Merge PDF',
+                'card_merge_desc': 'Combine PDFs in the order you want with the easiest PDF merger.',
+                'card_split_title': 'Split PDF',
+                'card_split_desc': 'Separate one page or a whole set for easy conversion into independent PDF files.',
+                'card_compress_title': 'Compress PDF',
+                'card_compress_desc': 'Reduce file size while optimizing for maximal PDF quality.',
+                'card_pdf_word_title': 'PDF to Word',
+                'card_pdf_word_desc': 'Easily convert your PDF files into easy to edit DOC and DOCX documents.',
+                'card_pdf_ppt_title': 'PDF to PowerPoint',
+                'card_pdf_ppt_desc': 'Turn your PDF files into easy to edit PPT and PPTX slideshows.',
+                'card_pdf_excel_title': 'PDF to Excel',
+                'card_pdf_excel_desc': 'Pull data straight from PDFs into Excel spreadsheets in a few seconds.',
+                'card_merge_word_title': 'Merge Word',
+                'card_merge_word_desc': 'Combine multiple Docs and Docx files into a single Word file easily.',
+                'card_word_pdf_title': 'Word to PDF',
+                'card_word_pdf_desc': 'Make DOC and DOCX files easy to read by converting them to PDF.',
+                'card_ppt_pdf_title': 'PowerPoint to PDF',
+                'card_ppt_pdf_desc': 'Make PPT and PPTX slideshows easy to view by converting them to PDF.',
+                'card_qrcode_title': 'QR Code Gen',
+                'card_qrcode_desc': 'Create free QR Codes from URLs, text, or phone numbers with custom colors.',
+                'card_url_title': 'URL Shortener',
+                'card_url_desc': 'Shorten long links for easy sharing. Includes stats and 24h/7d expiry.',
+                'card_unlock_title': 'Unlock PDF',
+                'card_unlock_desc': 'Remove passwords from PDFs to access and edit them immediately.'
             },
             'ja': {
                 'nav_merge': 'PDF結合',
@@ -182,7 +202,37 @@
                 'nav_pdf_word': 'PDF Word 変換',
                 'nav_word_pdf': 'Word PDF 変換',
                 'nav_unlock': 'PDF解除',
-                'footer_text': '© 2024 MankyFile - 誰でも使える簡単PDFツール'
+                'footer_text': '© 2024 MankyFile - 誰でも使える簡単PDFツール',
+
+                // Hero
+                'hero_title': '必要なすべてのPDFツールがここに',
+                'hero_subtitle': 'PDFに必要なすべてのツールが手元に。100％無料て使いやすい！数回のクリックでPDFの結合、分割、圧縮、変換、回転、ロック解除、透かし追加が可能です。',
+
+                // Cards
+                'card_merge_title': 'PDF結合',
+                'card_merge_desc': '最も簡単なPDF結合ツールを使用して、任意の順序でPDFを結合します。',
+                'card_split_title': 'PDF分割',
+                'card_split_desc': '1ページまたはセット全体を分離して、独立したPDFファイルに簡単に変換します。',
+                'card_compress_title': 'PDF圧縮',
+                'card_compress_desc': 'PDFの品質を最大限に維持しながら、ファイルサイズを削減します。',
+                'card_pdf_word_title': 'PDF Word 変換',
+                'card_pdf_word_desc': 'PDFファイルを編集しやすいDOCおよびDOCX文書に簡単に変換します。',
+                'card_pdf_ppt_title': 'PDF PowerPoint 変換',
+                'card_pdf_ppt_desc': 'PDFファイルを編集しやすいPPTおよびPPTXスライドショーに変換します。',
+                'card_pdf_excel_title': 'PDF Excel 変換',
+                'card_pdf_excel_desc': '数秒でPDFからExcelスプレッドシートにデータを直接抽出します。',
+                'card_merge_word_title': 'Word結合',
+                'card_merge_word_desc': '複数のDocsおよびDocxファイルを1つのWordファイルに簡単に結合します。',
+                'card_word_pdf_title': 'Word PDF 変換',
+                'card_word_pdf_desc': 'DOCおよびDOCXファイルをPDFに変換して読みやすくします。',
+                'card_ppt_pdf_title': 'PowerPoint PDF 変換',
+                'card_ppt_pdf_desc': 'PPTおよびPPTXスライドショーをPDFに変換して表示しやすくします。',
+                'card_qrcode_title': 'QRコード作成',
+                'card_qrcode_desc': 'URL、テキスト、電話番号から無料のQRコードを作成します。色はカスタマイズ可能です。',
+                'card_url_title': 'URL短縮',
+                'card_url_desc': '長いリンクを短縮して共有しやすくします。統計と自動期限切れ（24時間/7日）付き。',
+                'card_unlock_title': 'PDFロック解除',
+                'card_unlock_desc': 'PDFからパスワードを削除して、すぐにアクセスして編集できるようにします。'
             },
             'th': {
                 'nav_merge': 'รวม PDF',
@@ -190,7 +240,37 @@
                 'nav_pdf_word': 'PDF เป็น Word',
                 'nav_word_pdf': 'Word เป็น PDF',
                 'nav_unlock': 'ปลดล็อค PDF',
-                'footer_text': '© 2024 MankyFile - จัดการไฟล์ PDF ง่ายๆ ด้วยตัวคุณเอง'
+                'footer_text': '© 2024 MankyFile - จัดการไฟล์ PDF ง่ายๆ ด้วยตัวคุณเอง',
+
+                // Hero
+                'hero_title': 'เครื่องมือจัดการ File ครบวงจรที่คุณต้องการ',
+                'hero_subtitle': 'เครื่องมือทั้งหมดที่คุณต้องใช้กับ File อยู่ใกล้แค่เอื้อม ฟรีและใช้งานง่าย 100%! รวม, แยก, บีบอัด, แปลง, หมุน, ปลดล็อก และใส่ลายน้ำ File ได้ในไม่กี่คลิก',
+
+                // Cards
+                'card_merge_title': 'รวมไฟล์ PDF',
+                'card_merge_desc': 'รวมไฟล์ PDF ตามลำดับที่คุณต้องการด้วยตัวรวม PDF ที่ง่ายที่สุด',
+                'card_split_title': 'แยกไฟล์ PDF',
+                'card_split_desc': 'แยกหน้าหนึ่งหน้าหรือทั้งชุดเพื่อแปลงเป็นไฟล์ PDF อิสระได้อย่างง่ายดาย',
+                'card_compress_title': 'บีบอัด PDF',
+                'card_compress_desc': 'ลดขนาดไฟล์ในขณะที่รักษาคุณภาพ PDF ให้สูงสุด',
+                'card_pdf_word_title': 'PDF เป็น Word',
+                'card_pdf_word_desc': 'แปลงไฟล์ PDF ของคุณเป็นเอกสาร DOC และ DOCX ที่แก้ไขได้ง่ายอย่างง่ายดาย',
+                'card_pdf_ppt_title': 'PDF เป็น PowerPoint',
+                'card_pdf_ppt_desc': 'เปลี่ยนไฟล์ PDF ของคุณเป็นสไลด์โชว์ PPT และ PPTX ที่แก้ไขได้ง่าย',
+                'card_pdf_excel_title': 'PDF เป็น Excel',
+                'card_pdf_excel_desc': 'ดึงข้อมูลโดยตรงจาก PDF ลงในสเปรดชีต Excel ในเวลาไม่กี่วินาที',
+                'card_merge_word_title': 'รวมไฟล์ Word',
+                'card_merge_word_desc': 'รวมไฟล์ Docs และ Docx หลายไฟล์ให้เป็นไฟล์ Word เดียวได้อย่างง่ายดาย',
+                'card_word_pdf_title': 'Word เป็น PDF',
+                'card_word_pdf_desc': 'ทำให้ไฟล์ DOC และ DOCX อ่านง่ายโดยการแปลงเป็น PDF',
+                'card_ppt_pdf_title': 'PowerPoint เป็น PDF',
+                'card_ppt_pdf_desc': 'ทำให้สไลด์โชว์ PPT และ PPTX ดูง่ายโดยการแปลงเป็น PDF',
+                'card_qrcode_title': 'สร้าง QR Code',
+                'card_qrcode_desc': 'สร้าง QR Code ฟรีจากลิงก์ ข้อความ หรือเบอร์โทรศัพท์ พร้อมปรับแต่งสีได้',
+                'card_url_title': 'ย่อลิงก์',
+                'card_url_desc': 'ย่อลิงก์ยาวให้สั้น แชร์ง่าย พร้อมระบบหมดอายุอัตโนมัติ (24ชม./7วัน)',
+                'card_unlock_title': 'ปลดล็อค PDF',
+                'card_unlock_desc': 'ลบรหัสผ่านออกจากไฟล์ PDF เพื่อให้เข้าถึงและแก้ไขได้ทันที'
             }
         };
 
