@@ -293,14 +293,19 @@
         };
 
         function updateLanguage() {
-            // Detect language from URL (e.g., /en/...) or use default 'th'
-            // Using Django context logic if possible, otherwise URL fallback
-            let lang = "{{ LANGUAGE_CODE|default:'th' }}";
+            // 1. Get Language from Django (Source of Truth)
+            let rawLang = "{{ LANGUAGE_CODE|default:'th' }}".toLowerCase();
+            let lang = 'th'; // Default fallback
             const path = window.location.pathname;
 
-            // Strict URL check for purely client-side switches
-            if (path.includes('/en/')) lang = 'en';
-            else if (path.includes('/ja/')) lang = 'ja';
+            // 2. Normalize Language Code (Handle en-us, ja-jp, etc.)
+            if (rawLang.startsWith('en')) {
+                lang = 'en';
+            } else if (rawLang.startsWith('ja')) {
+                lang = 'ja';
+            } else {
+                lang = 'th';
+            }
 
             // Apply translations to data-i18n elements
             const elements = document.querySelectorAll('[data-i18n]');
