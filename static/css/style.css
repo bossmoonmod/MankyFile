@@ -615,8 +615,57 @@ footer {
     opacity: 1;
     color: #64748B;
     right: 14px;
-    /* Fixed Right Position */
     transform: translateY(-50%) translateX(0);
+}
+
+/* --- Language Switcher --- */
+.lang-switcher {
+    margin-left: 20px;
+}
+
+.lang-select {
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    background-color: transparent;
+    color: var(--text-main);
+    font-family: var(--font-family);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    text-align: center;
+    font-weight: 500;
+}
+
+.lang-select:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(229, 50, 45, 0.05);
+}
+
+.lang-select option {
+    background-color: var(--bg-white);
+    color: var(--text-main);
+}
+
+/* --- Dark Mode State --- */
+[data-theme="dark"] .lang-select {
+    border-color: #444;
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .lang-select:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(229, 50, 45, 0.15);
+}
+
+[data-theme="dark"] .lang-select option {
+    background-color: #2d2d2d;
+    color: #f0f0f0;
 }
 
 /* --- Dark Mode State --- */

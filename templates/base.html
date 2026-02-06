@@ -22,6 +22,26 @@
                 I<span>❤</span>MankyFile
             </a>
 
+            <!-- Language Switcher -->
+            {% load i18n %}
+            <div class="lang-switcher">
+                <form action="{% url 'set_language' %}" method="post" id="lang-form">
+                    {% csrf_token %}
+                    <input name="next" type="hidden" value="{{ redirect_to }}">
+                    <select name="language" onchange="document.getElementById('lang-form').submit()"
+                        class="lang-select">
+                        {% get_current_language as LANGUAGE_CODE %}
+                        {% get_available_languages as LANGUAGES %}
+                        {% get_language_info_list for LANGUAGES as languages %}
+                        {% for language in languages %}
+                        <option value="{{ language.code }}" {% if language.code==LANGUAGE_CODE %}selected{% endif %}>
+                            {{ language.code|upper }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+
             <!-- Dark Mode Toggle (Far Left Switch) -->
             <button id="theme-toggle" class="theme-switch" aria-label="Toggle Dark Mode">
                 <div class="switch-track">

@@ -69,8 +69,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # Add WhiteNoise for static files!
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware', # Enable i18n
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -91,7 +92,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'apps.converter.context_processors.daily_usage_stats',  # Custom Usage Stats
+                'apps.converter.context_processors.daily_usage_stats',
+                'django.template.context_processors.i18n', # Allow access to languages in templates
             ],
         },
     },
@@ -133,9 +135,22 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'th' # Default Language
 
-TIME_ZONE = 'Asia/Bangkok' # Set to Thailand Time
+from django.utils.translation import gettext_lazy as _
+
+LANGUAGES = [
+    ('th', _('Thai')),
+    ('en', _('English')),
+    ('zh-hans', _('Chinese')),
+    ('ja', _('Japanese')),
+]
+
+LOCALE_PATHS = [
+    BASE_DIR / 'locale',
+]
+
+TIME_ZONE = 'Asia/Bangkok'
 
 USE_I18N = True
 
