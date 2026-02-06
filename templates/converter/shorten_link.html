@@ -14,7 +14,7 @@
 
         <!-- Main Form Card -->
         <div class="shortener-card">
-            <form method="post" action="{% url 'converter:shorten_url' %}">
+            <form id="shorten-form" method="post" action="{% url 'converter:shorten_url' %}">
                 {% csrf_token %}
 
                 <!-- URL Input -->
@@ -40,30 +40,30 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn-shorten" data-i18n="shorten_btn">
+                <button type="submit" id="submit-btn" class="btn-shorten" data-i18n="shorten_btn">
                     ย่อลิงก์เลย! ✨
                 </button>
             </form>
 
-            <!-- Result Section -->
-            {% if short_url %}
-            <div class="result-box">
-                <div class="success-icon">🎉</div>
-                <h3>ลิงก์ย่อของคุณพร้อมแล้ว!</h3>
+            <div id="result-container" style="display: {% if short_url %}block{% else %}none{% endif %};">
+                <div class="result-box">
+                    <div class="success-icon">🎉</div>
+                    <h3 style="color:var(--text-main); font-weight:700;">ลิงก์ส่วนตัวของคุณสร้างเสร็จแล้ว!</h3>
 
-                <div class="short-url-wrapper">
-                    <input type="text" value="{{ short_url }}" id="short-url-input" readonly>
-                    <button onclick="copyToClipboard()" class="btn-copy">คัดลอก</button>
+                    <div class="short-url-wrapper">
+                        <input type="text" value="{{ short_url }}" id="short-url-input" readonly>
+                        <button onclick="copyToClipboard()" class="btn-copy">คัดลอกลิงก์</button>
+                    </div>
+
+                    <div class="result-meta">
+                        <span>📅 หมดอายุ: <b id="expiry-text">{{ expires_at|date:"d M Y H:i" }}</b></span>
+                        <span>🔗 <a href="{{ short_url|default:'#' }}" id="test-link"
+                                target="_blank">ทดสอบลิงก์</a></span>
+                    </div>
+
+                    <button onclick="resetTool()" class="btn-reset">ย่อลิงก์อื่นต่อไป</button>
                 </div>
-
-                <div class="result-meta">
-                    <span>📅 หมดอายุ: {{ expires_at|date:"d M Y H:i" }}</span>
-                    <span>🔗 <a href="{{ short_url }}" target="_blank">ทดสอบลิงก์</a></span>
-                </div>
-
-                <a href="{% url 'converter:shorten_url' %}" class="btn-reset">ย่อลิงก์อื่น</a>
             </div>
-            {% endif %}
         </div>
     </div>
 
@@ -278,6 +278,24 @@
     .btn-shorten:hover {
         background: var(--primary-hover);
         transform: translateY(-3px);
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+        vertical-align: middle;
+        margin-right: 8px;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
     }
 
     /* Result Box */
@@ -531,6 +549,21 @@
             text-align: center;
             box-sizing: border-box;
         }
+
+        /* Result Box Mobile Optimization */
+        .result-box h3 {
+            font-size: 1.2rem;
+        }
+
+        #short-url-input {
+            font-size: 1rem;
+            padding: 15px 10px;
+        }
+
+        .result-meta {
+            flex-direction: column;
+            gap: 10px;
+        }
     }
 
     @media (max-width: 480px) {
@@ -555,6 +588,67 @@
 </style>
 
 <script>
+    document.getElementById('shorten-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const form = this;
+        const btn = document.getElementById('submit-btn');
+        const url = form.getAttribute('action');
+        const formData = new FormData(form);
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading-spinner"></span> กำลังประมวลผล...';
+
+        try {
+            const response = await fetch(url + '?ajax=true', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('short-url-input').value = data.short_url;
+                document.getElementById('expiry-text').innerText = data.expires_at;
+                document.getElementById('test-link').href = data.short_url;
+
+                form.style.display = 'none';
+                const resultContainer = document.getElementById('result-container');
+                resultContainer.style.display = 'block';
+                resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // Optional: Confetti or success effect
+                confettiEffect();
+            } else {
+                alert(data.error || 'เกิดข้อผิดพลาด');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'ย่อลิงก์เลย! ✨';
+        }
+    });
+
+    function resetTool() {
+        document.getElementById('shorten-form').style.display = 'block';
+        document.getElementById('result-container').style.display = 'none';
+        document.getElementById('url-input').value = '';
+    }
+
+    function confettiEffect() {
+        // Simple success animation placeholder
+        const icon = document.querySelector('.success-icon');
+        icon.animate([
+            { transform: 'scale(0.5) rotate(-15deg)', opacity: 0 },
+            { transform: 'scale(1.2) rotate(10deg)', opacity: 1 },
+            { transform: 'scale(1) rotate(0deg)', opacity: 1 }
+        ], { duration: 600, easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)' });
+    }
+
     function copyToClipboard() {
         var copyText = document.getElementById("short-url-input");
         copyText.select();

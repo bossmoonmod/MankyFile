@@ -1420,6 +1420,8 @@ class ShortenURLView(View):
         expiry_option = request.POST.get('expiry') # 24h, 7d
         
         if not original_url:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.GET.get('ajax') == 'true':
+                return JsonResponse({'success': False, 'error': 'กรุณาระบุ URL'})
             return render(request, 'converter/shorten_link.html', {'error': 'กรุณาระบุ URL'})
         
         # Generate Short Code
@@ -1447,6 +1449,14 @@ class ShortenURLView(View):
         # Build absolute URL
         short_url = request.build_absolute_uri(f'/s/{short_code}/')
         
+        # Check if AJAX request
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.GET.get('ajax') == 'true':
+            return JsonResponse({
+                'success': True,
+                'short_url': short_url,
+                'expires_at': expires_at.strftime("%d %b %Y %H:%M")
+            })
+
         return render(request, 'converter/shorten_link.html', {
             'short_url': short_url,
             'original_url': original_url,
