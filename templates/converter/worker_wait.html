@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="tool-container">
+    <div class="card-wrapper" style="text-align: center; padding: 40px 20px;">
+
+        <!-- Processing State -->
+        <div id="state-processing">
+            <div class="radar-spinner">
+                <div class="radar-scan"></div>
+            </div>
+
+            <h2 style="margin-top: 25px;">กำลังส่งภารกิจให้ Worker Node...</h2>
+            <p style="color: #888; font-family: monospace;" id="console-log">Connecting to {{ worker_host }}...</p>
+
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="p-bar"></div>
+            </div>
+
+            <p style="font-size: 0.8rem; color: #666; margin-top: 20px;">
+                ระบบกำลังใช้ Server พลังสูงในการค้นหารหัสผ่าน <br>
+                กรุณาอย่าปิดหน้านี้ (ใช้เวลาประมาณ 1-5 นาที)
+            </p>
+        </div>
+
+        <!-- Success State -->
+        <div id="state-success" style="display: none;">
+            <div class="success-icon">🔓</div>
+            <h1 style="color: #28a745;">ปลดล็อคสำเร็จ!</h1>
+
+            <div class="password-box">
+                <span style="color: #888;">รหัสผ่านที่ค้นพบ:</span>
+                <h2 id="found-password" style="font-family: monospace; color: #e5322d; margin: 10px 0;">...</h2>
+            </div>
+
+            <a id="download-btn" href="#" class="download-btn" target="_blank">
+                ดาวน์โหลดไฟล์ PDF 📥
+            </a>
+            <br>
+            <a href="{% url 'converter:unlock_pdf' %}"
+                style="display: inline-block; margin-top: 20px; color: #888;">ทำรายการใหม่</a>
+        </div>
+
+        <!-- Failed State -->
+        <div id="state-failed" style="display: none;">
+            <div class="fail-icon">❌</div>
+            <h2>ไม่สามารถปลดล็อคได้</h2>
+            <p>ขออภัย ระบบไม่สามารถหารหัสผ่านของไฟล์นี้ได้ภายในเวลาที่กำหนด</p>
+            <a href="{% url 'converter:unlock_pdf' %}" class="retry-btn">ลองใหม่อีกครั้ง</a>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .radar-spinner {
+        width: 80px;
+        height: 80px;
+        border: 2px solid rgba(229, 50, 45, 0.3);
+        border-radius: 50%;
+        margin: 0 auto;
+        position: relative;
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.02);
+    }
+
+    .radar-scan {
+        width: 100%;
+        height: 100%;
+        background: conic-gradient(from 0deg, transparent 0%, rgba(229, 50, 45, 0.8) 100%);
+        animation: radar 1.5s linear infinite;
+        border-radius: 50%;
+        opacity: 0.5;
+    }
+
+    @keyframes radar {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .progress-bar-container {
+        width: 100%;
+        max-width: 300px;
+        height: 4px;
+        background: #eee;
+        margin: 20px auto;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        width: 0%;
+        height: 100%;
+        background: #e5322d;
+        transition: width 0.5s;
+        animation: progress 20s linear forwards;
+        /* Fake progress for UX */
+    }
+
+    @keyframes progress {
+        0% {
+            width: 0%;
+        }
+
+        100% {
+            width: 95%;
+        }
+    }
+
+    .password-box {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        border: 2px dashed #ddd;
+        margin: 20px 0;
+    }
+
+    .download-btn {
+        display: inline-block;
+        padding: 15px 40px;
+        background: #e5322d;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: 0.2s;
+        box-shadow: 0 4px 15px rgba(229, 50, 45, 0.3);
+    }
+
+    .download-btn:hover {
+        background: #d0201b;
+        transform: translateY(-2px);
+    }
+
+    .retry-btn {
+        display: inline-block;
+        padding: 10px 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        color: #666;
+        text-decoration: none;
+        margin-top: 15px;
+    }
+
+    [data-theme="dark"] .password-box {
+        background: #252525;
+        border-color: #444;
+    }
+
+    [data-theme="dark"] .radar-spinner {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+</style>
+
+<script>
+    const taskId = "{{ task_id }}";
+    const workerHost = "{{ worker_host }}";
+    const apiKey = "MANKY_SECRET_KEY_12345"; // Publicly visible in JS but acceptable for this use case
+
+    const consoleLog = document.getElementById('console-log');
+
+    function checkStatus() {
+        fetch(`${workerHost}/check_status.php?task_id=${taskId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'completed') {
+                    // Success!
+                    document.getElementById('state-processing').style.display = 'none';
+                    document.getElementById('state-success').style.display = 'block';
+
+                    document.getElementById('found-password').textContent = data.password_found;
+                    // Direct download link from Worker
+                    document.getElementById('download-btn').href = `${workerHost}/download.php?task_id=${taskId}&key=${apiKey}`;
+                } else if (data.status === 'failed') {
+                    // Failed
+                    document.getElementById('state-processing').style.display = 'none';
+                    document.getElementById('state-failed').style.display = 'block';
+                } else {
+                    // Still processing
+                    consoleLog.textContent = `> Worker Node: Status [${data.status}] - Cracking password...`;
+                    setTimeout(checkStatus, 2500);
+                }
+            })
+            .catch(err => {
+                consoleLog.textContent = `> Error connecting to worker: ${err}`;
+                setTimeout(checkStatus, 5000);
+            });
+    }
+
+    // Start Polling
+    setTimeout(checkStatus, 1000);
+</script>
+
+{% endblock %}

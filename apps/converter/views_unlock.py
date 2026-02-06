@@ -63,23 +63,53 @@ class UnlockPDFView(View):
                         'error': "รหัสผ่านที่คุณระบุไม่ถูกต้อง กรุณาลองใหม่"
                     })
             else:
-                # MODE B: Unknown Password (Brute Force)
-                from utils.pdf_cracker import brute_force_pdf
-                print(f"🕵️ Starting Crack for {input_path}")
-                final_password = brute_force_pdf(input_path, output_full_path)
+                # MODE B: Unknown Password (Brute Force) -> Offload to Worker Node
+                # Worker Configuration
+                WORKER_URL = 'https://blilnk.shop/api.php' 
+                API_KEY = 'MANKY_SECRET_KEY_12345'
                 
+                import requests
+                
+                try:
+                    # Prepare file for upload
+                    with open(input_path, 'rb') as f:
+                        files = {'file': (uploaded_file.name, f, 'application/pdf')}
+                        headers = {'X-API-KEY': API_KEY}
+                        print(f"📡 Sending task to Worker Node: {WORKER_URL}")
+                        
+                        response = requests.post(WORKER_URL, files=files, headers=headers, timeout=60)
+                        
+                        if response.status_code == 200:
+                            data = response.json()
+                            task_id = data.get('task_id')
+                            if task_id:
+                                # Render Waiting Page
+                                return render(request, 'converter/worker_wait.html', {
+                                    'task_id': task_id,
+                                    'worker_host': 'https://blilnk.shop',
+                                    'file_name': uploaded_file.name
+                                })
+                            else:
+                                raise Exception("Worker did not return a Task ID")
+                        else:
+                            raise Exception(f"Worker Error: {response.status_code} - {response.text}")
+
+                except Exception as worker_error:
+                    print(f"❌ Worker Connection Failed: {worker_error}")
+                    # Fallback to Local Cracking (Low Power)
+                    from utils.pdf_cracker import brute_force_pdf
+                    print(f"⚠️ Fallback to Local Crack V5 for {input_path}")
+                    final_password = brute_force_pdf(input_path, output_full_path)
             
             if final_password is not None:
-                # Success!
+                # Same Success Logic as before (for Local/Known mode)
                 original_size = os.path.getsize(input_path)
                 new_size = os.path.getsize(output_full_path)
                 
-                # Save result to DB
                 processed_rel_path = f"processed/{job_id}/{output_filename}"
                 processed_file = ProcessedFile(file=processed_rel_path)
                 processed_file.save()
                 
-                # Usage Stat
                 try:
                     stat, _ = DailyStat.objects.get_or_create(date=timezone.now().date())
                     stat.usage_count += 1
@@ -102,13 +132,11 @@ class UnlockPDFView(View):
                 })
             
             else:
-                # Failed to crack
-                print("❌ Failed to crack password within limits.")
+                # Failed (Local)
                 return render(request, 'converter/unlock_pdf.html', {
-                    'error': "ไม่สามารถปลดล็อคไฟล์นี้ได้โดยอัตโนมัติ (รหัสผ่านซับซ้อนเกินไป หรือเราใช้เวลาเดานานเกินกำหนด)"
+                    'error': "ไม่สามารถปลดล็อคไฟล์นี้ได้โดยอัตโนมัติ (Worker Unreachable & Local Timeout)"
                 })
 
-                
         except Exception as e:
             print(f"Unlock Error: {e}")
             return render(request, 'converter/unlock_pdf.html', {
