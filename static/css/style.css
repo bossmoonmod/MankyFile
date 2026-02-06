@@ -1021,3 +1021,173 @@ footer {
 [data-theme="dark"] .drop-text {
     color: #9ca3af;
 }
+
+/* --- Comprehensive Mobile Optimization --- */
+
+/* Tablet & Mobile (Max width 768px) */
+@media screen and (max-width: 768px) {
+
+    /* 1. Header Optimization */
+    header {
+        height: 60px;
+        /* ลดความสูง Navbar เล็กน้อย */
+        padding: 0 16px;
+    }
+
+    main {
+        margin-top: 60px;
+        /* ขยับ Main ให้พอดีกับ Header ใหม่ */
+        padding: 16px;
+    }
+
+    .logo {
+        font-size: 20px;
+        gap: 4px;
+    }
+
+    .logo svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    /* ปรับปุ่ม Theme/Lang ให้ประหยัดที่ */
+    .theme-switch {
+        width: 100px;
+        /* ลดความกว้าง */
+        height: 34px;
+        margin-left: 10px;
+    }
+
+    .switch-thumb {
+        width: 26px;
+        height: 26px;
+        left: 4px;
+    }
+
+    .theme-icon {
+        width: 14px;
+        height: 14px;
+    }
+
+    /* ซ่อน Text Day/Night ในมือถือเพื่อประหยัดที่ */
+    .switch-text {
+        display: none;
+    }
+
+    .lang-switcher {
+        margin-left: 8px;
+    }
+
+    .lang-select {
+        width: 50px;
+        /* เล็กลงนิดหน่อย */
+        height: 34px;
+        padding: 4px 10px;
+        font-size: 13px;
+    }
+
+    /* 2. Hero Section */
+    .hero-section {
+        padding: 30px 16px 20px;
+        /* ลด Padding */
+    }
+
+    .hero-title {
+        font-size: 28px;
+        /* ลดขนาด Font หัวข้อ */
+        line-height: 1.3;
+        margin-bottom: 12px;
+    }
+
+    .hero-subtitle {
+        font-size: 16px;
+        /* ลดขนาดคำอธิบาย */
+        margin-bottom: 20px;
+    }
+
+    /* 3. Tool Cards Grid */
+    .tools-grid {
+        grid-template-columns: 1fr;
+        /* Stack เป็นแนวตั้ง 1 แถว */
+        gap: 16px;
+        padding: 10px 0;
+    }
+
+    .tool-card {
+        padding: 20px;
+        /* ลด Padding การ์ด */
+        align-items: center;
+        /* จัดกึ่งกลางดูสวยกว่าในมือถือ */
+        text-align: center;
+        width: 100%;
+        box-sizing: border-box;
+        /* สำคัญ: ป้องกัน padding ดัน width เกินจอ */
+    }
+
+    .tool-card h3 {
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+
+    .tool-card p {
+        font-size: 13px;
+    }
+
+    /* 4. Tool Interface (Convert Tool Page) */
+    .tool-container {
+        padding: 30px 16px;
+    }
+
+    .tool-header h1 {
+        font-size: 28px;
+        word-wrap: break-word;
+        /* ป้องกันคำยาวล้นจอ */
+    }
+
+    .tool-header p {
+        font-size: 16px;
+        margin-bottom: 30px;
+    }
+
+    /* Large Upload Button */
+    .btn-upload-big {
+        width: 100%;
+        justify-content: center;
+        font-size: 18px;
+        padding: 16px;
+    }
+
+    .btn-upload-big span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .upload-area {
+        max-width: 100%;
+        padding: 0 10px;
+    }
+
+    /* Footer */
+    footer {
+        padding: 30px 16px;
+        font-size: 12px;
+    }
+}
+
+/* Small Mobile (Max width 360px) - หน้าจอเล็กมาก เช่น iPhone SE/5/Fold Folded */
+@media screen and (max-width: 360px) {
+    .theme-switch {
+        display: none;
+        /* ซ่อน Switch เลยถ้าจอเล็กมากจริงๆ */
+    }
+
+    .logo span {
+        display: none;
+        /* ซ่อนชื่อ MankyFile */
+    }
+
+    .lang-switcher {
+        margin-left: auto;
+    }
+}
