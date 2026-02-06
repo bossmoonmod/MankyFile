@@ -3,8 +3,8 @@
 {% block content %}
 <div class="tool-container">
     <div class="tool-header">
-        <h1>{{ title }}</h1>
-        <p>{{ subtitle }}</p>
+        <h1 id="tool-title-heading">{{ title }}</h1>
+        <p id="tool-subtitle-text">{{ subtitle }}</p>
     </div>
 
     <!-- Error Message Display -->
@@ -27,10 +27,10 @@
             {% endif %}
 
             <a href="#" id="select-files-btn" class="btn-upload-big">
-                <span>เลือกไฟล์ {{ file_type }}</span>
+                <span data-i18n="btn_select_file">เลือกไฟล์ {{ file_type }}</span>
             </a>
 
-            <div class="drop-text">หรือวางไฟล์ {{ file_type }} ที่นี่</div>
+            <div class="drop-text" data-i18n="drag_drop_hint">หรือวางไฟล์ {{ file_type }} ที่นี่</div>
 
             <!-- Manual Submit Button (Hidden by default, shown if auto-submit fails or files selected) -->
             <button type="submit" id="manual-submit-btn" class="btn btn-primary"
