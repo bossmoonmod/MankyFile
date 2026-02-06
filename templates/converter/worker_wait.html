@@ -19,8 +19,13 @@
             </div>
 
             <p style="font-size: 0.8rem; color: #666; margin-top: 20px;">
+                {% if task_type %}
+                ระบบกำลังประมวลผลเอกสารของคุณอย่างละเอียด <br>
+                กรุณารอสักครู่... เรากำลังจัดเตรียมไฟล์ที่ดีที่สุดสำหรับคุณ
+                {% else %}
                 ระบบกำลังใช้ Server พลังสูงในการค้นหารหัสผ่าน <br>
                 กรุณาอย่าปิดหน้านี้ (ระบบจะทำงานจนกว่าจะปลดล็อคสำเร็จ)
+                {% endif %}
             </p>
         </div>
 
@@ -207,7 +212,7 @@
     const taskId = "{{ task_id }}";
     const workerHost = "{{ worker_host }}";
     const apiKey = "MANKY_SECRET_KEY_12345";
-    const taskType = "{{ task_type }}"; // 'PowerPoint', 'Excel', or empty for Unlock
+    const taskType = "{{ task_type|default_if_none:'' }}"; // 'PowerPoint', 'Excel', 'WORD', 'PDF', or empty for Unlock
     const originalFileName = "{{ file_name }}"; // Need to pass this from view ideally
 
     const consoleLog = document.getElementById('console-log');
@@ -243,6 +248,8 @@
                         let ext = '.pdf';
                         if (taskType === 'PowerPoint') ext = '.pptx';
                         if (taskType === 'Excel') ext = '.xlsx';
+                        if (taskType === 'WORD') ext = '.docx';
+                        if (taskType === 'PDF') ext = '.pdf';
 
                         document.getElementById('file-ext-label').innerText = ext;
                         document.getElementById('success-subtext').innerText = `ไฟล์ ${taskType} ของคุณถูกสร้างเรียบร้อยแล้ว`;
