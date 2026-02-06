@@ -7,8 +7,9 @@
     <!-- Section 1: Hero & Tool -->
     <div class="hero-section">
         <div class="hero-text">
-            <h1>ย่อลิงก์ (URL Shortener)</h1>
-            <p>ย่อลิงก์ยาวๆ ให้สั้น กระชับ แชร์ง่าย <br>พร้อมระบบความปลอดภัยและหมดอายุอัตโนมัติ</p>
+            <h1 id="tool-title-heading">ย่อลิงก์ (URL Shortener)</h1>
+            <p id="tool-subtitle-text">ย่อลิงก์ยาวๆ ให้สั้น กระชับ แชร์ง่าย <br>พร้อมระบบความปลอดภัยและหมดอายุอัตโนมัติ
+            </p>
         </div>
 
         <!-- Main Form Card -->
@@ -20,7 +21,8 @@
                 <div class="input-container">
                     <div class="input-icon">🔗</div>
                     <input type="url" id="url-input" name="url" placeholder="วางลิงก์ยาวของคุณที่นี่ (https://...)"
-                        class="custom-input" required value="{{ original_url|default:'' }}">
+                        class="custom-input" required value="{{ original_url|default:'' }}"
+                        data-i18n-placeholder="shorten_placeholder">
                 </div>
 
                 <!-- Expiry Options -->
@@ -38,7 +40,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn-shorten">
+                <button type="submit" class="btn-shorten" data-i18n="shorten_btn">
                     ย่อลิงก์เลย! ✨
                 </button>
             </form>

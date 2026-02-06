@@ -4,8 +4,8 @@
 {% block content %}
 <div class="tool-container">
     <div class="hero-section">
-        <h1>ปลดล็อค PDF (Unlock PDF)</h1>
-        <p>ปลดรหัสผ่านไฟล์ PDF อัตโนมัติ รองรับทั้งรหัสวันเกิดและ PIN</p>
+        <h1 id="tool-title-heading">ปลดล็อค PDF (Unlock PDF)</h1>
+        <p id="tool-subtitle-text">ปลดรหัสผ่านไฟล์ PDF อัตโนมัติ รองรับทั้งรหัสวันเกิดและ PIN</p>
     </div>
 
     <!-- MAIN FORM WRAPPER -->
@@ -23,14 +23,14 @@
 
                 <div class="upload-graphics">
                     <div class="folder-icon">📂</div>
-                    <h3 id="status-text">คลิกเลือกไฟล์ PDF หรือวางที่นี่</h3>
-                    <p id="sub-status">รองรับไฟล์ที่มีรหัสผ่าน</p>
+                    <h3 id="status-text" data-i18n="unlock_upload_hint">คลิกเลือกไฟล์ PDF หรือวางที่นี่</h3>
+                    <p id="sub-status" data-i18n="unlock_sub_status">รองรับไฟล์ที่มีรหัสผ่าน</p>
                 </div>
             </label>
 
             <!-- Options Panel (Hidden until file selected) -->
             <div id="hidden-options" class="options-area">
-                <div class="separator"><span>ตั้งค่าการปลดล็อค</span></div>
+                <div class="separator"><span data-i18n="unlock_settings_label">ตั้งค่าการปลดล็อค</span></div>
 
                 <div class="radio-group">
                     <!-- Mode: Unknown (Default) -->
@@ -38,8 +38,8 @@
                         <input type="radio" name="mode" value="unknown" checked>
                         <div class="card-icon">🕵️</div>
                         <div class="card-info">
-                            <b>จำรหัสไม่ได้</b>
-                            <small>ระบบช่วยสุ่มหาให้ (แนะนำ)</small>
+                            <b data-i18n="unlock_mode_unknown_title">จำรหัสไม่ได้</b>
+                            <small data-i18n="unlock_mode_unknown_desc">ระบบช่วยสุ่มหาให้ (แนะนำ)</small>
                         </div>
                     </label>
 
@@ -48,8 +48,8 @@
                         <input type="radio" name="mode" value="known">
                         <div class="card-icon">🔑</div>
                         <div class="card-info">
-                            <b>รู้รหัสผ่าน</b>
-                            <small>กรอกเพื่อปลดทันที</small>
+                            <b data-i18n="unlock_mode_known_title">รู้รหัสผ่าน</b>
+                            <small data-i18n="unlock_mode_known_desc">กรอกเพื่อปลดทันที</small>
                         </div>
                     </label>
                 </div>
@@ -57,10 +57,11 @@
                 <!-- Input for known password -->
                 <div id="passport-input-box" style="display:none;">
                     <input type="text" name="password" id="password-input" class="magic-input"
-                        placeholder="กรอกรหัสผ่าน (เช่น 1234, วันเกิด)">
+                        placeholder="กรอกรหัสผ่าน (เช่น 1234, วันเกิด)"
+                        data-i18n-placeholder="unlock_password_placeholder">
                 </div>
 
-                <button type="submit" class="start-btn">เริ่มปลดล็อค 🔓</button>
+                <button type="submit" class="start-btn" data-i18n="unlock_btn">เริ่มปลดล็อค 🔓</button>
             </div>
         </div>
 

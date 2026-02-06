@@ -3,6 +3,10 @@
 
 {% block content %}
 <div class="qr-tool-container">
+    <div class="hero-section" style="text-align: center; margin-bottom: 40px;">
+        <h1 id="tool-title-heading">สร้าง QR Code</h1>
+        <p id="tool-subtitle-text">สร้าง QR Code ฟรีจากลิงก์ ข้อความ หรือเบอร์โทรศัพท์ พร้อมปรับแต่งสีได้ตามใจชอบ</p>
+    </div>
 
     <!-- Main Grid: Left (Controls) & Right (Preview) -->
     <div class="qr-layout">
@@ -12,13 +16,13 @@
 
             <!-- 1. Top Navigation Tabs -->
             <div class="qr-nav-tabs">
-                <div class="nav-item active" onclick="selectType(this, 'url')">URL</div>
-                <div class="nav-item" onclick="selectType(this, 'text')">ข้อความ</div>
-                <div class="nav-item" onclick="selectType(this, 'email')">Email</div>
-                <div class="nav-item" onclick="selectType(this, 'tel')">เบอร์โทร</div>
-                <div class="nav-item" onclick="selectType(this, 'sms')">SMS</div>
-                <div class="nav-item" onclick="selectType(this, 'whatsapp')">Whatsapp</div>
-                <div class="nav-item" onclick="selectType(this, 'wifi')">WIFI</div>
+                <div class="nav-item active" onclick="selectType(this, 'url')" data-i18n="qr_nav_url">URL</div>
+                <div class="nav-item" onclick="selectType(this, 'text')" data-i18n="qr_nav_text">ข้อความ</div>
+                <div class="nav-item" onclick="selectType(this, 'email')" data-i18n="qr_nav_email">Email</div>
+                <div class="nav-item" onclick="selectType(this, 'tel')" data-i18n="qr_nav_tel">เบอร์โทร</div>
+                <div class="nav-item" onclick="selectType(this, 'sms')" data-i18n="qr_nav_sms">SMS</div>
+                <div class="nav-item" onclick="selectType(this, 'whatsapp')" data-i18n="qr_nav_whatsapp">Whatsapp</div>
+                <div class="nav-item" onclick="selectType(this, 'wifi')" data-i18n="qr_nav_wifi">WIFI</div>
             </div>
 
             <!-- 2. Main Form Card -->
@@ -30,7 +34,7 @@
                     <!-- Colors Section -->
                     <div class="form-row">
                         <div class="form-col">
-                            <label>สีของตัวอักษร</label>
+                            <label data-i18n="qr_fill_color">สีของตัวอักษร</label>
                             <div class="color-input-wrapper">
                                 <input type="color" name="fill_color" value="#000000"
                                     oninput="updateColorText(this, 'fill-text')">
@@ -38,7 +42,7 @@
                             </div>
                         </div>
                         <div class="form-col">
-                            <label>สีของพื้นหลัง</label>
+                            <label data-i18n="qr_back_color">สีของพื้นหลัง</label>
                             <div class="color-input-wrapper">
                                 <input type="color" name="back_color" value="#ffffff"
                                     oninput="updateColorText(this, 'back-text')">
@@ -50,7 +54,7 @@
                     <!-- Logo Section (New UI) -->
                     <div class="form-row" style="margin-top: 10px;">
                         <div class="form-col">
-                            <label>เพิ่มโลโก้ (Logo)</label>
+                            <label data-i18n="qr_logo_label">เพิ่มโลโก้ (Logo)</label>
                             <div class="logo-upload-box" onclick="document.getElementById('logo-input').click()">
                                 <input type="file" name="logo" id="logo-input" accept="image/*" style="display: none;"
                                     onchange="previewLogo(this)">
@@ -64,7 +68,7 @@
                                             <line x1="12" y1="3" x2="12" y2="15" />
                                         </svg>
                                     </div>
-                                    <span id="logo-text">คลิกเพื่ออัพโหลดรูปภาพ</span>
+                                    <span id="logo-text" data-i18n="qr_logo_hint">คลิกเพื่ออัพโหลดรูปภาพ</span>
                                     <p style="font-size: 0.8rem; color: #999; margin-top: 5px;">รองรับ JPG, PNG
                                         (แนะนำพื้นใส)</p>
                                 </div>
@@ -88,7 +92,7 @@
                                     <line x1="12" y1="8" x2="12" y2="16" />
                                     <line x1="8" y1="12" x2="16" y2="12" />
                                 </svg>
-                                ปรับแต่งการออกแบบ
+                                <span data-i18n="qr_design_label">ปรับแต่งการออกแบบ</span>
                             </span>
                             <span class="accordion-icon" id="acc-icon">+</span>
                         </div>
@@ -96,7 +100,8 @@
                         <div class="accordion-content" id="design-content">
                             <!-- Pattern Style -->
                             <div class="design-section">
-                                <label class="section-label">รูปทรงลายพื้นหลัง (Pattern)</label>
+                                <label class="section-label" data-i18n="qr_pattern_label">รูปทรงลายพื้นหลัง
+                                    (Pattern)</label>
                                 <div class="style-grid">
                                     <!-- Square -->
                                     <label class="style-option">
@@ -511,7 +516,7 @@
                     </div>
 
                     <!-- Submit Button -->
-                    <button type="submit" class="btn-create">
+                    <button type="submit" class="btn-create" data-i18n="qr_btn_create">
                         สร้าง QR CODE
                     </button>
                 </form>
