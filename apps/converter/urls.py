@@ -1,12 +1,5 @@
 from django.urls import path
-from .views import (
-    IndexView, ResultView, MergePDFView, SplitPDFView,
-    WordToPDFView, MergeWordView, ArrangeWordView, ArrangePDFView, 
-    DownloadFileView, CompressPDFView, PDFToPowerPointView, 
-    PDFToExcelView, PowerPointToPDFView, TermsView, PrivacyView,
-    download_file, QRCodeGeneratorView, DeleteInstantView,
-    ShortenURLView, RedirectShortLinkView, SystemCleanupView, UnlockPDFView
-)
+from . import views, views_unlock, views_merge, views_split_pdf
 from .api_views import ProgressAPIView, ProgressTestAPIView
 from .async_views import PDFToWordAsyncView
 from . import views_unlock  # Import the module explicitly

@@ -244,7 +244,8 @@ class WordToPDFView(View):
         import requests
         from django.conf import settings
         
-        print("DEBUG: WordToPDFView POST - Starting...")
+        # DEBUG: Confirm execution of New Logic
+        print("🚀 Executing WordToPDFView POST (Worker Node Logic)")
         
         try:
             if 'files' in request.FILES:
@@ -254,19 +255,18 @@ class WordToPDFView(View):
             else:
                 return redirect('converter:index')
             
-            # Save upload locally first
+            # 1. Save locally
             upload_instance = UploadedFile(file=uploaded_file)
             upload_instance.save()
             input_path = upload_instance.file.path
             
-            # Worker Configuration
+            # 2. Config
             WORKER_URL = 'https://blilnk.shop/api.php'
             API_KEY = 'MANKY_SECRET_KEY_12345'
             
-            # Send to Worker
+            # 3. Dispatch to Worker
             print(f"📡 Dispatching Word->PDF to Worker: {WORKER_URL}")
             with open(input_path, 'rb') as f:
-                # Word files (doc/docx) mime type
                 mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
                 files = {'file': (uploaded_file.name, f, mime)}
                 headers = {'X-API-KEY': API_KEY}
