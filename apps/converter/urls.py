@@ -9,6 +9,7 @@ from .views import (
 )
 from .api_views import ProgressAPIView, ProgressTestAPIView
 from .async_views import PDFToWordAsyncView
+from . import views_unlock  # Import the module explicitly
 from django.views.generic import TemplateView
 
 app_name = 'converter'
