@@ -26,28 +26,56 @@
 
         <!-- Success State -->
         <div id="state-success" style="display: none;">
-            <div class="success-icon">🔓</div>
-            <h1 style="color: #28a745;">ปลดล็อคสำเร็จ!</h1>
 
-            <div class="password-box">
-                <span style="color: #888;">รหัสผ่านที่ค้นพบ:</span>
-                <h2 id="found-password" style="font-family: monospace; color: #e5322d; margin: 10px 0;">...</h2>
+            <!-- Unlock Mode UI -->
+            <div id="ui-unlock" style="display: none;">
+                <div class="success-icon">🔓</div>
+                <h1 style="color: #28a745;">ปลดล็อคสำเร็จ!</h1>
+                <div class="password-box">
+                    <span style="color: #888;">รหัสผ่านที่ค้นพบ:</span>
+                    <h2 id="found-password" style="font-family: monospace; color: #e5322d; margin: 10px 0;">...</h2>
+                </div>
             </div>
 
-            <a id="download-btn" href="#" class="download-btn" target="_blank">
-                ดาวน์โหลดไฟล์ PDF 📥
-            </a>
+            <!-- Conversion Mode UI -->
+            <div id="ui-convert" style="display: none;">
+                <h1 style="font-size: 2.5rem; margin-bottom: 10px;">ประมวลผลไฟล์สำเร็จ!</h1>
+                <p style="color: #ccc; margin-bottom: 30px;" id="success-subtext">ไฟล์ของคุณถูกสร้างเรียบร้อยแล้ว</p>
+
+                <div
+                    style="margin-bottom: 20px; text-align: left; display: inline-block; max-width: 400px; width: 100%;">
+                    <label
+                        style="color: #aaa; font-size: 0.9rem; margin-bottom: 5px; display: block;">ตั้งชื่อไฟล์ที่ต้องการบันทึก:</label>
+                    <div style="display: flex;">
+                        <input type="text" id="filename-input" value="processed_document"
+                            style="flex: 1; padding: 10px; border-radius: 5px 0 0 5px; border: 1px solid #444; background: #222; color: white; outline: none;">
+                        <span id="file-ext-label"
+                            style="padding: 10px; background: #333; color: #aaa; border: 1px solid #444; border-left: none; border-radius: 0 5px 5px 0;">.pptx</span>
+                    </div>
+                </div>
+            </div>
+
             <br>
-            <a href="{% url 'converter:unlock_pdf' %}"
-                style="display: inline-block; margin-top: 20px; color: #888;">ทำรายการใหม่</a>
+
+            <a id="download-btn" href="#" class="download-btn">
+                ดาวน์โหลดไฟล์
+            </a>
+
+            <div style="margin-top: 30px; display: flex; justify-content: center; gap: 15px;">
+                <a href="{% url 'converter:index' %}" class="btn btn-outline-secondary"
+                    style="border-radius: 50px; padding: 8px 20px; color: #aaa; border-color: #555;">กลับหน้าหลัก</a>
+                <a href="{% url 'converter:index' %}" class="btn btn-outline-secondary"
+                    style="border-radius: 50px; padding: 8px 20px; color: #aaa; border-color: #555;">ลบไฟล์ทันที</a>
+            </div>
+
         </div>
 
         <!-- Failed State -->
         <div id="state-failed" style="display: none;">
             <div class="fail-icon">❌</div>
-            <h2>ไม่สามารถปลดล็อคได้</h2>
-            <p>ขออภัย ระบบไม่สามารถหารหัสผ่านของไฟล์นี้ได้ภายในเวลาที่กำหนด</p>
-            <a href="{% url 'converter:unlock_pdf' %}" class="retry-btn">ลองใหม่อีกครั้ง</a>
+            <h2 id="fail-title">ไม่สามารถปลดล็อคได้</h2>
+            <p id="fail-desc">ขออภัย ระบบไม่สามารถหารหัสผ่านของไฟล์นี้ได้ภายในเวลาที่กำหนด</p>
+            <a href="javascript:history.back()" class="retry-btn">ลองใหม่อีกครั้ง</a>
         </div>
 
         <!-- Error Message -->
@@ -141,11 +169,13 @@
         font-weight: bold;
         transition: 0.2s;
         box-shadow: 0 4px 15px rgba(229, 50, 45, 0.3);
+        font-size: 1.2rem;
     }
 
     .download-btn:hover {
         background: #d0201b;
         transform: translateY(-2px);
+        color: white;
     }
 
     .retry-btn {
@@ -166,6 +196,11 @@
     [data-theme="dark"] .radar-spinner {
         border-color: rgba(255, 255, 255, 0.1);
     }
+
+    /* Input Focus */
+    #filename-input:focus {
+        border-color: #e5322d !important;
+    }
 </style>
 
 <script>
@@ -173,8 +208,22 @@
     const workerHost = "{{ worker_host }}";
     const apiKey = "MANKY_SECRET_KEY_12345";
     const taskType = "{{ task_type }}"; // 'PowerPoint', 'Excel', or empty for Unlock
+    const originalFileName = "{{ file_name }}"; // Need to pass this from view ideally
 
     const consoleLog = document.getElementById('console-log');
+    const filenameInput = document.getElementById('filename-input');
+    const downloadBtn = document.getElementById('download-btn');
+
+    // Remove extension from filename if present
+    let defaultName = originalFileName.substring(0, originalFileName.lastIndexOf('.')) || originalFileName;
+    filenameInput.value = defaultName;
+
+    function updateDownloadLink() {
+        let name = filenameInput.value;
+        downloadBtn.href = `${workerHost}/download.php?task_id=${taskId}&key=${apiKey}&name=${encodeURIComponent(name)}`;
+    }
+
+    filenameInput.addEventListener('input', updateDownloadLink);
 
     function checkStatus() {
         const statusUrl = "{% url 'converter:check_worker_status' %}";
@@ -188,25 +237,35 @@
 
                     if (taskType) {
                         // CONVERSION MODE
-                        document.querySelector('#state-success h1').innerText = "แปลงไฟล์สำเร็จ!";
-                        document.querySelector('.password-box').style.display = 'none';
-                        document.getElementById('download-btn').innerText = `ดาวน์โหลดไฟล์ ${taskType} 📥`;
+                        document.getElementById('ui-convert').style.display = 'block';
+                        document.getElementById('ui-unlock').style.display = 'none';
+
+                        let ext = '.pdf';
+                        if (taskType === 'PowerPoint') ext = '.pptx';
+                        if (taskType === 'Excel') ext = '.xlsx';
+
+                        document.getElementById('file-ext-label').innerText = ext;
+                        document.getElementById('success-subtext').innerText = `ไฟล์ ${taskType} ของคุณถูกสร้างเรียบร้อยแล้ว`;
+                        document.getElementById('download-btn').innerText = `ดาวน์โหลด ${taskType}`;
                     } else {
                         // UNLOCK MODE
+                        document.getElementById('ui-convert').style.display = 'none';
+                        document.getElementById('ui-unlock').style.display = 'block';
                         document.getElementById('found-password').textContent = data.password_found;
+                        document.getElementById('download-btn').innerText = `ดาวน์โหลดไฟล์ PDF 🔓`;
                     }
 
-                    // Direct download link
-                    document.getElementById('download-btn').href = `${workerHost}/download.php?task_id=${taskId}&key=${apiKey}`;
+                    updateDownloadLink(); // Initial Link Set
+
                 } else if (data.status === 'failed') {
                     // Failed
                     document.getElementById('state-processing').style.display = 'none';
-                    // Check if converting or unlocking to show correct error
                     if (taskType) {
                         document.getElementById('error-title').innerText = "แปลงไฟล์ไม่สำเร็จ";
                         document.getElementById('error-desc').innerText = "เกิดข้อผิดพลาดในการแปลงไฟล์ (อาจเกิดจากไฟล์เสียหาย)";
                         document.getElementById('error-message').style.display = 'block';
                     } else {
+                        document.getElementById('fail-title').innerText = "ไม่สามารถปลดล็อคได้";
                         document.getElementById('state-failed').style.display = 'block';
                     }
                 } else {
