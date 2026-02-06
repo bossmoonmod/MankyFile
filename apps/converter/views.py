@@ -244,6 +244,8 @@ class WordToPDFView(View):
         import requests
         from django.conf import settings
         
+        print("DEBUG: WordToPDFView POST - Starting...")
+        
         try:
             if 'files' in request.FILES:
                 uploaded_file = request.FILES.getlist('files')[0]
@@ -699,155 +701,60 @@ class WordToPDFView(View):
         return render(request, 'converter/tool_base.html', context)
 
     def post(self, request):
-        files = request.FILES.getlist('files')
-        if not files:
-            return redirect('converter:word_to_pdf')
-        
-        # For now, convert only the first file
-        uploaded_file = UploadedFile.objects.create(
-            file=files[0],
-            original_filename=files[0].name
-        )
+        import requests
+        from django.conf import settings
         
         try:
-            import subprocess
-            import os
-            from django.conf import settings
+            if 'files' in request.FILES:
+                uploaded_file = request.FILES.getlist('files')[0]
+            elif 'file' in request.FILES:
+                uploaded_file = request.FILES['file']
+            else:
+                return redirect('converter:index')
             
-            input_path = uploaded_file.file.path
-            output_filename = f"converted_{uuid.uuid4()}.pdf"
-            output_rel_path = f"processed/{output_filename}"
-            output_full_path = os.path.join(settings.MEDIA_ROOT, 'processed', output_filename)
+            # Save upload locally first
+            upload_instance = UploadedFile(file=uploaded_file)
+            upload_instance.save()
+            input_path = upload_instance.file.path
             
-            os.makedirs(os.path.dirname(output_full_path), exist_ok=True)
+            # Worker Configuration
+            WORKER_URL = 'https://blilnk.shop/api.php'
+            API_KEY = 'MANKY_SECRET_KEY_12345'
             
-            # V.2 Strategy: Try CloudConvert API first (Direct REST Mode)
-            try:
-                # The service now uses 'requests' internally, so no external SDK import error.
-                print("DEBUG: Importing CloudConvertService (New)...")
-                from utils.cc_v2_api import CloudConvertService
-                print(f"DEBUG: Service Imported successfully: {CloudConvertService}")
-                print("Attempting CloudConvert V2 API (Direct REST)...")
+            # Send to Worker
+            print(f"📡 Dispatching Word->PDF to Worker: {WORKER_URL}")
+            with open(input_path, 'rb') as f:
+                # Word files (doc/docx) mime type
+                mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                files = {'file': (uploaded_file.name, f, mime)}
+                headers = {'X-API-KEY': API_KEY}
+                data = {'type': 'word-to-pdf'}
                 
-                converter = CloudConvertService()
-                converter.convert(
-                    input_file_path=input_path, 
-                    output_format='pdf',
-                    export_path=output_full_path
-                )
-                print("CloudConvert V2 API Success!")
+                target_url = f"{WORKER_URL}?key={API_KEY}"
+                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=60, verify=False)
                 
-            except Exception as api_error:
-                print(f"CloudConvert API Failed: {api_error}")
-                
-                # Check if we are on a Linux server (Production) where LibreOffice is likely missing
-                # If so, show the API error directly instead of misleading "LibreOffice not found"
-                is_linux = sys.platform != 'win32'
-                if is_linux:
-                     raise Exception(f"CloudConvert Error: {str(api_error)}")
-
-                print("Falling back to local LibreOffice Engine...")
-                
-                # ... Fallback to original LibreOffice logic (Only for Local/Windows) ...
-                
-                # Try to find LibreOffice installation (Windows and Linux)
-                libreoffice_paths = [
-                    # Windows paths
-                    r"C:\Program Files\LibreOffice\program\soffice.exe",
-                    r"C:\Program Files (x86)\LibreOffice\program\soffice.exe",
-                    r"C:\Program Files\LibreOffice 7\program\soffice.exe",
-                    r"C:\Program Files\LibreOffice 24\program\soffice.exe",
-                    r"C:\Program Files\LibreOffice 25\program\soffice.exe",
-                    # Linux paths (for production server)
-                    "/usr/bin/libreoffice",
-                    "/usr/bin/soffice",
-                    "/snap/bin/libreoffice",
-                    "/opt/libreoffice/program/soffice",
-                ]
-                
-                soffice_path = None
-                for path in libreoffice_paths:
-                    if os.path.exists(path):
-                        soffice_path = path
-                        print(f"Found LibreOffice at: {path}")
-                        break
-                
-                if not soffice_path:
-                    # Try using 'which' command on Linux
-                    try:
-                        result = subprocess.run(['which', 'libreoffice'], capture_output=True, text=True)
-                        if result.returncode == 0 and result.stdout.strip():
-                            soffice_path = result.stdout.strip()
-                            print(f"Found LibreOffice via 'which': {soffice_path}")
-                    except:
-                        pass
-                
-                if not soffice_path:
-                    # Reraise the original API error if local engine also fails
-                    raise Exception(f"CloudConvert failed ({str(api_error)}) and LibreOffice not found.")
-                
-                # Convert using LibreOffice
-                cmd = [
-                    soffice_path,
-                    '--headless',
-                    '--convert-to',
-                    'pdf',
-                    '--outdir',
-                    os.path.dirname(output_full_path),
-                    input_path
-                ]
-                
-                print(f"Running LibreOffice command: {' '.join(cmd)}")
-                result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-                
-                if result.returncode != 0:
-                    raise Exception(f"LibreOffice conversion failed: {result.stderr}")
-                
-                # LibreOffice creates file with same name but .pdf extension
-                temp_output = os.path.join(
-                    os.path.dirname(output_full_path),
-                    os.path.splitext(os.path.basename(input_path))[0] + '.pdf'
-                )
-                
-                # Rename to our desired filename
-                if os.path.exists(temp_output):
-                    # Remove placeholder if created by touch or previous run
-                    if os.path.exists(output_full_path):
-                        os.remove(output_full_path) 
-                    os.rename(temp_output, output_full_path)
+                if response.status_code == 200:
+                    res_data = response.json()
+                    task_id = res_data.get('task_id')
+                    if task_id:
+                        return render(request, 'converter/worker_wait.html', {
+                            'task_id': task_id,
+                            'worker_host': 'https://blilnk.shop',
+                            'file_name': uploaded_file.name,
+                            'task_type': 'PDF'
+                        })
+                    else:
+                        raise Exception("Worker did not return Task ID")
                 else:
-                    raise Exception("Converted PDF file not found")
-            
-            # Save processed file
-            processed_file = ProcessedFile(file=output_rel_path)
-            processed_file.save()
-            
-            # Track usage statistics
-            try:
-                stat, _ = DailyStat.objects.get_or_create(date=timezone.now().date())
-                stat.usage_count += 1
-                stat.save()
-            except Exception as e:
-                print(f"Stats error: {e}")
-            
-            return render(request, 'converter/result.html', {
-                'download_url': processed_file.file.url,
-                'file_id': processed_file.id,
-                'file_type': 'PDF'
-            })
-            
-        except subprocess.TimeoutExpired:
-            print("LibreOffice conversion timeout")
-            from django.contrib import messages
-            messages.error(request, 'การแปลงไฟล์ใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง')
-            return redirect('converter:word_to_pdf')
+                    raise Exception(f"Worker Error: {response.status_code} - {response.text}")
+
         except Exception as e:
-            print(f"Word to PDF conversion error: {e}")
-            import traceback
-            traceback.print_exc()
-            from django.contrib import messages
-            messages.error(request, f'เกิดข้อผิดพลาดในการแปลงไฟล์: {str(e)}')
-            return redirect('converter:word_to_pdf')
+            print(f"Error converting Word to PDF: {e}")
+            context = {
+                'error': f"เกิดข้อผิดพลาด: {str(e)}",
+                'title': 'Word เป็น PDF'
+            }
+            return render(request, 'converter/tool_base.html', context)
 
 class MergeWordView(View):
     def get(self, request):
