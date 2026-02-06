@@ -82,102 +82,150 @@
 
             <!-- Navigation Links -->
             <nav class="nav-links">
-                <a href="{% url 'converter:merge_pdf' %}">รวม PDF</a>
-                <a href="{% url 'converter:split_pdf' %}">แยก PDF</a>
-                <a href="{% url 'converter:compress_pdf' %}">บีบอัด PDF</a>
-                <a href="{% url 'converter:pdf_to_word' %}">แปลง PDF</a>
-                <a href="{% url 'converter:index' %}">เครื่องมือ PDF ทั้งหมด</a>
-
-                <!-- Daily Usage Stats (Moved inside nav for mobile Layout) -->
-                <div class="usage-badge">
-                    <span>ใช้งานวันนี้:</span>
-                    <span class="usage-count">{{ daily_usage|default:0 }}</span>
-                </div>
+                <a href="{% url 'converter:merge_pdf' %}" data-i18n="nav_merge">รวม PDF</a>
+                <a href="{% url 'converter:split_pdf' %}" data-i18n="nav_split">แยก PDF</a>
+                <a href="{% url 'converter:pdf_to_word' %}" data-i18n="nav_pdf_word">PDF เป็น Word</a>
+                <a href="{% url 'converter:word_to_pdf' %}" data-i18n="nav_word_pdf">Word เป็น PDF</a>
+                <a href="{% url 'converter:unlock_pdf' %}" data-i18n="nav_unlock">ปลดล็อค PDF</a>
             </nav>
 
-
+            <!-- Mobile Menu Links -->
+            <div class="mobile-menu">
+                <a href="{% url 'converter:merge_pdf' %}" data-i18n="nav_merge">รวม PDF</a>
+                <a href="{% url 'converter:split_pdf' %}" data-i18n="nav_split">แยก PDF</a>
+                <a href="{% url 'converter:pdf_to_word' %}" data-i18n="nav_pdf_word">PDF เป็น Word</a>
+                <a href="{% url 'converter:word_to_pdf' %}" data-i18n="nav_word_pdf">Word เป็น PDF</a>
+                <a href="{% url 'converter:unlock_pdf' %}" data-i18n="nav_unlock">ปลดล็อค PDF</a>
+            </div>
         </div>
     </header>
 
-    <!-- Messages Display -->
-    {% if messages %}
-    <div class="messages-container">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-            <span class="alert-text">{{ message }}</span>
-            <button class="alert-close" onclick="this.parentElement.remove()">✕</button>
+    <main class="main-content">
+        <!-- Messages -->
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="alert {{ message.tags }}">
+                {{ message }}
+                <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+        {% endif %}
 
-    <main>
-        {% block content %}
-        {% endblock %}
+        {% block content %}{% endblock %}
     </main>
 
-    <footer>
-        <p>&copy; {% now "Y" %} MankyFile Project • <a href="{% url 'converter:terms' %}"
-                style="color:#666;text-decoration:none;">เงื่อนไขการใช้งาน</a> •
-            <a href="{% url 'converter:privacy' %}" style="color:#666;text-decoration:none;">นโยบายความเป็นส่วนตัว</a>
-        </p>
+    <footer class="footer">
+        <p data-i18n="footer_text">© 2024 MankyFile - จัดการไฟล์ PDF ง่ายๆ ด้วยตัวคุณเอง</p>
     </footer>
 
     <script src="{% static 'js/upload_handler.js' %}"></script>
     <script>
-        // Auto-dismiss messages after 5 seconds
-        document.addEventListener('DOMContentLoaded', function () {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function (alert) {
-                setTimeout(function () {
-                    alert.style.animation = 'slideOut 0.3s ease-out';
-                    setTimeout(function () {
-                        alert.remove();
-                    }, 300);
-                }, 5000);
+        // --- Dark Mode Logic ---
+        const themeToggle = document.getElementById('theme-toggle');
+        const langSelect = document.querySelector('.lang-select');
+
+        // Check Saved Theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
+        // Initial Icon State
+        if (savedTheme === 'dark') {
+            themeToggle.classList.add('active');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeToggle.classList.toggle('active');
+        });
+
+        // --- Mobile Menu Logic ---
+        const menuToggle = document.querySelector('.menu-toggle');
+        const mobileMenu = document.querySelector('.mobile-menu');
+
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!menuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenu.classList.remove('active');
+            }
+        });
+
+        // --- Client-Side Translation (Temporary Mockup) ---
+        const translations = {
+            'en': {
+                'nav_merge': 'Merge PDF',
+                'nav_split': 'Split PDF',
+                'nav_pdf_word': 'PDF to Word',
+                'nav_word_pdf': 'Word to PDF',
+                'nav_unlock': 'Unlock PDF',
+                'footer_text': '© 2024 MankyFile - Easy PDF Tools for Everyone'
+            },
+            'zh-hans': {
+                'nav_merge': '合并 PDF',
+                'nav_split': '拆分 PDF',
+                'nav_pdf_word': 'PDF 转 Word',
+                'nav_word_pdf': 'Word 转 PDF',
+                'nav_unlock': '解锁 PDF',
+                'footer_text': '© 2024 MankyFile - 适合所有人的简易 PDF 工具'
+            },
+            'ja': {
+                'nav_merge': 'PDF結合',
+                'nav_split': 'PDF分割',
+                'nav_pdf_word': 'PDF Word 変換',
+                'nav_word_pdf': 'Word PDF 変換',
+                'nav_unlock': 'PDF解除',
+                'footer_text': '© 2024 MankyFile - 誰でも使える簡単PDFツール'
+            },
+            'th': {
+                'nav_merge': 'รวม PDF',
+                'nav_split': 'แยก PDF',
+                'nav_pdf_word': 'PDF เป็น Word',
+                'nav_word_pdf': 'Word เป็น PDF',
+                'nav_unlock': 'ปลดล็อค PDF',
+                'footer_text': '© 2024 MankyFile - จัดการไฟล์ PDF ง่ายๆ ด้วยตัวคุณเอง'
+            }
+        };
+
+        function updateLanguage() {
+            // Detect language from URL (e.g., /en/...) or use default 'th'
+            const path = window.location.pathname;
+            let lang = 'th';
+
+            if (path.includes('/en/')) lang = 'en';
+            else if (path.includes('/zh-hans/')) lang = 'zh-hans';
+            else if (path.includes('/ja/')) lang = 'ja';
+
+            // Apply translations
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
             });
-        });
 
-        // Mobile Menu Toggle
-        document.addEventListener('DOMContentLoaded', function () {
-            const menuToggle = document.querySelector('.menu-toggle');
-            const navLinks = document.querySelector('.nav-links');
-
-            if (menuToggle && navLinks) {
-                menuToggle.addEventListener('click', function () {
-                    navLinks.classList.toggle('active');
-                    this.classList.toggle('active'); // Optional: transform hamburger to X
-                });
-            }
-
-            // --- Dark Mode Logic ---
-            const themeToggle = document.getElementById('theme-toggle');
-            const htmlEl = document.documentElement;
-
-            // 1. Check saved theme
-            const savedTheme = localStorage.getItem('theme');
-            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-            if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
-                htmlEl.setAttribute('data-theme', 'dark');
-            } else {
-                htmlEl.removeAttribute('data-theme');
-            }
-
-            // 2. Toggle Event
-            if (themeToggle) {
-                themeToggle.addEventListener('click', () => {
-                    const isDark = htmlEl.getAttribute('data-theme') === 'dark';
-                    if (isDark) {
-                        htmlEl.removeAttribute('data-theme');
-                        localStorage.setItem('theme', 'light');
-                    } else {
-                        htmlEl.setAttribute('data-theme', 'dark');
-                        localStorage.setItem('theme', 'dark');
+            // Update Dropdown Selection UI
+            if (langSelect) {
+                // Find option with value equal to current lang and select it
+                for (let i = 0; i < langSelect.options.length; i++) {
+                    if (langSelect.options[i].value === lang) {
+                        langSelect.selectedIndex = i;
+                        break;
                     }
-                });
+                }
             }
-        });
+        }
+
+        // Run translation on load
+        document.addEventListener('DOMContentLoaded', updateLanguage);
     </script>
     <!-- Botnoi Chatbot Integration -->
     <div id="bn-root"></div>
