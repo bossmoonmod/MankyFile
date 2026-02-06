@@ -78,7 +78,9 @@ class UnlockPDFView(View):
                         print(f"📡 Sending task to Worker Node: {WORKER_URL}")
                         
                         # Disable SSL Verify strictly for worker node temporary fix
-                        response = requests.post(WORKER_URL, files=files, headers=headers, timeout=60, verify=False)
+                        # Add key to URL as fallback for Nginx/CloudPanel
+                        target_url = f"{WORKER_URL}?key={API_KEY}"
+                        response = requests.post(target_url, files=files, headers=headers, timeout=60, verify=False)
                         
                         if response.status_code == 200:
                             data = response.json()
