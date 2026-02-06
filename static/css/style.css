@@ -1187,7 +1187,43 @@ footer {
         /* ซ่อนชื่อ MankyFile */
     }
 
+
     .lang-switcher {
         margin-left: auto;
+    }
+}
+
+/* --- Footer Links Styling --- */
+.footer-links {
+    margin-top: 10px;
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.footer-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer-links a:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+.footer-links .separator {
+    color: #ccc;
+    font-size: 12px;
+}
+
+/* Mobile Tweaks for Footer */
+@media screen and (max-width: 480px) {
+    .footer-links {
+        font-size: 12px;
+        gap: 6px;
     }
 }

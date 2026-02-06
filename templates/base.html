@@ -115,7 +115,12 @@
     </main>
 
     <footer class="footer">
-        <p data-i18n="footer_text">© 2024 MankyFile - จัดการไฟล์ PDF ง่ายๆ ด้วยตัวคุณเอง</p>
+        <p data-i18n="footer_text">© 2026 MankyFile - จัดการไฟล์ PDF ง่ายๆ ด้วยตัวคุณเอง</p>
+        <div class="footer-links">
+            <a href="{% url 'converter:terms' %}" data-i18n="footer_terms">เงื่อนไขการใช้งาน</a>
+            <span class="separator">•</span>
+            <a href="{% url 'converter:privacy' %}" data-i18n="footer_privacy">นโยบายความเป็นส่วนตัว</a>
+        </div>
     </footer>
 
     <script src="{% static 'js/upload_handler.js' %}"></script>
