@@ -50,6 +50,16 @@
             <a href="{% url 'converter:unlock_pdf' %}" class="retry-btn">ลองใหม่อีกครั้ง</a>
         </div>
 
+        <!-- Error Message -->
+        <div id="error-message" style="display: none; text-align: center; margin-top: 30px;">
+            <div style="font-size: 3rem; margin-bottom: 20px;">❌</div>
+            <h2 id="error-title">{{ error_header|default:"ทำงานไม่สำเร็จ" }}</h2>
+            <p id="error-desc" style="color: #ccc; margin-bottom: 30px;">
+                {{ error_text|default:"ระบบไม่สามารถประมวลผลไฟล์นี้ได้" }}
+            </p>
+            <a href="javascript:history.back()" class="btn btn-outline-light px-4 py-2">ลองใหม่อีกครั้ง</a>
+        </div>
+
     </div>
 </div>
 
@@ -161,13 +171,12 @@
 <script>
     const taskId = "{{ task_id }}";
     const workerHost = "{{ worker_host }}";
-    const apiKey = "MANKY_SECRET_KEY_12345"; // Publicly visible in JS but acceptable for this use case
+    const apiKey = "MANKY_SECRET_KEY_12345";
+    const taskType = "{{ task_type }}"; // 'PowerPoint', 'Excel', or empty for Unlock
 
     const consoleLog = document.getElementById('console-log');
 
     function checkStatus() {
-        // Use local Django Proxy to bypass CORS/SSL issues
-        // Use Django URL tag to guarantee correct path
         const statusUrl = "{% url 'converter:check_worker_status' %}";
         fetch(`${statusUrl}?task_id=${taskId}`)
             .then(res => res.json())
@@ -177,16 +186,33 @@
                     document.getElementById('state-processing').style.display = 'none';
                     document.getElementById('state-success').style.display = 'block';
 
-                    document.getElementById('found-password').textContent = data.password_found;
-                    // Direct download link from Worker
+                    if (taskType) {
+                        // CONVERSION MODE
+                        document.querySelector('#state-success h1').innerText = "แปลงไฟล์สำเร็จ!";
+                        document.querySelector('.password-box').style.display = 'none';
+                        document.getElementById('download-btn').innerText = `ดาวน์โหลดไฟล์ ${taskType} 📥`;
+                    } else {
+                        // UNLOCK MODE
+                        document.getElementById('found-password').textContent = data.password_found;
+                    }
+
+                    // Direct download link
                     document.getElementById('download-btn').href = `${workerHost}/download.php?task_id=${taskId}&key=${apiKey}`;
                 } else if (data.status === 'failed') {
                     // Failed
                     document.getElementById('state-processing').style.display = 'none';
-                    document.getElementById('state-failed').style.display = 'block';
+                    // Check if converting or unlocking to show correct error
+                    if (taskType) {
+                        document.getElementById('error-title').innerText = "แปลงไฟล์ไม่สำเร็จ";
+                        document.getElementById('error-desc').innerText = "เกิดข้อผิดพลาดในการแปลงไฟล์ (อาจเกิดจากไฟล์เสียหาย)";
+                        document.getElementById('error-message').style.display = 'block';
+                    } else {
+                        document.getElementById('state-failed').style.display = 'block';
+                    }
                 } else {
                     // Still processing
-                    consoleLog.textContent = `> Worker Node: Status [${data.status}] - Cracking password...`;
+                    let msg = taskType ? `Converting to ${taskType}...` : "Cracking password...";
+                    consoleLog.textContent = `> Worker Node: Status [${data.status}] - ${msg}`;
                     setTimeout(checkStatus, 2500);
                 }
             })
