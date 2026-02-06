@@ -1056,6 +1056,18 @@ footer {
         /* ลดความกว้าง */
         height: 34px;
         margin-left: 10px;
+        background-color: #cbd5e1;
+        /* ให้พื้นหลังชัดขึ้นในโหมดสว่าง */
+    }
+
+    /* แก้ไขระยะการเลื่อนของวงกลมในมือถือให้พอดีกับ 100px */
+    [data-theme="dark"] .switch-thumb {
+        transform: translateX(66px) !important;
+    }
+
+    [data-theme="dark"] .theme-switch {
+        background-color: #334155 !important;
+        border: 1px solid #475569;
     }
 
     .switch-thumb {
