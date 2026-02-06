@@ -165,7 +165,16 @@ def check_worker_status(request):
         # Proxy Request (Server-side)
         url = f"{worker_host}/check_status.php?task_id={task_id}"
         response = requests.get(url, timeout=10, verify=False)
-        return JsonResponse(response.json())
+        
+        try:
+            return JsonResponse(response.json())
+        except ValueError: # JSONDecodeError
+            # Worker returned HTML (404/500/Cloudflare)
+            return JsonResponse({
+                'status': 'processing', 
+                'proxy_warning': f"Invalid JSON info from worker: {response.text[:50]}..."
+            })
+            
     except Exception as e:
         # Return processing status so client keeps waiting
         return JsonResponse({'status': 'processing', 'proxy_error': str(e)})
