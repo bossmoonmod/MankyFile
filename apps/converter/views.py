@@ -1185,131 +1185,93 @@ class QRCodeGeneratorView(View):
             import qrcode
             from django.http import JsonResponse
             
-            # Helper: Convert Hex to RGB Tuple for StyledImage reliability
+            # Helper: Convert Hex to RGB Tuple
             def hex_to_rgb(hex_color):
-                hex_color = hex_color.lstrip('#')
-                return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-
-            # Default to standard generation first
-            use_styled = False
-            drawer = None
-            
-            if pattern_style and pattern_style != 'square':
                 try:
-                    from qrcode.image.styled.pil import StyledImage
-                    from qrcode.image.styles.moduledrawers import (
-                        SquareModuleDrawer,
-                        GappedSquareModuleDrawer,
-                        CircleModuleDrawer,
-                        RoundedModuleDrawer,
-                        VerticalBarsDrawer,
-                        HorizontalBarsDrawer
-                    )
-                    use_styled = True
-                    
-                    print(f"[QR DEBUG] Requested pattern: {pattern_style}")
-                    
-                    if pattern_style == 'gapped':
-                        drawer = GappedSquareModuleDrawer()
-                    elif pattern_style == 'circle':
-                        drawer = CircleModuleDrawer()
-                    elif pattern_style == 'rounded':
-                        drawer = RoundedModuleDrawer()
-                    elif pattern_style == 'vertical':
-                        drawer = VerticalBarsDrawer()
-                    elif pattern_style == 'horizontal':
-                        drawer = HorizontalBarsDrawer()
-                    else:
-                        drawer = SquareModuleDrawer()
-                    
-                    print(f"[QR DEBUG] Using drawer: {drawer.__class__.__name__}")
-                except ImportError as e:
-                    print(f"[QR ERROR] Styled QR modules import failed: {e}")
-                    import traceback
-                    traceback.print_exc()
-                    use_styled = False
-                except Exception as e:
-                    print(f"[QR ERROR] Unexpected error setting up styled QR: {e}")
-                    import traceback
-                    traceback.print_exc()
-                    use_styled = False
+                    hex_color = hex_color.lstrip('#')
+                    if len(hex_color) == 3:
+                        hex_color = ''.join([c*2 for c in hex_color])
+                    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+                except:
+                    return (0, 0, 0) # Default black
 
             qr = qrcode.QRCode(
-                version=None, # Auto version
+                version=None,
                 error_correction=qrcode.constants.ERROR_CORRECT_H,
-                box_size=20, # Higher quality
-                border=2,
+                box_size=15,
+                border=4,
             )
             qr.add_data(data)
             qr.make(fit=True)
             
-            # Create Image with colors
-            try:
-                # Debug info
-                print(f"DEBUG: Pattern Style requested: '{pattern_style}'")
-                
-                # Check imports explicitly
+            # Try to apply styling if requested
+            img = None
+            if pattern_style and pattern_style != 'square':
                 try:
+                    # Attempt to import advanced modules
                     from qrcode.image.styled.pil import StyledImage
+                    from qrcode.image.styles.moduledrawers import (
+                        SquareModuleDrawer, GappedSquareModuleDrawer, CircleModuleDrawer,
+                        RoundedModuleDrawer, VerticalBarsDrawer, HorizontalBarsDrawer
+                    )
+                    
+                    drawers = {
+                        'square': SquareModuleDrawer(),
+                        'gapped': GappedSquareModuleDrawer(),
+                        'circle': CircleModuleDrawer(),
+                        'rounded': RoundedModuleDrawer(),
+                        'vertical': VerticalBarsDrawer(),
+                        'horizontal': HorizontalBarsDrawer()
+                    }
+                    
+                    selected_drawer = drawers.get(pattern_style, SquareModuleDrawer())
+                    
+                    # Generate with StyledImage
+                    # Note: We generate mask first to apply custom colors via ImageOps if standard way fails
+                    qr_img = qr.make_image(image_factory=StyledImage, module_drawer=selected_drawer)
+                    
+                    # Apply colors
                     from PIL import ImageOps
-                except ImportError as e:
-                    print(f"CRITICAL ERROR: Libraries missing: {e}")
-                    raise e
-
-                if use_styled and drawer:
-                    print(f"DEBUG: Generating Styled QR using drawer: {drawer}")
+                    img_mask = qr_img.convert('L')
+                    fill_rgb = hex_to_rgb(fill_color)
+                    back_rgb = hex_to_rgb(back_color)
+                    img = ImageOps.colorize(img_mask, black=fill_rgb, white=back_rgb).convert('RGB')
                     
-                    # 1. Generate Grayscale Mask (L Mode)
-                    try:
-                        img_mask = qr.make_image(
-                            image_factory=StyledImage,
-                            module_drawer=drawer,
-                        ).convert('L') 
-                        print("DEBUG: Styled Mask generated successfully")
-                    except Exception as e:
-                        print(f"ERROR generating styled mask: {e}")
-                        raise e
-                    
-                    # 2. Manual Colorization using ImageOps
-                    try:
-                        fill_rgb = hex_to_rgb(fill_color)
-                        back_rgb = hex_to_rgb(back_color)
-                        img = ImageOps.colorize(img_mask, black=fill_rgb, white=back_rgb)
-                        print("DEBUG: Colorization successful")
-                    except Exception as e:
-                         print(f"ERROR coloring image: {e}")
-                         raise e
-                    
-                else:
-                    print("DEBUG: Using Standard Generation")
+                except Exception as style_err:
+                    print(f"[QR STYLE ERROR] Falling back to standard: {style_err}")
                     img = qr.make_image(fill_color=fill_color, back_color=back_color).convert('RGB')
-            except Exception as e:
-                print(f"FATAL QR GENERATION ERROR: {e}")
-                import traceback
-                traceback.print_exc()
-                # Return standard black/white as absolute last resort, but LOG IT LOUDLY
-                img = qr.make_image(fill_color="black", back_color="white").convert('RGB')
+            else:
+                # Standard Generation
+                img = qr.make_image(fill_color=fill_color, back_color=back_color).convert('RGB')
 
-            # --- LOGO PROCESSING START ---
+            # --- LOGO PROCESSING ---
             logo_file = request.FILES.get('logo')
-            if logo_file:
+            if logo_file and img:
                 try:
                     logo = Image.open(logo_file)
+                    img_w, img_h = img.size
                     
-                    basewidth = int(img.size[0] * 0.22)
-                    wpercent = (basewidth / float(logo.size[0]))
-                    hsize = int((float(logo.size[1]) * float(wpercent)))
+                    # Calculate logo size (max 20% of QR)
+                    logo_max_size = int(img_w * 0.2)
+                    logo_w, logo_h = logo.size
                     
-                    logo = logo.resize((basewidth, hsize), Image.Resampling.LANCZOS)
-                    pos = ((img.size[0] - logo.size[0]) // 2, (img.size[1] - logo.size[1]) // 2)
+                    if logo_w > logo_h:
+                        new_w = logo_max_size
+                        new_h = int(logo_h * (logo_max_size / logo_w))
+                    else:
+                        new_h = logo_max_size
+                        new_w = int(logo_w * (logo_max_size / logo_h))
+                        
+                    logo = logo.resize((new_w, new_h), Image.Resampling.LANCZOS)
                     
+                    # Paste with transparency support
+                    pos = ((img_w - new_w) // 2, (img_h - new_h) // 2)
                     if logo.mode == 'RGBA':
                         img.paste(logo, pos, logo)
                     else:
                         img.paste(logo, pos)
-                except Exception as e:
-                    print(f"Logo processing error: {e}")
-            # --- LOGO PROCESSING END ---
+                except Exception as logo_err:
+                    print(f"[QR LOGO ERROR] {logo_err}")
             
             # 4. Save file
             job_id = str(uuid.uuid4())

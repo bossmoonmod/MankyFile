@@ -980,28 +980,19 @@
 {% block extra_js %}
 <script>
     // --- 1. Tab & Input Handling ---
-    function selectType(element, type) {
-        // Update Tabs
-        const tabs = document.querySelectorAll('.nav-item');
-        if (tabs) tabs.forEach(el => el.classList.remove('active'));
-        if (element) element.classList.add('active');
+    function selectType(btn, type) {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('selected_qr_type').value = type;
 
-        // Update Hidden Input
-        const typeInput = document.getElementById('selected_qr_type');
-        if (typeInput) typeInput.value = type;
+        // Hide all
+        document.querySelectorAll('.input-group').forEach(el => el.classList.add('hidden'));
 
-        // Show/Hide Inputs
-        const groups = document.querySelectorAll('.input-group');
-        if (groups) groups.forEach(el => el.classList.add('hidden'));
-
+        // Show target
         const targetId = 'input-' + type;
-        const targetGroup = document.getElementById(targetId);
-        if (targetGroup) {
-            targetGroup.classList.remove('hidden');
-        } else {
-            // Fallback
-            const textGroup = document.getElementById('input-text');
-            if (textGroup) textGroup.classList.remove('hidden');
+        const target = document.getElementById(targetId);
+        if (target) {
+            target.classList.remove('hidden');
         }
     }
 
@@ -1015,9 +1006,17 @@
         const icon = document.getElementById('acc-icon');
         if (content && icon) {
             content.classList.toggle('show');
-            icon.textContent = content.classList.contains('show') ? '-' : '+';
+            icon.textContent = content.classList.contains('show') ? '−' : '+';
         }
     }
+
+    // Pattern Style highlight
+    document.addEventListener('change', function (e) {
+        if (e.target.name === 'pattern_style') {
+            document.querySelectorAll('.style-option').forEach(opt => opt.classList.remove('selected'));
+            e.target.closest('.style-option').classList.add('selected');
+        }
+    });
 
     function previewLogo(input) {
         if (input.files && input.files[0]) {
@@ -1069,7 +1068,7 @@
             let originalBtnText = 'สร้าง QR CODE';
             if (submitBtn) {
                 originalBtnText = submitBtn.innerText;
-                submitBtn.innerText = 'กำลังสร้าง...';
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังสร้าง...';
                 submitBtn.disabled = true;
                 submitBtn.style.opacity = '0.7';
             }
