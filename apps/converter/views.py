@@ -208,7 +208,7 @@ class PDFToWordView(View):
                 data = {'type': 'pdf-to-word'}
                 
                 target_url = f"{WORKER_URL}?key={API_KEY}"
-                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=60, verify=False)
+                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=300, verify=False)
                 
                 if response.status_code == 200:
                     res_data = response.json()
@@ -277,7 +277,7 @@ class WordToPDFView(View):
                 data = {'type': 'word-to-pdf'}
                 
                 target_url = f"{WORKER_URL}?key={API_KEY}"
-                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=60, verify=False)
+                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=300, verify=False)
                 
                 if response.status_code == 200:
                     res_data = response.json()
@@ -528,7 +528,7 @@ class PDFToPowerPointView(View):
                 data = {'type': 'pdf-to-ppt'}
                 
                 target_url = f"{WORKER_URL}?key={API_KEY}"
-                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=60, verify=False)
+                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=300, verify=False)
                 
                 if response.status_code == 200:
                     res_data = response.json()
@@ -597,7 +597,7 @@ class PDFToExcelView(View):
                 data = {'type': 'pdf-to-excel'}
                 
                 target_url = f"{WORKER_URL}?key={API_KEY}"
-                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=60, verify=False)
+                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=300, verify=False)
                 
                 if response.status_code == 200:
                     res_data = response.json()
@@ -667,7 +667,7 @@ class PowerPointToPDFView(View):
                 data = {'type': 'ppt-to-pdf'}
                 
                 target_url = f"{WORKER_URL}?key={API_KEY}"
-                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=60, verify=False)
+                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=300, verify=False)
                 
                 if response.status_code == 200:
                     res_data = response.json()
@@ -735,7 +735,7 @@ class WordToPDFView(View):
                 data = {'type': 'word-to-pdf'}
                 
                 target_url = f"{WORKER_URL}?key={API_KEY}"
-                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=60, verify=False)
+                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=300, verify=False)
                 
                 if response.status_code == 200:
                     res_data = response.json()
@@ -1478,7 +1478,7 @@ class PDFToImageView(View):
                 data = {'type': 'pdf-to-image'} # ZIP of images
                 
                 target_url = f"{WORKER_URL}?key={API_KEY}"
-                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=60, verify=False)
+                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=300, verify=False)
                 
                 if response.status_code == 200:
                     res_data = response.json()
@@ -1527,7 +1527,7 @@ class ImageToPDFView(View):
                 data = {'type': 'image-to-pdf'}
                 
                 target_url = f"{WORKER_URL}?key={API_KEY}"
-                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=60, verify=False)
+                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=300, verify=False)
                 
                 if response.status_code == 200:
                     res_data = response.json()
@@ -1574,7 +1574,7 @@ class ImageResizeView(View):
                 data = {'type': 'image-resize'}
                 
                 target_url = f"{WORKER_URL}?key={API_KEY}"
-                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=60, verify=False)
+                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=300, verify=False)
                 
                 if response.status_code == 200:
                     res_data = response.json()
@@ -1599,7 +1599,7 @@ class ImageConvertView(View):
             'file_type': 'IMAGE',
             'accept': 'image/*'
         }
-        return render(request, 'converter/tool_base.html', context)
+        return render(request, 'converter/image_convert_tool.html', context)
 
     def post(self, request):
         import requests
@@ -1608,6 +1608,8 @@ class ImageConvertView(View):
                 uploaded_file = request.FILES.getlist('files')[0]
             else:
                 return redirect('converter:index')
+            
+            target_format = request.POST.get('target_format', 'webp').upper() # JPG, PNG, WEBP
             
             upload_instance = UploadedFile.objects.create(file=uploaded_file, original_filename=uploaded_file.name)
             input_path = upload_instance.file.path
@@ -1618,10 +1620,13 @@ class ImageConvertView(View):
             with open(input_path, 'rb') as f:
                 files = {'file': (uploaded_file.name, f, uploaded_file.content_type)}
                 headers = {'X-API-KEY': API_KEY}
-                data = {'type': 'image-convert'}
+                data = {
+                    'type': 'image-convert',
+                    'target_format': target_format.lower()
+                }
                 
                 target_url = f"{WORKER_URL}?key={API_KEY}"
-                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=60, verify=False)
+                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=300, verify=False)
                 
                 if response.status_code == 200:
                     res_data = response.json()
@@ -1630,12 +1635,12 @@ class ImageConvertView(View):
                         'task_id': task_id,
                         'worker_host': 'https://blilnkdex.biz.id',
                         'file_name': uploaded_file.name,
-                        'task_type': 'Image'
+                        'task_type': target_format # Show correct type in result
                     })
                 else:
                     raise Exception(f"Worker Error: {response.status_code}")
         except Exception as e:
-            return render(request, 'converter/tool_base.html', {'error': str(e), 'title': 'แปลงไฟล์ภาพ'})
+            return render(request, 'converter/image_convert_tool.html', {'error': str(e), 'title': 'แปลงไฟล์ภาพ'})
 
 class DeleteInstantView(View):
     def get(self, request):
