@@ -1210,8 +1210,8 @@ class QRCodeGeneratorView(View):
             img = None
             if pattern_style and pattern_style != 'square':
                 try:
-                    # Attempt to import advanced modules
-                    from qrcode.image.styled.pil import StyledImage
+                    # qrcode 8.x+ structure
+                    from qrcode.image.styledpil import StyledPilImage
                     from qrcode.image.styles.moduledrawers import (
                         SquareModuleDrawer, GappedSquareModuleDrawer, CircleModuleDrawer,
                         RoundedModuleDrawer, VerticalBarsDrawer, HorizontalBarsDrawer
@@ -1234,17 +1234,21 @@ class QRCodeGeneratorView(View):
                     back_rgb = hex_to_rgb(back_color)
                     color_mask = SolidFillColorMask(back_color=back_rgb, front_color=fill_rgb)
                     
-                    # Generate with StyledImage directly
+                    # Generate with StyledPilImage
                     img = qr.make_image(
-                        image_factory=StyledImage, 
+                        image_factory=StyledPilImage, 
                         module_drawer=selected_drawer,
                         color_mask=color_mask
                     ).convert('RGB')
                     
-                    print(f"[QR SUCCESS] Styled QR ({pattern_style}) generated with native color mask")
+                    print(f"[QR SUCCESS] Styled QR ({pattern_style}) generated with StyledPilImage")
                     
-                except Exception as style_err:
-                    print(f"[QR STYLE ERROR] Falling back: {style_err}")
+                except Exception as e:
+                    import traceback
+                    with open(os.path.join(settings.BASE_DIR, 'qr_error.log'), 'a', encoding='utf-8') as f:
+                        f.write(f"\n--- {timezone.now()} ---\nStyle: {pattern_style}\nError: {str(e)}\n")
+                        f.write(traceback.format_exc())
+                    print(f"[QR STYLE ERROR] Falling back to standard: {e}")
                     img = qr.make_image(fill_color=fill_color, back_color=back_color).convert('RGB')
             else:
                 # Standard Generation
