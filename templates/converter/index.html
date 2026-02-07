@@ -138,6 +138,53 @@
         <p data-i18n="card_url_desc">ย่อลิงก์ยาวให้สั้น แชร์ง่าย พร้อมระบบหมดอายุอัตโนมัติ (24ชม./7วัน)</p>
     </a>
 
+    <!-- PDF to Image -->
+    <a href="{% url 'converter:pdf_to_image' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+            </svg>
+        </div>
+        <h3 data-i18n="card_pdf_img_title">PDF เป็น Image</h3>
+        <p data-i18n="card_pdf_img_desc">แปลงหน้า PDF ของคุณเป็นไฟล์รูปภาพ (JPG/PNG) ได้อย่างง่ายดาย</p>
+    </a>
+
+    <!-- Image to PDF -->
+    <a href="{% url 'converter:image_to_pdf' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5l2.5 3.01L17.5 7l4.5 6H9l2.5-3.5zM16 22H4c-1.1 0-2-.9-2-2V7h2v13h12v2z" />
+            </svg>
+        </div>
+        <h3 data-i18n="card_img_pdf_title">Image เป็น PDF</h3>
+        <p data-i18n="card_img_pdf_desc">แปลงรูปภาพของคุณเป็นไฟล์ PDF ภายในไม่กี่วินาที</p>
+    </a>
+
+    <!-- Resize Image -->
+    <a href="{% url 'converter:image_resize' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path d="M7 2v3h10V2H7zm0 17v3h10v-3H7zM2 7h3v10H2V7zm17 0h3v10h-3V7zM8 8h8v8H8V8z" />
+            </svg>
+        </div>
+        <h3 data-i18n="card_img_resize_title">ลดขนาดไฟล์ภาพ</h3>
+        <p data-i18n="card_img_resize_desc">ปรับขนาดหรือลดคุณภาพไฟล์ภาพเพื่อลดขนาดไฟล์</p>
+    </a>
+
+    <!-- Convert Image -->
+    <a href="{% url 'converter:image_convert' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M15 16h4v2h-4v-2zm0-8h7v2h-7V8zm0 4h5v2h-5v-2zM3 18c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v12zM5 6h6v12H5V6z" />
+            </svg>
+        </div>
+        <h3 data-i18n="card_img_convert_title">แปลงไฟล์ภาพ</h3>
+        <p data-i18n="card_img_convert_desc">แปลงไฟล์รูปภาพเป็นนามสกุลอื่น เช่น JPG, PNG, WebP</p>
+    </a>
+
     <!-- Unlock PDF -->
     <a href="{% url 'converter:unlock_pdf' %}" class="tool-card">
         <div class="tool-icon">

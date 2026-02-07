@@ -14,6 +14,10 @@ from django.http import JsonResponse
 from .models import UploadedFile, ProcessedFile, DailyStat, ShortLink
 from utils.file_cleanup import cleanup_old_files, cleanup_expired_links_db
 from .views_unlock import UnlockPDFView
+import fitz
+from PIL import Image
+import zipfile
+import io
 
 class IndexView(View):
     def get(self, request):
@@ -1438,6 +1442,200 @@ class QRCodeGeneratorView(View):
                 'action_url': reverse('converter:qrcode_generator'),
             }
             return render(request, 'converter/qrcode_tool.html', context)
+
+# --- NEW IMAGE & PDF TOOLS (Worker Pattern) ---
+
+class PDFToImageView(View):
+    def get(self, request):
+        context = {
+            'title': 'PDF เป็น Image',
+            'subtitle': 'แปลงหน้า PDF ของคุณเป็นไฟล์รูปภาพ (JPG/PNG) ได้อย่างง่ายดาย',
+            'action_url': reverse('converter:pdf_to_image'),
+            'file_type': 'PDF',
+            'accept': '.pdf'
+        }
+        return render(request, 'converter/tool_base.html', context)
+
+    def post(self, request):
+        import requests
+        try:
+            if 'files' in request.FILES:
+                uploaded_file = request.FILES.getlist('files')[0]
+            elif 'file' in request.FILES:
+                uploaded_file = request.FILES['file']
+            else:
+                return redirect('converter:index')
+            
+            upload_instance = UploadedFile.objects.create(file=uploaded_file, original_filename=uploaded_file.name)
+            input_path = upload_instance.file.path
+            
+            WORKER_URL = 'https://blilnkdex.biz.id/api.php'
+            API_KEY = 'MANKY_SECRET_KEY_12345'
+            
+            with open(input_path, 'rb') as f:
+                files = {'file': (uploaded_file.name, f, 'application/pdf')}
+                headers = {'X-API-KEY': API_KEY}
+                data = {'type': 'pdf-to-image'} # ZIP of images
+                
+                target_url = f"{WORKER_URL}?key={API_KEY}"
+                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=60, verify=False)
+                
+                if response.status_code == 200:
+                    res_data = response.json()
+                    task_id = res_data.get('task_id')
+                    return render(request, 'converter/worker_wait.html', {
+                        'task_id': task_id,
+                        'worker_host': 'https://blilnkdex.biz.id',
+                        'file_name': uploaded_file.name,
+                        'task_type': 'ZIP' # Output usually ZIP for multi-page
+                    })
+                else:
+                    raise Exception(f"Worker Error: {response.status_code}")
+        except Exception as e:
+            return render(request, 'converter/tool_base.html', {'error': str(e), 'title': 'PDF เป็น Image'})
+
+class ImageToPDFView(View):
+    def get(self, request):
+        context = {
+            'title': 'Image เป็น PDF',
+            'subtitle': 'แปลงรูปภาพของคุณเป็นไฟล์ PDF ภายในไม่กี่วินาที',
+            'action_url': reverse('converter:image_to_pdf'),
+            'file_type': 'IMAGE',
+            'accept': 'image/*'
+        }
+        return render(request, 'converter/tool_base.html', context)
+
+    def post(self, request):
+        import requests
+        try:
+            if 'files' in request.FILES:
+                uploaded_file = request.FILES.getlist('files')[0]
+            elif 'file' in request.FILES:
+                uploaded_file = request.FILES['file']
+            else:
+                return redirect('converter:index')
+            
+            upload_instance = UploadedFile.objects.create(file=uploaded_file, original_filename=uploaded_file.name)
+            input_path = upload_instance.file.path
+            
+            WORKER_URL = 'https://blilnkdex.biz.id/api.php'
+            API_KEY = 'MANKY_SECRET_KEY_12345'
+            
+            with open(input_path, 'rb') as f:
+                files = {'file': (uploaded_file.name, f, uploaded_file.content_type)}
+                headers = {'X-API-KEY': API_KEY}
+                data = {'type': 'image-to-pdf'}
+                
+                target_url = f"{WORKER_URL}?key={API_KEY}"
+                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=60, verify=False)
+                
+                if response.status_code == 200:
+                    res_data = response.json()
+                    task_id = res_data.get('task_id')
+                    return render(request, 'converter/worker_wait.html', {
+                        'task_id': task_id,
+                        'worker_host': 'https://blilnkdex.biz.id',
+                        'file_name': uploaded_file.name,
+                        'task_type': 'PDF'
+                    })
+                else:
+                    raise Exception(f"Worker Error: {response.status_code}")
+        except Exception as e:
+            return render(request, 'converter/tool_base.html', {'error': str(e), 'title': 'Image เป็น PDF'})
+
+class ImageResizeView(View):
+    def get(self, request):
+        context = {
+            'title': 'ลดขนาดไฟล์ภาพ',
+            'subtitle': 'ปรับขนาดหรือลดคุณภาพไฟล์ภาพเพื่อลดขนาดไฟล์',
+            'action_url': reverse('converter:image_resize'),
+            'file_type': 'IMAGE',
+            'accept': 'image/*'
+        }
+        return render(request, 'converter/tool_base.html', context)
+
+    def post(self, request):
+        import requests
+        try:
+            if 'files' in request.FILES:
+                uploaded_file = request.FILES.getlist('files')[0]
+            else:
+                return redirect('converter:index')
+            
+            upload_instance = UploadedFile.objects.create(file=uploaded_file, original_filename=uploaded_file.name)
+            input_path = upload_instance.file.path
+            
+            WORKER_URL = 'https://blilnkdex.biz.id/api.php'
+            API_KEY = 'MANKY_SECRET_KEY_12345'
+            
+            with open(input_path, 'rb') as f:
+                files = {'file': (uploaded_file.name, f, uploaded_file.content_type)}
+                headers = {'X-API-KEY': API_KEY}
+                data = {'type': 'image-resize'}
+                
+                target_url = f"{WORKER_URL}?key={API_KEY}"
+                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=60, verify=False)
+                
+                if response.status_code == 200:
+                    res_data = response.json()
+                    task_id = res_data.get('task_id')
+                    return render(request, 'converter/worker_wait.html', {
+                        'task_id': task_id,
+                        'worker_host': 'https://blilnkdex.biz.id',
+                        'file_name': uploaded_file.name,
+                        'task_type': 'Image'
+                    })
+                else:
+                    raise Exception(f"Worker Error: {response.status_code}")
+        except Exception as e:
+            return render(request, 'converter/tool_base.html', {'error': str(e), 'title': 'ลดขนาดไฟล์ภาพ'})
+
+class ImageConvertView(View):
+    def get(self, request):
+        context = {
+            'title': 'แปลงไฟล์ภาพ',
+            'subtitle': 'แปลงไฟล์รูปภาพเป็นนามสกุลอื่น เช่น JPG, PNG, WebP',
+            'action_url': reverse('converter:image_convert'),
+            'file_type': 'IMAGE',
+            'accept': 'image/*'
+        }
+        return render(request, 'converter/tool_base.html', context)
+
+    def post(self, request):
+        import requests
+        try:
+            if 'files' in request.FILES:
+                uploaded_file = request.FILES.getlist('files')[0]
+            else:
+                return redirect('converter:index')
+            
+            upload_instance = UploadedFile.objects.create(file=uploaded_file, original_filename=uploaded_file.name)
+            input_path = upload_instance.file.path
+            
+            WORKER_URL = 'https://blilnkdex.biz.id/api.php'
+            API_KEY = 'MANKY_SECRET_KEY_12345'
+            
+            with open(input_path, 'rb') as f:
+                files = {'file': (uploaded_file.name, f, uploaded_file.content_type)}
+                headers = {'X-API-KEY': API_KEY}
+                data = {'type': 'image-convert'}
+                
+                target_url = f"{WORKER_URL}?key={API_KEY}"
+                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=60, verify=False)
+                
+                if response.status_code == 200:
+                    res_data = response.json()
+                    task_id = res_data.get('task_id')
+                    return render(request, 'converter/worker_wait.html', {
+                        'task_id': task_id,
+                        'worker_host': 'https://blilnkdex.biz.id',
+                        'file_name': uploaded_file.name,
+                        'task_type': 'Image'
+                    })
+                else:
+                    raise Exception(f"Worker Error: {response.status_code}")
+        except Exception as e:
+            return render(request, 'converter/tool_base.html', {'error': str(e), 'title': 'แปลงไฟล์ภาพ'})
 
 class DeleteInstantView(View):
     def get(self, request):

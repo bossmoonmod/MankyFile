@@ -193,6 +193,14 @@
                 'card_url_desc': 'Shorten long links for easy sharing. Includes stats and 24h/7d expiry.',
                 'card_unlock_title': 'Unlock PDF',
                 'card_unlock_desc': 'Remove passwords from PDFs to access and edit them immediately.',
+                'card_pdf_img_title': 'PDF to Image',
+                'card_pdf_img_desc': 'Convert PDF pages into high-quality image files (JPG/PNG).',
+                'card_img_pdf_title': 'Image to PDF',
+                'card_img_pdf_desc': 'Convert your images to PDF documents in seconds.',
+                'card_img_resize_title': 'Resize Image',
+                'card_img_resize_desc': 'Reduce image file size or dimensions while preserving quality.',
+                'card_img_convert_title': 'Convert Image',
+                'card_img_convert_desc': 'Convert images between formats like JPG, PNG, and WebP.',
 
                 // Tool UI
                 'btn_select_file': 'Select File',
@@ -269,6 +277,14 @@
                 'card_url_desc': '長いリンクを短縮して共有しやすくします。統計と自動期限切れ（24時間/7日）付き。',
                 'card_unlock_title': 'PDFロック解除',
                 'card_unlock_desc': 'PDFからパスワードを削除して、すぐにアクセスして編集できるようにします。',
+                'card_pdf_img_title': 'PDF画像変換',
+                'card_pdf_img_desc': 'PDFページを高品質な画像（JPG/PNG）に変換します。',
+                'card_img_pdf_title': '画像PDF変換',
+                'card_img_pdf_desc': '数秒でお使いの画像をPDFドキュメントに変換します。',
+                'card_img_resize_title': '画像リサイズ',
+                'card_img_resize_desc': '品質を維持しながら画像サイズや寸法を削減します。',
+                'card_img_convert_title': '画像形式変換',
+                'card_img_convert_desc': 'JPG、PNG、WebPなどの形式間で画像を変換します。',
 
                 // Tool UI
                 'btn_select_file': 'ファイルを選択',
@@ -345,6 +361,14 @@
                 'card_url_desc': 'ย่อลิงก์ยาวให้สั้น แชร์ง่าย พร้อมระบบหมดอายุอัตโนมัติ (24ชม./7วัน)',
                 'card_unlock_title': 'ปลดล็อค PDF',
                 'card_unlock_desc': 'ลบรหัสผ่านออกจากไฟล์ PDF เพื่อให้เข้าถึงและแก้ไขได้ทันที',
+                'card_pdf_img_title': 'PDF เป็น Image',
+                'card_pdf_img_desc': 'แปลงหน้า PDF ของคุณเป็นไฟล์รูปภาพ (JPG/PNG) ได้อย่างง่ายดาย',
+                'card_img_pdf_title': 'Image เป็น PDF',
+                'card_img_pdf_desc': 'แปลงรูปภาพของคุณเป็นไฟล์ PDF ภายในไม่กี่วินาที',
+                'card_img_resize_title': 'ลดขนาดไฟล์ภาพ',
+                'card_img_resize_desc': 'ปรับขนาดหรือลดคุณภาพไฟล์ภาพเพื่อลดขนาดไฟล์',
+                'card_img_convert_title': 'แปลงไฟล์ภาพ',
+                'card_img_convert_desc': 'แปลงไฟล์รูปภาพเป็นนามสกุลอื่น เช่น JPG, PNG, WebP',
 
                 // Tool UI
                 'btn_select_file': 'เลือกไฟล์',
@@ -439,6 +463,10 @@
                 else if (path.includes('/merge-word')) toolKey = 'merge_word';
                 else if (path.includes('/qrcode-generator')) toolKey = 'qrcode';
                 else if (path.includes('/shorten-url')) toolKey = 'url';
+                else if (path.includes('/pdf-to-image')) toolKey = 'pdf_img';
+                else if (path.includes('/image-to-pdf')) toolKey = 'img_pdf';
+                else if (path.includes('/image-resizer')) toolKey = 'img_resize';
+                else if (path.includes('/image-convert')) toolKey = 'img_convert';
 
                 if (toolKey) {
                     const titleKey = `card_${toolKey}_title`;

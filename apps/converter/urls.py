@@ -6,6 +6,7 @@ from .views import (
     PDFToExcelView, PowerPointToPDFView, PDFToWordView, WordToPDFView,
     TermsView, PrivacyView, QRCodeGeneratorView, DeleteInstantView,
     ShortenURLView, RedirectShortLinkView, SystemCleanupView,
+    PDFToImageView, ImageToPDFView, ImageResizeView, ImageConvertView,
     download_file
 )
 from . import views_unlock
@@ -39,6 +40,10 @@ urlpatterns = [
     path('terms/', TermsView.as_view(), name='terms'),
     path('privacy/', PrivacyView.as_view(), name='privacy'),
     path('qrcode-generator/', QRCodeGeneratorView.as_view(), name='qrcode_generator'),
+    path('pdf-to-image/', PDFToImageView.as_view(), name='pdf_to_image'),
+    path('image-to-pdf/', ImageToPDFView.as_view(), name='image_to_pdf'),
+    path('image-resizer/', ImageResizeView.as_view(), name='image_resize'),
+    path('image-convert/', ImageConvertView.as_view(), name='image_convert'),
     path('delete-instant/', DeleteInstantView.as_view(), name='delete_instant'),
     path('unlock-pdf/', views_unlock.UnlockPDFView.as_view(), name='unlock_pdf'),
     path('check-worker-status/', views_unlock.check_worker_status, name='check_worker_status'),

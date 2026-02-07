@@ -245,6 +245,10 @@
                         if (taskType === 'Excel') ext = '.xlsx';
                         if (taskType === 'WORD') ext = '.docx';
                         if (taskType === 'PDF') ext = '.pdf';
+                        if (taskType === 'Image') ext = '.jpg';
+                        if (taskType === 'ZIP') ext = '.zip';
+                        if (taskType === 'PNG') ext = '.png';
+                        if (taskType === 'WebP') ext = '.webp';
 
                         document.getElementById('file-ext-label').innerText = ext;
                         document.getElementById('success-subtext').innerText = `ไฟล์ ${taskType} ของคุณถูกสร้างเรียบร้อยแล้ว`;
