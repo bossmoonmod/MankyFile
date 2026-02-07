@@ -1207,7 +1207,6 @@ class QRCodeGeneratorView(View):
             qr.add_data(data)
             qr.make(fit=True)
             
-            # Try to apply styling if requested
             img = None
             if pattern_style and pattern_style != 'square':
                 try:
@@ -1217,6 +1216,7 @@ class QRCodeGeneratorView(View):
                         SquareModuleDrawer, GappedSquareModuleDrawer, CircleModuleDrawer,
                         RoundedModuleDrawer, VerticalBarsDrawer, HorizontalBarsDrawer
                     )
+                    from qrcode.image.styles.colormasks import SolidFillColorMask
                     
                     drawers = {
                         'square': SquareModuleDrawer(),
@@ -1229,19 +1229,22 @@ class QRCodeGeneratorView(View):
                     
                     selected_drawer = drawers.get(pattern_style, SquareModuleDrawer())
                     
-                    # Generate with StyledImage
-                    # Note: We generate mask first to apply custom colors via ImageOps if standard way fails
-                    qr_img = qr.make_image(image_factory=StyledImage, module_drawer=selected_drawer)
-                    
-                    # Apply colors
-                    from PIL import ImageOps
-                    img_mask = qr_img.convert('L')
+                    # Construct Color Mask
                     fill_rgb = hex_to_rgb(fill_color)
                     back_rgb = hex_to_rgb(back_color)
-                    img = ImageOps.colorize(img_mask, black=fill_rgb, white=back_rgb).convert('RGB')
+                    color_mask = SolidFillColorMask(back_color=back_rgb, front_color=fill_rgb)
+                    
+                    # Generate with StyledImage directly
+                    img = qr.make_image(
+                        image_factory=StyledImage, 
+                        module_drawer=selected_drawer,
+                        color_mask=color_mask
+                    ).convert('RGB')
+                    
+                    print(f"[QR SUCCESS] Styled QR ({pattern_style}) generated with native color mask")
                     
                 except Exception as style_err:
-                    print(f"[QR STYLE ERROR] Falling back to standard: {style_err}")
+                    print(f"[QR STYLE ERROR] Falling back: {style_err}")
                     img = qr.make_image(fill_color=fill_color, back_color=back_color).convert('RGB')
             else:
                 # Standard Generation
