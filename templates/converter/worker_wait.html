@@ -241,14 +241,15 @@
                         document.getElementById('ui-unlock').style.display = 'none';
 
                         let ext = '.pdf';
-                        if (taskType === 'PowerPoint') ext = '.pptx';
-                        if (taskType === 'Excel') ext = '.xlsx';
-                        if (taskType === 'WORD') ext = '.docx';
-                        if (taskType === 'PDF') ext = '.pdf';
-                        if (taskType === 'Image') ext = '.jpg';
-                        if (taskType === 'ZIP') ext = '.zip';
-                        if (taskType === 'PNG') ext = '.png';
-                        if (taskType === 'WebP') ext = '.webp';
+                        let typeUpper = taskType.toUpperCase();
+                        if (typeUpper === 'POWERPOINT') ext = '.pptx';
+                        else if (typeUpper === 'EXCEL') ext = '.xlsx';
+                        else if (typeUpper === 'WORD') ext = '.docx';
+                        else if (typeUpper === 'PDF') ext = '.pdf';
+                        else if (typeUpper === 'IMAGE' || typeUpper === 'JPG') ext = '.jpg';
+                        else if (typeUpper === 'ZIP') ext = '.zip';
+                        else if (typeUpper === 'PNG') ext = '.png';
+                        else if (typeUpper === 'WEBP') ext = '.webp';
 
                         document.getElementById('file-ext-label').innerText = ext;
                         document.getElementById('success-subtext').innerText = `ไฟล์ ${taskType} ของคุณถูกสร้างเรียบร้อยแล้ว`;
