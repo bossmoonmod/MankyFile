@@ -1104,6 +1104,92 @@ class PrivacyView(View):
         })
 
 
+# --- CUSTOM QR DRAWERS ---
+from qrcode.image.styles.moduledrawers.pil import StyledPilQRModuleDrawer
+from PIL import ImageDraw
+
+class QRStyledEyeDrawer(StyledPilQRModuleDrawer):
+    """
+    Custom drawer for QR Corner Eyes (Finder Patterns)
+    Supports different shapes for the frame and ball.
+    """
+    def __init__(self, style='square'):
+        self.style = style
+        self.drawn_eyes = set()
+
+    def initialize(self, *args, **kwargs):
+        super().initialize(*args, **kwargs)
+        self.img_draw = ImageDraw.Draw(self.img._img)
+
+    def drawrect(self, box, is_active):
+        # Find module coordinates
+        x, y = box[0]
+        bs = self.img.box_size
+        border = self.img.border
+        col = int(round(x / bs)) - border
+        row = int(round(y / bs)) - border
+        width = self.img.width
+        
+        # Eyes are at 0..6 or (width-7)..(width-1)
+        eye_positions = [(0, 0), (0, width - 7), (width - 7, 0)]
+        
+        for er, ec in eye_positions:
+            if er <= row < er + 7 and ec <= col < ec + 7:
+                # We only draw the entire eye once when we hit the first module of it
+                if (er, ec) not in self.drawn_eyes:
+                    self.draw_eye_shape(er, ec)
+                    self.drawn_eyes.add((er, ec))
+                return
+
+    def draw_eye_shape(self, row, col):
+        bs = self.img.box_size
+        border = self.img.border
+        # Use paint_color (maskable) and back_color (background)
+        paint_color = self.img.paint_color
+        back_color = self.img.color_mask.back_color
+
+        x0 = (col + border) * bs
+        y0 = (row + border) * bs
+        x1 = x0 + (7 * bs)
+        y1 = y0 + (7 * bs)
+
+        # 1. Frame (Outer 7x7)
+        self.draw_shape(x0, y0, x1, y1, paint_color, self.style)
+        
+        # 2. Gap (Clear inner 5x5)
+        # Note: We use back_color to clear the gap
+        g0, g1 = x0 + bs, x1 - bs
+        h0, h1 = y0 + bs, y1 - bs
+        self.draw_shape(g0, h0, g1, h1, back_color, self.style)
+
+        # 3. Ball (Solid inner 3x3)
+        b0, b1 = x0 + (2 * bs), x1 - (2 * bs)
+        c0, c1 = y0 + (2 * bs), y1 - (2 * bs)
+        self.draw_shape(b0, c0, b1, c1, paint_color, self.style)
+
+    def draw_shape(self, x0, y0, x1, y1, color, style):
+        # PIL handles coordinates as [left, top, right, bottom]
+        rect = [x0, y0, x1-1, y1-1]
+        
+        if style == 'circle':
+            self.img_draw.ellipse(rect, fill=color)
+        elif style == 'rounded':
+            radius = (x1 - x0) // 4
+            self.img_draw.rounded_rectangle(rect, fill=color, radius=radius)
+        elif style == 'leaf':
+            # NW and SE rounded, others square
+            # For simplicity, we use rounded with custom radii if supported, 
+            # but standard PIL rounded_rectangle applies to all.
+            # Fallback: just use rounded for now or custom implementation later
+            radius = (x1 - x0) // 3
+            self.img_draw.rounded_rectangle(rect, fill=color, radius=radius)
+        elif style == 'shield':
+            # Bottom corners rounded
+            radius = (x1 - x0) // 3
+            self.img_draw.rounded_rectangle(rect, fill=color, radius=radius)
+        else: # square
+            self.img_draw.rectangle(rect, fill=color)
+
 class QRCodeGeneratorView(View):
     def get(self, request):
         from django.urls import reverse
@@ -1182,7 +1268,8 @@ class QRCodeGeneratorView(View):
             # 2. Get Design Options
             fill_color = request.POST.get('fill_color', '#000000')
             back_color = request.POST.get('back_color', '#ffffff')
-            pattern_style = request.POST.get('pattern_style', 'square') # square, gapped, circle, rounded, vertical, horizontal
+            pattern_style = request.POST.get('pattern_style', 'square')
+            eye_style = request.POST.get('eye_style', 'square')
             
             # 3. Generate QR Code
             import qrcode
@@ -1208,50 +1295,50 @@ class QRCodeGeneratorView(View):
             qr.make(fit=True)
             
             img = None
-            if pattern_style and pattern_style != 'square':
-                try:
-                    # qrcode 8.x+ structure
-                    from qrcode.image.styledpil import StyledPilImage
-                    from qrcode.image.styles.moduledrawers import (
-                        SquareModuleDrawer, GappedSquareModuleDrawer, CircleModuleDrawer,
-                        RoundedModuleDrawer, VerticalBarsDrawer, HorizontalBarsDrawer
-                    )
-                    from qrcode.image.styles.colormasks import SolidFillColorMask
-                    
-                    drawers = {
-                        'square': SquareModuleDrawer(),
-                        'gapped': GappedSquareModuleDrawer(),
-                        'circle': CircleModuleDrawer(),
-                        'rounded': RoundedModuleDrawer(),
-                        'vertical': VerticalBarsDrawer(),
-                        'horizontal': HorizontalBarsDrawer()
-                    }
-                    
-                    selected_drawer = drawers.get(pattern_style, SquareModuleDrawer())
-                    
-                    # Construct Color Mask
-                    fill_rgb = hex_to_rgb(fill_color)
-                    back_rgb = hex_to_rgb(back_color)
-                    color_mask = SolidFillColorMask(back_color=back_rgb, front_color=fill_rgb)
-                    
-                    # Generate with StyledPilImage
-                    img = qr.make_image(
-                        image_factory=StyledPilImage, 
-                        module_drawer=selected_drawer,
-                        color_mask=color_mask
-                    ).convert('RGB')
-                    
-                    print(f"[QR SUCCESS] Styled QR ({pattern_style}) generated with StyledPilImage")
-                    
-                except Exception as e:
-                    import traceback
-                    with open(os.path.join(settings.BASE_DIR, 'qr_error.log'), 'a', encoding='utf-8') as f:
-                        f.write(f"\n--- {timezone.now()} ---\nStyle: {pattern_style}\nError: {str(e)}\n")
-                        f.write(traceback.format_exc())
-                    print(f"[QR STYLE ERROR] Falling back to standard: {e}")
-                    img = qr.make_image(fill_color=fill_color, back_color=back_color).convert('RGB')
-            else:
-                # Standard Generation
+            try:
+                # qrcode 8.x+ structure
+                from qrcode.image.styledpil import StyledPilImage
+                from qrcode.image.styles.moduledrawers import (
+                    SquareModuleDrawer, GappedSquareModuleDrawer, CircleModuleDrawer,
+                    RoundedModuleDrawer, VerticalBarsDrawer, HorizontalBarsDrawer
+                )
+                from qrcode.image.styles.colormasks import SolidFillColorMask
+                
+                # Setup Module Drawer
+                drawers = {
+                    'square': SquareModuleDrawer(),
+                    'gapped': GappedSquareModuleDrawer(),
+                    'circle': CircleModuleDrawer(),
+                    'rounded': RoundedModuleDrawer(),
+                    'vertical': VerticalBarsDrawer(),
+                    'horizontal': HorizontalBarsDrawer()
+                }
+                selected_drawer = drawers.get(pattern_style, SquareModuleDrawer())
+                
+                # Setup Eye Drawer
+                selected_eye_drawer = QRStyledEyeDrawer(style=eye_style)
+                
+                # Construct Color Mask
+                fill_rgb = hex_to_rgb(fill_color)
+                back_rgb = hex_to_rgb(back_color)
+                color_mask = SolidFillColorMask(back_color=back_rgb, front_color=fill_rgb)
+                
+                # Generate with StyledPilImage
+                img = qr.make_image(
+                    image_factory=StyledPilImage, 
+                    module_drawer=selected_drawer,
+                    eye_drawer=selected_eye_drawer,
+                    color_mask=color_mask
+                ).convert('RGB')
+                
+                print(f"[QR SUCCESS] Styled QR ({pattern_style}/{eye_style}) generated")
+                
+            except Exception as e:
+                import traceback
+                with open(os.path.join(settings.BASE_DIR, 'qr_error.log'), 'a', encoding='utf-8') as f:
+                    f.write(f"\n--- {timezone.now()} ---\nStyle: {pattern_style}/{eye_style}\nError: {str(e)}\n")
+                    f.write(traceback.format_exc())
+                print(f"[QR STYLE ERROR] Falling back to standard: {e}")
                 img = qr.make_image(fill_color=fill_color, back_color=back_color).convert('RGB')
 
             # --- LOGO PROCESSING ---
@@ -1331,6 +1418,7 @@ class QRCodeGeneratorView(View):
                 'fill_color': fill_color,
                 'back_color': back_color,
                 'pattern_style': pattern_style,
+                'eye_style': eye_style,
             }
 
             return render(request, 'converter/qrcode_tool.html', context)

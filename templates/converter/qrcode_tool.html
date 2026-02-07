@@ -158,22 +158,27 @@
                                 </div>
                             </div>
 
-                            <!-- Eye Frame (Dummy UI) -->
+                            <!-- Eye Frame (Functional UI) -->
                             <div class="design-section">
-                                <label class="section-label" style="opacity: 0.6;">รูปทรงกรอบตา (Eye Frame)</label>
-                                <div class="style-grid" style="pointer-events: none; opacity: 0.6;">
-                                    <div class="style-option selected"
-                                        style="border-color: #e5322d; background: #fff5f5;">
+                                <label class="section-label">รูปทรงกรอบตา (Eye Frame)</label>
+                                <input type="hidden" name="eye_style" id="selected_eye_style" value="square">
+                                <div class="style-grid" id="eye-style-grid">
+                                    <div class="style-option selected" onclick="selectEyeStyle(this, 'square')">
                                         <div class="eye-preview square"></div>
                                     </div>
-                                    <div class="style-option">
+                                    <div class="style-option" onclick="selectEyeStyle(this, 'rounded')">
                                         <div class="eye-preview rounded"></div>
                                     </div>
-                                    <div class="style-option">
+                                    <div class="style-option" onclick="selectEyeStyle(this, 'circle')">
                                         <div class="eye-preview circle"></div>
                                     </div>
+                                    <div class="style-option" onclick="selectEyeStyle(this, 'leaf')">
+                                        <div class="eye-preview leaf"></div>
+                                    </div>
+                                    <div class="style-option" onclick="selectEyeStyle(this, 'shield')">
+                                        <div class="eye-preview shield"></div>
+                                    </div>
                                 </div>
-                                <p style="font-size: 0.75rem; color: #999;">*ฟีเจอร์นี้จะเปิดให้ใช้งานเร็วๆ นี้</p>
                             </div>
 
                         </div>
@@ -734,6 +739,22 @@
         border-radius: 50%;
     }
 
+    .eye-preview.leaf {
+        border-radius: 20px 0 20px 0;
+    }
+
+    .eye-preview.leaf::after {
+        border-radius: 8px 0 8px 0;
+    }
+
+    .eye-preview.shield {
+        border-radius: 4px 4px 15px 15px;
+    }
+
+    .eye-preview.shield::after {
+        border-radius: 2px 2px 6px 6px;
+    }
+
 
     /* --- RIGHT SIDE --- */
     .qr-preview-panel {
@@ -961,6 +982,14 @@
         if (target) {
             target.classList.remove('hidden');
         }
+    }
+
+    function selectEyeStyle(btn, style) {
+        const grid = document.getElementById('eye-style-grid');
+        if (!grid) return;
+        grid.querySelectorAll('.style-option').forEach(el => el.classList.remove('selected'));
+        btn.classList.add('selected');
+        document.getElementById('selected_eye_style').value = style;
     }
 
     function updateColorText(input, textId) {
