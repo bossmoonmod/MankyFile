@@ -191,7 +191,7 @@ class PDFToWordView(View):
             input_path = upload_instance.file.path
             
             # Worker Configuration
-            WORKER_URL = 'https://blilnk.shop/api.php'
+            WORKER_URL = 'https://blilnkdex.biz.id/api.php'
             API_KEY = 'MANKY_SECRET_KEY_12345'
             
             # Send to Worker
@@ -212,7 +212,7 @@ class PDFToWordView(View):
                     if task_id:
                         return render(request, 'converter/worker_wait.html', {
                             'task_id': task_id,
-                            'worker_host': 'https://blilnk.shop',
+                            'worker_host': 'https://blilnkdex.biz.id',
                             'file_name': uploaded_file.name,
                             'task_type': 'WORD' # Expected output type
                         })
@@ -261,7 +261,7 @@ class WordToPDFView(View):
             input_path = upload_instance.file.path
             
             # 2. Config
-            WORKER_URL = 'https://blilnk.shop/api.php'
+            WORKER_URL = 'https://blilnkdex.biz.id/api.php'
             API_KEY = 'MANKY_SECRET_KEY_12345'
             
             # 3. Dispatch to Worker
@@ -281,7 +281,7 @@ class WordToPDFView(View):
                     if task_id:
                         return render(request, 'converter/worker_wait.html', {
                             'task_id': task_id,
-                            'worker_host': 'https://blilnk.shop',
+                            'worker_host': 'https://blilnkdex.biz.id',
                             'file_name': uploaded_file.name,
                             'task_type': 'PDF'
                         })
@@ -511,7 +511,7 @@ class PDFToPowerPointView(View):
             input_path = upload_instance.file.path
             
             # Worker Configuration
-            WORKER_URL = 'https://blilnk.shop/api.php'
+            WORKER_URL = 'https://blilnkdex.biz.id/api.php'
             API_KEY = 'MANKY_SECRET_KEY_12345'
             
             # Send to Worker
@@ -532,7 +532,7 @@ class PDFToPowerPointView(View):
                     if task_id:
                         return render(request, 'converter/worker_wait.html', {
                             'task_id': task_id,
-                            'worker_host': 'https://blilnk.shop',
+                            'worker_host': 'https://blilnkdex.biz.id',
                             'file_name': uploaded_file.name,
                             'task_type': 'PowerPoint'
                         })
@@ -580,7 +580,7 @@ class PDFToExcelView(View):
             input_path = upload_instance.file.path
             
             # Worker Configuration
-            WORKER_URL = 'https://blilnk.shop/api.php'
+            WORKER_URL = 'https://blilnkdex.biz.id/api.php'
             API_KEY = 'MANKY_SECRET_KEY_12345'
             
             # Send to Worker
@@ -601,7 +601,7 @@ class PDFToExcelView(View):
                     if task_id:
                         return render(request, 'converter/worker_wait.html', {
                             'task_id': task_id,
-                            'worker_host': 'https://blilnk.shop',
+                            'worker_host': 'https://blilnkdex.biz.id',
                             'file_name': uploaded_file.name,
                             'task_type': 'Excel'
                         })
@@ -649,7 +649,7 @@ class PowerPointToPDFView(View):
             input_path = upload_instance.file.path
             
             # Worker Configuration
-            WORKER_URL = 'https://blilnk.shop/api.php'
+            WORKER_URL = 'https://blilnkdex.biz.id/api.php'
             API_KEY = 'MANKY_SECRET_KEY_12345'
             
             # Send to Worker
@@ -671,7 +671,7 @@ class PowerPointToPDFView(View):
                     if task_id:
                         return render(request, 'converter/worker_wait.html', {
                             'task_id': task_id,
-                            'worker_host': 'https://blilnk.shop',
+                            'worker_host': 'https://blilnkdex.biz.id',
                             'file_name': uploaded_file.name,
                             'task_type': 'PDF'  # Target Format
                         })
@@ -718,7 +718,7 @@ class WordToPDFView(View):
             input_path = upload_instance.file.path
             
             # Worker Configuration
-            WORKER_URL = 'https://blilnk.shop/api.php'
+            WORKER_URL = 'https://blilnkdex.biz.id/api.php'
             API_KEY = 'MANKY_SECRET_KEY_12345'
             
             # Send to Worker
@@ -739,7 +739,7 @@ class WordToPDFView(View):
                     if task_id:
                         return render(request, 'converter/worker_wait.html', {
                             'task_id': task_id,
-                            'worker_host': 'https://blilnk.shop',
+                            'worker_host': 'https://blilnkdex.biz.id',
                             'file_name': uploaded_file.name,
                             'task_type': 'PDF'
                         })

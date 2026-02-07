@@ -65,7 +65,7 @@ class UnlockPDFView(View):
             else:
                 # MODE B: Unknown Password (Brute Force) -> Offload to Worker Node
                 # Worker Configuration
-                WORKER_URL = 'https://blilnk.shop/api.php' 
+                WORKER_URL = 'https://blilnkdex.biz.id/api.php' 
                 API_KEY = 'MANKY_SECRET_KEY_12345'
                 
                 import requests
@@ -89,7 +89,7 @@ class UnlockPDFView(View):
                                 # Render Waiting Page
                                 return render(request, 'converter/worker_wait.html', {
                                     'task_id': task_id,
-                                    'worker_host': 'https://blilnk.shop',
+                                    'worker_host': 'https://blilnkdex.biz.id',
                                     'file_name': uploaded_file.name
                                 })
                             else:
@@ -156,7 +156,7 @@ def check_worker_status(request):
     task_id = request.GET.get('task_id')
     # Use direct IP or domain provided by user
     # If connection fails, client-side retry
-    worker_host = 'https://blilnk.shop'
+    worker_host = 'https://blilnkdex.biz.id'
     
     if not task_id:
         return JsonResponse({'error': 'No task_id provided'}, status=400)
