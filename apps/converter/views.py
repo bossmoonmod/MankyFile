@@ -1168,10 +1168,13 @@ class QRCodeGeneratorView(View):
 
             # Validate Data
             if not data:
-                # ถ้าข้อมูลไม่ครบ ให้เรนเดอร์กลับไปพร้อม Error
+                message = 'กรุณากรอกข้อมูลให้ครบถ้วน'
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    return JsonResponse({'success': False, 'message': message})
+                    
                 context = {
                     'title': 'สร้าง QR Code',
-                    'error': 'กรุณากรอกข้อมูลให้ครบถ้วน',
+                    'error': message,
                     'action_url': reverse('converter:qrcode_generator'),
                 }
                 return render(request, 'converter/qrcode_tool.html', context)
@@ -1298,7 +1301,7 @@ class QRCodeGeneratorView(View):
             
             # 5. Prepare Context/Response
             qr_image_url = f"{settings.MEDIA_URL}{processed_rel_path}"
-            download_url = reverse('converter:download_file', kwargs={'job_id': job_id})
+            download_url = reverse('converter:download_file', kwargs={'file_id': processed_file.id})
             
             # Check for AJAX Request
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -1307,8 +1310,7 @@ class QRCodeGeneratorView(View):
                     'qr_image_url': qr_image_url,
                     'download_url': download_url,
                     'message': 'QR Code generated successfully',
-                    'debug_style': pattern_style,
-                    'debug_used_styled': use_styled
+                    'debug_style': pattern_style
                 })
 
             # Normal Request
@@ -1324,44 +1326,23 @@ class QRCodeGeneratorView(View):
                 'pattern_style': pattern_style,
             }
 
-            # Track usage statistics
-            try:
-                stat, _ = DailyStat.objects.get_or_create(date=timezone.now().date())
-                stat.usage_count += 1
-                stat.save()
-            except Exception as e:
-                print(f"Stats error: {e}")
-
             return render(request, 'converter/qrcode_tool.html', context)
             
         except Exception as e:
             print(f"QR Error: {e}")
             import traceback
             traceback.print_exc()
+            
+            message = f'เกิดข้อผิดพลาด: {str(e)}'
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'message': message})
+                
             context = {
                 'title': 'สร้าง QR Code',
-                'error': f'เกิดข้อผิดพลาด: {str(e)}',
+                'error': message,
                 'action_url': reverse('converter:qrcode_generator'),
             }
             return render(request, 'converter/qrcode_tool.html', context)
-            
-            context = {
-                'success': True,
-                'file_url': download_url,
-                'file_name': output_filename,
-                'file_type': 'PNG', 
-                'file_size': os.path.getsize(output_full_path)
-            }
-            return render(request, 'converter/result.html', context)
-            
-        except Exception as e:
-            print(f"QR Gen Error: {e}")
-            # Re-render with error (need to pass previous inputs back ideally, but for now simple error)
-            return render(request, 'converter/qrcode_tool.html', {
-                'title': 'สร้าง QR Code', 
-                'subtitle': 'สร้าง QR Code ฟรี ครบทุกรูปแบบ', 
-                'error': f"เกิดข้อผิดพลาด: {str(e)}"
-            })
 
 class DeleteInstantView(View):
     def get(self, request):
