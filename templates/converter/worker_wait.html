@@ -23,15 +23,6 @@
                 กรุณาโปรดรอจนกว่าสำเร็จ...
             </p>
 
-            <!-- Force Download Area (Hidden initially) -->
-            <div id="force-dl-area"
-                style="display:none; margin-top: 30px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
-                <p style="color: #orange; font-size: 0.9rem; margin-bottom: 10px;">ใช้เวลานานกว่าปกติ?</p>
-                <a id="force-dl-btn" href="#" target="_blank" class="btn btn-outline-light" style="font-size: 0.8rem;">
-                    📥 ลองดาวน์โหลดไฟล์ทันที (Force Download)
-                </a>
-                <p style="color: #555; font-size: 0.7rem; margin-top: 5px;">(หากไฟล์เสร็จแล้วจะดาวน์โหลดได้ทันที)</p>
-            </div>
         </div>
 
         <!-- Success State -->
@@ -235,19 +226,8 @@
 
     filenameInput.addEventListener('input', updateDownloadLink);
 
-    let attemptCount = 0;
-    const maxWaitTime = 10; // Show force download after 10 ticks (approx 25s)
-
     function checkStatus() {
-        attemptCount++;
         const statusUrl = "{% url 'converter:check_worker_status' %}";
-
-        // Show Force Download if waiting too long
-        if (attemptCount > maxWaitTime) {
-            document.getElementById('force-dl-area').style.display = 'block';
-            let fUrl = `${workerHost}/download.php?task_id=${taskId}&key=${apiKey}`;
-            document.getElementById('force-dl-btn').href = fUrl;
-        }
 
         fetch(`${statusUrl}?task_id=${taskId}`)
             .then(res => res.json())
@@ -256,7 +236,6 @@
                     // Success!
                     document.getElementById('state-processing').style.display = 'none';
                     document.getElementById('state-success').style.display = 'block';
-                    document.getElementById('force-dl-area').style.display = 'none'; // Hide force DL if successful
 
                     if (taskType) {
                         // CONVERSION MODE
@@ -296,7 +275,6 @@
                     } else {
                         // Logic Failed
                         document.getElementById('state-processing').style.display = 'none';
-                        document.getElementById('force-dl-area').style.display = 'none';
 
                         if (taskType) {
                             document.getElementById('error-title').innerText = "แปลงไฟล์ไม่สำเร็จ";
@@ -319,6 +297,19 @@
                 setTimeout(checkStatus, 5000);
             });
     }
+
+    // Cancel Task when user leaves page or closes app
+    function cancelTask() {
+        const cancelUrl = "{% url 'converter:check_worker_status' %}?task_id=" + taskId + "&cancel=1";
+        // Use keepalive to ensure the request completes even if the page is closed
+        fetch(cancelUrl, { keepalive: true, method: 'GET' });
+    }
+
+    // Listen for page exit or app close
+    window.addEventListener('pagehide', cancelTask);
+    window.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') cancelTask();
+    });
 
     // Start Polling
     setTimeout(checkStatus, 1000);

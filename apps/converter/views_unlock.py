@@ -163,7 +163,8 @@ def check_worker_status(request):
     
     try:
         # Proxy Request (Server-side)
-        url = f"{worker_host}/check_status.php?task_id={task_id}"
+        cancel = request.GET.get('cancel', '0')
+        url = f"{worker_host}/check_status.php?task_id={task_id}&cancel={cancel}"
         response = requests.get(url, timeout=10, verify=False)
         
         try:
