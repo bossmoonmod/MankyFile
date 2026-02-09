@@ -21,3 +21,4 @@ whitenoise==6.7.0
 gunicorn==21.2.0
 packaging==23.2
 openpyxl==3.1.2
+setuptools
