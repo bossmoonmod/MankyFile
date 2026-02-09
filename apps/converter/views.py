@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.conf import settings
 from django.views import View
-from .services.pdf_service import PDFService
-from .services.word_service import WordService
+# from .services.pdf_service import PDFService
+# from .services.word_service import WordService
 import os
 import random
 import string
@@ -898,6 +898,7 @@ class ArrangeWordView(View):
             return redirect('converter:merge_word')
 
         # Perform Merge
+        from .services.word_service import WordService
         service = WordService()
         
         # Prepare file paths
