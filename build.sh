@@ -3,6 +3,7 @@
 set -o errexit
 
 pip install --upgrade pip
+pip install setuptools
 pip install requests
 # Force Rebuild Trigger 1
 pip install -r requirements.txt
