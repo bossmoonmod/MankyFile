@@ -22,6 +22,16 @@
                 ระบบกำลังดำเนินการ <br>
                 กรุณาโปรดรอจนกว่าสำเร็จ...
             </p>
+
+            <!-- Force Download Area (Hidden initially) -->
+            <div id="force-dl-area"
+                style="display:none; margin-top: 30px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                <p style="color: #orange; font-size: 0.9rem; margin-bottom: 10px;">ใช้เวลานานกว่าปกติ?</p>
+                <a id="force-dl-btn" href="#" target="_blank" class="btn btn-outline-light" style="font-size: 0.8rem;">
+                    📥 ลองดาวน์โหลดไฟล์ทันที (Force Download)
+                </a>
+                <p style="color: #555; font-size: 0.7rem; margin-top: 5px;">(หากไฟล์เสร็จแล้วจะดาวน์โหลดได้ทันที)</p>
+            </div>
         </div>
 
         <!-- Success State -->
@@ -225,8 +235,20 @@
 
     filenameInput.addEventListener('input', updateDownloadLink);
 
+    let attemptCount = 0;
+    const maxWaitTime = 10; // Show force download after 10 ticks (approx 25s)
+
     function checkStatus() {
+        attemptCount++;
         const statusUrl = "{% url 'converter:check_worker_status' %}";
+
+        // Show Force Download if waiting too long
+        if (attemptCount > maxWaitTime) {
+            document.getElementById('force-dl-area').style.display = 'block';
+            let fUrl = `${workerHost}/download.php?task_id=${taskId}&key=${apiKey}`;
+            document.getElementById('force-dl-btn').href = fUrl;
+        }
+
         fetch(`${statusUrl}?task_id=${taskId}`)
             .then(res => res.json())
             .then(data => {
@@ -234,6 +256,7 @@
                     // Success!
                     document.getElementById('state-processing').style.display = 'none';
                     document.getElementById('state-success').style.display = 'block';
+                    document.getElementById('force-dl-area').style.display = 'none'; // Hide force DL if successful
 
                     if (taskType) {
                         // CONVERSION MODE
@@ -264,16 +287,25 @@
 
                     updateDownloadLink(); // Initial Link Set
 
-                } else if (data.status === 'failed') {
-                    // Failed
-                    document.getElementById('state-processing').style.display = 'none';
-                    if (taskType) {
-                        document.getElementById('error-title').innerText = "แปลงไฟล์ไม่สำเร็จ";
-                        document.getElementById('error-desc').innerText = "เกิดข้อผิดพลาดในการแปลงไฟล์ (อาจเกิดจากไฟล์เสียหาย)";
-                        document.getElementById('error-message').style.display = 'block';
+                } else if (data.status === 'failed' || (data.status === 'processing' && data.proxy_error)) {
+
+                    if (data.proxy_error) {
+                        // Connection Error to Worker
+                        consoleLog.innerHTML = `<span style="color:salmon;">> Error: ${data.proxy_error}</span>`;
+                        // Don't hide processing immediately, let user see error
                     } else {
-                        document.getElementById('fail-title').innerText = "ไม่สามารถปลดล็อคได้";
-                        document.getElementById('state-failed').style.display = 'block';
+                        // Logic Failed
+                        document.getElementById('state-processing').style.display = 'none';
+                        document.getElementById('force-dl-area').style.display = 'none';
+
+                        if (taskType) {
+                            document.getElementById('error-title').innerText = "แปลงไฟล์ไม่สำเร็จ";
+                            document.getElementById('error-desc').innerText = "เกิดข้อผิดพลาดในการแปลงไฟล์ (อาจเกิดจากไฟล์เสียหาย)";
+                            document.getElementById('error-message').style.display = 'block';
+                        } else {
+                            document.getElementById('fail-title').innerText = "ไม่สามารถปลดล็อคได้";
+                            document.getElementById('state-failed').style.display = 'block';
+                        }
                     }
                 } else {
                     // Still processing
@@ -283,7 +315,7 @@
                 }
             })
             .catch(err => {
-                consoleLog.textContent = `> Error connecting to worker: ${err}`;
+                consoleLog.textContent = `> Connection Error: ${err}`;
                 setTimeout(checkStatus, 5000);
             });
     }
