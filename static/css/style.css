@@ -13,6 +13,10 @@
     --nav-height: 70px;
 }
 
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 /* Dark Mode Variables */
 [data-theme="dark"] {
     --primary-color: #ff4d4d;
@@ -230,6 +234,7 @@ main {
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 15px;
     text-decoration: none;
 }
