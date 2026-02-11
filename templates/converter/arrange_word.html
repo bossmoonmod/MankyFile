@@ -11,11 +11,12 @@
             <div id="file-grid" class="file-grid">
                 {% for file in files %}
                 <div class="file-card" draggable="true" data-id="{{ file.id }}">
+                    <div class="page-number">1</div>
                     <div class="card-actions">
                         <button type="button" class="btn-remove" onclick="removeFile(this)">×</button>
                     </div>
-                    <div class="card-preview">
-                        <!-- Realistic Document Page Simulation with Rich Preview -->
+                    <div class="card-preview doc-preview-wrapper">
+                        <!-- Realistic Word Document Page Simulation -->
                         <div class="doc-page-simulation real-text-preview">
                             {% if file.preview_data %}
                             {% for line in file.preview_data %}
@@ -25,13 +26,15 @@
                             </div>
                             {% endfor %}
                             {% else %}
-                            <!-- Fallback lines if extraction failed -->
                             <div class="doc-line line-short"></div>
                             <div class="doc-line line-long"></div>
                             <div class="doc-line line-long"></div>
                             <div class="doc-line line-long"></div>
                             <div class="doc-line line-medium"></div>
                             {% endif %}
+
+                            <!-- Word Identifier Badge -->
+                            <div class="word-indicator">WORD</div>
                         </div>
                     </div>
                     <div class="card-info">
@@ -41,46 +44,71 @@
                 </div>
                 {% endfor %}
 
-                <!-- Add more files button (Visual card) -->
-                <div class="file-card add-more-card" onclick="triggerAddFiles()" title="เพิ่มไฟล์">
+                <!-- Add more files button -->
+                <div class="file-card add-more-card" onclick="triggerAddFiles()" title="เพิ่มไฟล์ Word">
                     <div class="add-icon-wrapper">
                         <span class="add-symbol">+</span>
+                        <span class="add-text">เพิ่มไฟล์</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right Sidebar -->
+        <!-- Right Sidebar (Redesigned) -->
         <div class="workspace-sidebar">
-            <div class="sidebar-header">
-                <h2>รวมไฟล์ Word</h2>
-                <p>จัดเรียงไฟล์ในลำดับที่คุณต้องการ</p>
-            </div>
-
-            <div class="sidebar-content">
-                <ul class="sidebar-options-list">
-                    <li>
-                        <span>จำนวนไฟล์ทั้งหมด</span>
-                        <span class="badge" id="file-count">{{ files|length }}</span>
-                    </li>
-                </ul>
-
-                <div class="add-file-sidebar-btn" onclick="triggerAddFiles()">
-                    <span>+ เพิ่มไฟล์อีก</span>
+            <div class="sidebar-inner">
+                <div class="sidebar-header">
+                    <div class="icon-circle">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
+                    </div>
+                    <h2>รวมไฟล์ Word</h2>
+                    <p>จัดเรียงเอกสาร Word ของคุณให้ตรงตามลำดับที่ต้องการ</p>
                 </div>
-            </div>
 
-            <div class="sidebar-footer">
-                <button type="submit" class="btn-merge-action">
-                    รวมไฟล์ Word <span>→</span>
-                </button>
+                <div class="sidebar-content">
+                    <div class="info-card">
+                        <div class="info-item">
+                            <span class="label">ไฟล์ที่เลือก</span>
+                            <span class="value"><span id="file-count">{{ files|length }}</span> ไฟล์</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">รูปแบบ</span>
+                            <span class="value">Word (.docx)</span>
+                        </div>
+                    </div>
+
+                    <div class="action-list">
+                        <button type="button" class="action-item" onclick="triggerAddFiles()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            เลือกไฟล์เพิ่ม
+                        </button>
+                    </div>
+                </div>
+
+                <div class="sidebar-footer">
+                    <button type="submit" class="btn-merge-action">
+                        รวมไฟล์ Word
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" style="margin-left: 8px;">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                    <p class="footer-hint">ระบบจะรวมทุกเอกสารเข้าด้วยกัน</p>
+                </div>
             </div>
         </div>
     </form>
 </div>
 
 <!-- Hidden Form for Adding Files -->
-<!-- Moved outside the main flex container and hidden with aggressive CSS -->
 <div style="height:0; overflow:hidden; opacity:0; width:0; position:absolute; pointer-events:none;">
     <form id="add-files-form" method="post" enctype="multipart/form-data"
         action="{% url 'converter:merge_word' %}?append=true">
@@ -90,11 +118,17 @@
 </div>
 
 <style>
-    /* Layout Fixes */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #e5322d 0%, #c31432 100%);
+        --sidebar-bg: #ffffff;
+        --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        --accent-color: #e5322d;
+    }
+
     main {
         padding: 0 !important;
         max-width: 100% !important;
-        background-color: #f4f4f4;
+        background-color: #f8fafc;
     }
 
     .workspace-container {
@@ -114,154 +148,267 @@
         flex: 1;
         padding: 40px;
         overflow-y: auto;
-        background-color: #f4f7fa;
+        background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+        background-size: 24px 24px;
+        background-color: #f1f5f9;
+        scroll-behavior: smooth;
     }
 
+    /* Sidebar Redesign */
     .workspace-sidebar {
-        width: 320px;
-        background-color: white;
-        border-left: 1px solid #e0e0e0;
+        width: 340px;
+        background-color: var(--sidebar-bg);
+        border-left: 1px solid #e2e8f0;
+        z-index: 20;
+        flex-shrink: 0;
         display: flex;
         flex-direction: column;
-        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.05);
-        z-index: 10;
-        flex-shrink: 0;
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.03);
+    }
+
+    .sidebar-inner {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 30px 24px;
+    }
+
+    .sidebar-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+
+    .icon-circle {
+        width: 56px;
+        height: 56px;
+        background: #fff1f0;
+        color: var(--accent-color);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        box-shadow: 0 4px 12px rgba(229, 50, 45, 0.1);
+    }
+
+    .sidebar-header h2 {
+        font-size: 22px;
+        font-weight: 800;
+        color: #1e293b;
+        margin: 0 0 8px;
+    }
+
+    .sidebar-header p {
+        font-size: 14px;
+        color: #64748b;
+        line-height: 1.5;
+    }
+
+    .info-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .info-item .label {
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .info-item .value {
+        color: #1e293b;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .action-item {
+        width: 100%;
+        padding: 12px;
+        background: white;
+        border: 1px dashed #cbd5e1;
+        border-radius: 12px;
+        color: #475569;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+
+    .action-item:hover {
+        border-color: var(--accent-color);
+        color: var(--accent-color);
+        background: #fff1f0;
+    }
+
+    .btn-merge-action {
+        width: 100%;
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        padding: 18px;
+        border-radius: 16px;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 10px 20px -5px rgba(229, 50, 45, 0.4);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .btn-merge-action:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 15px 30px -5px rgba(229, 50, 45, 0.5);
+    }
+
+    .sidebar-footer {
+        margin-top: auto;
+        text-align: center;
+    }
+
+    .footer-hint {
+        margin-top: 12px;
+        font-size: 12px;
+        color: #94a3b8;
     }
 
     /* Grid Layout */
     .file-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 25px;
-        max-width: 1200px;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 30px;
+        max-width: 1300px;
         margin: 0 auto;
-        align-items: start;
     }
 
     .file-card {
         background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        border-radius: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         position: relative;
         cursor: grab;
         display: flex;
         flex-direction: column;
         border: 2px solid transparent;
-        transition: all 0.2s ease;
-        padding: 15px;
-        height: 260px;
+        transition: all 0.3s ease;
+        padding: 16px;
+        height: 280px;
     }
 
     .file-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        border-color: #e5322d;
+        transform: translateY(-8px) rotate(1deg);
+        box-shadow: var(--card-shadow);
+        border-color: #fee2e2;
     }
 
     .file-card.dragging {
-        opacity: 0.5;
-        border: 2px dashed #999;
-        transform: scale(0.95);
+        opacity: 0.4;
+        transform: scale(0.9);
+        border: 2px dashed #94a3b8;
     }
 
-    /* Remove Button */
-    .card-actions {
+    /* Page Number Badge */
+    .page-number {
         position: absolute;
-        top: 10px;
-        right: 10px;
-        z-index: 5;
-    }
-
-    .btn-remove {
-        background: #ff4d4f;
+        top: -12px;
+        left: -12px;
+        width: 32px;
+        height: 32px;
+        background: var(--primary-gradient);
         color: white;
-        border: none;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        cursor: pointer;
-        font-size: 18px;
-        line-height: 1;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
+        font-weight: 800;
+        font-size: 14px;
+        box-shadow: 0 4px 10px rgba(229, 50, 45, 0.3);
+        z-index: 10;
+        border: 2px solid white;
+    }
+
+    .btn-remove {
+        background: #fee2e2;
+        color: #ef4444;
+        border: none;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        cursor: pointer;
         opacity: 0;
-        transform: scale(0.8);
         transition: all 0.2s;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 15;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .file-card:hover .btn-remove {
         opacity: 1;
-        transform: scale(1);
     }
 
     .btn-remove:hover {
-        background-color: #d9363e;
-        transform: scale(1.1);
+        background: #ef4444;
+        color: white;
     }
 
-    /* Document Preview */
-    .card-preview {
+    .doc-preview-wrapper {
         flex: 1;
+        background-color: #f8fafc;
+        border-radius: 14px;
+        margin-bottom: 12px;
+        border: 1px solid #f1f5f9;
+        overflow: hidden;
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: #f9fafb;
-        border-radius: 8px;
-        margin-bottom: 10px;
-        border: 1px solid #eee;
     }
 
     .doc-page-simulation {
-        width: 80px;
-        height: 110px;
+        width: 90px;
+        height: 124px;
         background: white;
         border: 1px solid #e0e0e0;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-        padding: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        padding: 12px;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
         position: relative;
-        transition: transform 0.2s;
-    }
-
-    .file-card:hover .doc-page-simulation {
-        transform: scale(1.05);
-    }
-
-    .doc-page-simulation::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        border-width: 0 15px 15px 0;
-        border-style: solid;
-        border-color: #f9fafb #fff transparent transparent;
-        box-shadow: -1px 1px 2px rgba(0, 0, 0, 0.05);
     }
 
     .doc-line {
         height: 4px;
-        background: #eef1f5;
+        background: #f1f5f9;
         border-radius: 2px;
     }
 
     .doc-text-line {
         font-size: 4px;
-        color: #666;
+        color: #94a3b8;
         line-height: 1.4;
-        overflow: hidden;
         white-space: nowrap;
+        overflow: hidden;
         text-overflow: ellipsis;
-        border-bottom: 1px solid #eee;
-    }
-
-    .real-text-preview {
-        justify-content: flex-start;
-        /* Top align */
-        padding-top: 15px;
+        border-bottom: 1px solid #f8fafc;
     }
 
     .line-short {
@@ -276,326 +423,123 @@
         width: 100%;
     }
 
+    .word-indicator {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        background: #2b579a;
+        color: white;
+        font-size: 7px;
+        font-weight: bold;
+        padding: 1px 3px;
+        border-radius: 2px;
+        opacity: 0.8;
+    }
+
     .card-info {
         text-align: center;
-        padding-top: 5px;
     }
 
     .filename {
         font-size: 13px;
-        color: #4b5563;
+        color: #334155;
+        font-weight: 600;
         display: -webkit-box;
         -webkit-line-clamp: 2;
+        line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
-        text-overflow: ellipsis;
-        font-weight: 500;
         line-height: 1.4;
     }
 
-    /* Add More Card */
     .add-more-card {
-        border: 2px dashed #d1d5db;
-        background: transparent;
-        box-shadow: none;
+        border: 3px dashed #e2e8f0;
+        background: rgba(255, 255, 255, 0.5);
         justify-content: center;
         align-items: center;
-        cursor: pointer;
+        box-shadow: none;
     }
 
     .add-more-card:hover {
-        border-color: #e5322d;
-        background: rgba(229, 50, 45, 0.03);
-        transform: translateY(-5px);
+        border-color: var(--accent-color);
+        background: #fff;
     }
 
     .add-icon-wrapper {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background-color: #f3f4f6;
         display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: center;
+        gap: 12px;
+        color: #94a3b8;
         transition: all 0.2s;
     }
 
     .add-more-card:hover .add-icon-wrapper {
-        background-color: #e5322d;
-        color: white;
+        color: var(--accent-color);
     }
 
     .add-symbol {
-        font-size: 32px;
-        color: #9ca3af;
-        font-weight: 300;
-        line-height: 1;
-        margin-top: -2px;
-        /* Visual adjustment */
+        font-size: 40px;
+        font-weight: 200;
     }
 
-    .add-more-card:hover .add-symbol {
-        color: white;
-    }
-
-    /* Sidebar Styling */
-    .sidebar-header {
-        padding: 25px;
-        border-bottom: 1px solid #f0f0f0;
-        text-align: center;
-    }
-
-    .sidebar-header h2 {
-        margin: 0;
-        font-size: 20px;
-        color: #1f2937;
-        font-weight: 700;
-    }
-
-    .sidebar-header p {
-        margin: 8px 0 0;
+    .add-text {
         font-size: 14px;
-        color: #6b7280;
-    }
-
-    .sidebar-content {
-        flex: 1;
-        padding: 25px;
-    }
-
-    .sidebar-options-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .sidebar-options-list li {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 0;
-        border-bottom: 1px solid #f5f5f5;
-        font-size: 14px;
-        color: #4b5563;
-    }
-
-    .badge {
-        background: #e5322d;
-        color: white;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: bold;
-    }
-
-    .add-file-sidebar-btn {
-        margin-top: 20px;
-        padding: 12px;
-        border: 1px dashed #d1d5db;
-        border-radius: 8px;
-        text-align: center;
-        color: #6b7280;
-        cursor: pointer;
-        transition: all 0.2s;
-        font-size: 14px;
-    }
-
-    .add-file-sidebar-btn:hover {
-        border-color: #e5322d;
-        color: #e5322d;
-        background: #fff5f5;
-    }
-
-    .sidebar-footer {
-        padding: 25px;
-        border-top: 1px solid #f0f0f0;
-        background-color: white;
-    }
-
-    .btn-merge-action {
-        width: 100%;
-        background: linear-gradient(135deg, #e5322d 0%, #c91814 100%);
-        color: white;
-        border: none;
-        padding: 16px;
-        border-radius: 10px;
-        font-size: 18px;
         font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 12px;
-        transition: transform 0.2s, box-shadow 0.2s;
-        box-shadow: 0 4px 12px rgba(229, 50, 45, 0.3);
     }
 
-    .btn-merge-action:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(229, 50, 45, 0.4);
-    }
-
-    .btn-merge-action:active {
-        transform: translateY(0);
-    }
-
-    /* --- Mobile Responsive Styles --- */
-    /* --- Mobile Responsive Styles (Redesigned) --- */
-    /* --- Mobile Responsive Styles (Final Fix) --- */
     @media (max-width: 900px) {
-
-        /* Ensure padding doesn't increase width */
-        .workspace-container,
-        .workspace-main,
-        .file-grid,
-        .file-card,
-        .workspace-sidebar,
-        .btn-merge-action {
-            box-sizing: border-box;
-        }
-
-        /* Main Container */
         .workspace-container {
             flex-direction: column;
-            width: 100%;
-            height: auto;
-            position: relative;
-            overflow-x: hidden;
         }
 
-        /* Content Area */
         .workspace-main {
-            display: block;
-            /* Reset flex if any */
-            width: 100%;
-            padding: 15px;
-            /* Balanced padding */
-            padding-bottom: 100px;
-            margin: 0;
-            overflow-x: hidden;
+            padding: 20px;
+            padding-bottom: 120px;
         }
 
-        /* 2-Column Grid for Files */
         .file-grid {
-            display: grid !important;
-            grid-template-columns: 1fr 1fr !important;
-            /* Strict 2 columns */
-            gap: 15px !important;
-            width: 100%;
-            margin: 0;
-            max-width: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
         }
 
         .file-card {
             height: 220px;
-            /* Increased height */
-            width: 100%;
-            margin: 0;
-            padding: 10px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
+            border-radius: 16px;
         }
 
-        /* Preview Scaling - Container */
-        .file-card .card-preview {
-            flex: 1;
-            width: 100%;
-            margin-bottom: 5px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: transparent;
-            border: none;
-        }
-
-        /* The actual document shape */
-        .file-card .doc-page-simulation {
-            transform: scale(0.8);
-            transform-origin: center;
-            margin: 0;
-            flex-shrink: 0;
-        }
-
-        .add-more-card {
-            height: 220px;
-        }
-
-        /* Filename Container */
-        .card-info {
-            padding: 0 2px;
-            width: 100%;
-            height: 36px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            overflow: hidden;
-            margin-top: auto;
-        }
-
-        .filename {
+        .page-number {
+            top: -8px;
+            left: -8px;
+            width: 28px;
+            height: 28px;
             font-size: 12px;
-            line-height: 1.4;
-            max-width: 100%;
-            color: #333;
-            text-align: center;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: normal;
         }
 
-        /* Floating Sidebar (Fixed Bottom) */
         .workspace-sidebar {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            /* Stretch from left to right */
-            width: auto;
-            /* Auto width based on left/right */
+            width: 100%;
             height: auto;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(8px);
-            border-top: 1px solid #e0e0e0;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
-            z-index: 9999;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            border-top: 1px solid #e2e8f0;
+            border-left: none;
         }
 
-        /* Hide Sidebar Header & Content */
+        .sidebar-inner {
+            padding: 12px 20px;
+        }
+
         .sidebar-header,
         .sidebar-content {
-            display: none !important;
-        }
-
-        .sidebar-footer {
-            width: 100%;
-            max-width: 400px;
-            /* Limit button width on tablets/large phones */
-            padding: 0;
-            border: none;
-            background: transparent;
-            display: flex;
-            justify-content: center;
+            display: none;
         }
 
         .btn-merge-action {
-            width: 100%;
             padding: 14px;
             font-size: 16px;
-            border-radius: 50px;
-            box-shadow: 0 4px 12px rgba(229, 50, 45, 0.3);
-            margin: 0;
+            border-radius: 12px;
         }
     }
 </style>
@@ -604,71 +548,68 @@
     const fileGrid = document.getElementById('file-grid');
     let draggedItem = null;
 
-    // Trigger file input
-    function triggerAddFiles() {
-        document.getElementById('add-files-input').click();
-    }
-
-    // Submit form independently
+    function triggerAddFiles() { document.getElementById('add-files-input').click(); }
     function submitAddFiles() {
-        const input = document.getElementById('add-files-input');
-        if (input.files.length > 0) {
+        if (document.getElementById('add-files-input').files.length > 0) {
             document.getElementById('add-files-form').submit();
         }
     }
 
-    fileGrid.querySelectorAll('.file-card:not(.add-more-card)').forEach(item => {
-        item.addEventListener('dragstart', () => {
-            draggedItem = item;
-            setTimeout(() => item.classList.add('dragging'), 0);
+    function updatePageNumbers() {
+        const cards = fileGrid.querySelectorAll('.file-card:not(.add-more-card)');
+        cards.forEach((card, index) => {
+            const numBadge = card.querySelector('.page-number');
+            if (numBadge) numBadge.innerText = index + 1;
         });
+        document.getElementById('file-count').innerText = cards.length;
+    }
 
+    function initDraggable(item) {
+        item.addEventListener('dragstart', (e) => {
+            draggedItem = item;
+            item.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        });
         item.addEventListener('dragend', () => {
             item.classList.remove('dragging');
             draggedItem = null;
+            updatePageNumbers();
         });
-    });
+    }
+
+    fileGrid.querySelectorAll('.file-card:not(.add-more-card)').forEach(initDraggable);
 
     fileGrid.addEventListener('dragover', (e) => {
         e.preventDefault();
         const afterElement = getDragAfterElement(fileGrid, e.clientX, e.clientY);
         const currentDraggable = document.querySelector('.dragging');
-        if (afterElement == null) {
-            const addBtn = fileGrid.querySelector('.add-more-card');
-            fileGrid.insertBefore(currentDraggable, addBtn);
-        } else {
-            fileGrid.insertBefore(currentDraggable, afterElement);
+        if (currentDraggable) {
+            if (afterElement == null) {
+                fileGrid.insertBefore(currentDraggable, fileGrid.querySelector('.add-more-card'));
+            } else {
+                fileGrid.insertBefore(currentDraggable, afterElement);
+            }
         }
     });
 
     function getDragAfterElement(container, x, y) {
         const draggableElements = [...container.querySelectorAll('.file-card:not(.dragging):not(.add-more-card)')];
-
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
             const boxCenterX = box.left + box.width / 2;
-            const boxCenterY = box.top + box.height / 2;
             const dist = Math.hypot(x - boxCenterX, y - boxCenterY);
-            if (dist < closest.dist) {
-                return { dist: dist, element: child };
-            } else {
-                return closest;
-            }
+            if (dist < closest.dist) return { dist: dist, element: child };
+            return closest;
         }, { dist: Number.POSITIVE_INFINITY }).element;
     }
 
     function removeFile(btn) {
         if (confirm('ต้องการลบไฟล์นี้ใช่ไหม?')) {
-            const card = btn.closest('.file-card');
-            card.remove();
-            updateCount();
-            // Optional: You could make an AJAX call here to actually remove from session
+            btn.closest('.file-card').remove();
+            updatePageNumbers();
         }
     }
 
-    function updateCount() {
-        const count = document.querySelectorAll('.file-card:not(.add-more-card)').length;
-        document.getElementById('file-count').innerText = count;
-    }
+    updatePageNumbers();
 </script>
 {% endblock %}
