@@ -13,7 +13,9 @@
     --nav-height: 70px;
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
     box-sizing: border-box;
 }
 
@@ -128,9 +130,9 @@ main {
 
 .tools-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 24px;
-    max-width: 1200px;
+    max-width: 1400px;
     width: 100%;
     padding: 20px;
 }
