@@ -1507,42 +1507,110 @@ class ImageToPDFView(View):
         return render(request, 'converter/tool_base.html', context)
 
     def post(self, request):
-        import requests
-        try:
-            if 'files' in request.FILES:
-                uploaded_file = request.FILES.getlist('files')[0]
-            elif 'file' in request.FILES:
-                uploaded_file = request.FILES['file']
-            else:
-                return redirect('converter:index')
+        files = request.FILES.getlist('files')
+        if files:
+            uploaded_ids = []
+            for f in files:
+                uploaded_file = UploadedFile.objects.create(
+                    file=f,
+                    original_filename=f.name
+                )
+                uploaded_ids.append(str(uploaded_file.id))
             
-            upload_instance = UploadedFile.objects.create(file=uploaded_file, original_filename=uploaded_file.name)
-            input_path = upload_instance.file.path
+            # Save IDs to session
+            if request.GET.get('append') == 'true':
+                 existing_ids = request.session.get('image_to_pdf_ids', [])
+                 existing_ids.extend(uploaded_ids)
+                 request.session['image_to_pdf_ids'] = existing_ids
+                 request.session.modified = True
+            else:
+                 request.session['image_to_pdf_ids'] = uploaded_ids
+                 request.session.modified = True
+            
+            return redirect('converter:arrange_image')
+            
+        return redirect('converter:image_to_pdf')
+
+class ArrangeImageView(View):
+    def get(self, request):
+        file_ids = request.session.get('image_to_pdf_ids', [])
+        if not file_ids:
+            return redirect('converter:image_to_pdf')
+        
+        files = UploadedFile.objects.filter(id__in=file_ids)
+        files_dict = {str(f.id): f for f in files}
+        ordered_files = [files_dict[fid] for fid in file_ids if fid in files_dict]
+
+        for f in ordered_files:
+            f.display_name = f.original_filename if f.original_filename else f.filename
+
+        context = {
+            'files': ordered_files,
+            'title': 'จัดเรียงรูปภาพ',
+            'task_type': 'IMAGE_TO_PDF'
+        }
+        return render(request, 'converter/arrange_image.html', context)
+
+    def post(self, request):
+        ordered_ids = request.POST.getlist('file_order[]')
+        
+        if not ordered_ids:
+            return redirect('converter:arrange_image')
+
+        files = []
+        try:
+            for fid in ordered_ids:
+                files.append(UploadedFile.objects.get(id=fid))
+        except UploadedFile.DoesNotExist:
+            return redirect('converter:image_to_pdf')
+
+        import requests
+        import zipfile
+        import io
+        
+        try:
+            # Re-order images and zip them for the worker
+            zip_buffer = io.BytesIO()
+            with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+                for i, f in enumerate(files):
+                    zip_file.write(f.file.path, arcname=f"image_{i+1:03d}_{f.original_filename}")
+
+            zip_buffer.seek(0)
             
             WORKER_URL = 'https://blilnkdex.biz.id/api.php'
             API_KEY = 'MANKY_SECRET_KEY_12345'
             
-            with open(input_path, 'rb') as f:
-                files = {'file': (uploaded_file.name, f, uploaded_file.content_type)}
-                headers = {'X-API-KEY': API_KEY}
-                data = {'type': 'image-to-pdf'}
+            # Send ZIP to worker with type image-to-pdf
+            files_payload = {'file': ('images.zip', zip_buffer, 'application/zip')}
+            headers = {'X-API-KEY': API_KEY}
+            data = {'type': 'image-to-pdf'}
+            
+            target_url = f"{WORKER_URL}?key={API_KEY}"
+            response = requests.post(target_url, files=files_payload, data=data, headers=headers, timeout=300, verify=False)
+            
+            if response.status_code == 200:
+                res_data = response.json()
+                task_id = res_data.get('task_id')
                 
-                target_url = f"{WORKER_URL}?key={API_KEY}"
-                response = requests.post(target_url, files=files, data=data, headers=headers, timeout=300, verify=False)
+                # Cleanup session
+                if 'image_to_pdf_ids' in request.session:
+                    del request.session['image_to_pdf_ids']
                 
-                if response.status_code == 200:
-                    res_data = response.json()
-                    task_id = res_data.get('task_id')
-                    return render(request, 'converter/worker_wait.html', {
-                        'task_id': task_id,
-                        'worker_host': 'https://blilnkdex.biz.id',
-                        'file_name': uploaded_file.name,
-                        'task_type': 'PDF'
-                    })
-                else:
-                    raise Exception(f"Worker Error: {response.status_code}")
+                return render(request, 'converter/worker_wait.html', {
+                    'task_id': task_id,
+                    'worker_host': 'https://blilnkdex.biz.id',
+                    'file_name': f"images_to_pdf_{task_id}.pdf",
+                    'task_type': 'PDF'
+                })
+            else:
+                raise Exception(f"Worker Error: {response.status_code}")
+                
         except Exception as e:
-            return render(request, 'converter/tool_base.html', {'error': str(e), 'title': 'Image เป็น PDF'})
+            return render(request, 'converter/arrange_image.html', {
+                'error': str(e),
+                'files': files,
+                'title': 'จัดเรียงรูปภาพ'
+            })
 
 class ImageResizeView(View):
     def get(self, request):

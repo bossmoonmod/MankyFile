@@ -307,9 +307,7 @@
 
     // Listen for page exit or app close
     window.addEventListener('pagehide', cancelTask);
-    window.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') cancelTask();
-    });
+    /* Removed visibilitychange to allow users to switch tabs without cancelling */
 
     // Start Polling
     setTimeout(checkStatus, 1000);
