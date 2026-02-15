@@ -1815,11 +1815,17 @@ class HostImageView(View):
             WORKER_URL = 'https://blilnkdex.biz.id/image_api.php'
             API_KEY = 'MANKY_SECRET_KEY_12345'
             
-            files = {'image': (image.name, image.read(), image.content_type)}
             data = {'auto_delete': auto_delete}
             headers = {'X-API-KEY': API_KEY}
             
             target_url = f'{WORKER_URL}?action=upload&key={API_KEY}'
+            
+            # Ensure we are reading from the start of the file
+            image.seek(0)
+            file_content = image.read()
+            print(f"DEBUG: Uploading image to Worker using {target_url} | Size: {len(file_content)} bytes")
+            
+            files = {'image': (image.name, file_content, image.content_type)}
             response = requests.post(target_url, files=files, data=data, headers=headers, timeout=300, verify=False)
             
             if response.status_code == 200:
