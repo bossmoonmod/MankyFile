@@ -2,6 +2,14 @@
 require_once 'config.php';
 require_once 'db.php';
 
+// 0. Support path-based IDs for better extension detection (e.g. image_api.php/img_xxx.gif)
+if (isset($_SERVER['PATH_INFO'])) {
+    $path_info = trim($_SERVER['PATH_INFO'], '/');
+    if (preg_match('/^(img_[a-z0-9]+)(\.[a-z0-9]+)?$/i', $path_info, $matches)) {
+        $_GET['id'] = $matches[1];
+    }
+}
+
 // 1. serve image if id is provided via GET and no action
 if (isset($_GET['id']) && !isset($_GET['action'])) {
     $id = $_GET['id'];
@@ -98,7 +106,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'upload') {
             $host = $_SERVER['HTTP_HOST'];
             $script_url = $protocol . "://" . $host . $_SERVER['SCRIPT_NAME'];
             $viewer_url = $script_url . "?id=" . $id;
-            $direct_url = $script_url . "?id=" . $id; // serving direct file
+            // Use PATH_INFO for direct links to help apps like Discord detect extensions
+            $direct_url = $script_url . "/" . $id . "." . $ext; 
 
             echo json_encode([
                 'success' => true,
