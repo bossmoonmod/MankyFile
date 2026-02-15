@@ -20,6 +20,9 @@ if (isset($_GET['id']) && !isset($_GET['action'])) {
                     echo "Image Expired";
                     exit;
                 }
+                if ($img['mime_type'] === 'image/gif') {
+                    header('Content-Disposition: inline; filename="'.$img['id'].'.gif"');
+                }
                 header('Content-Type: ' . $img['mime_type']);
                 readfile($path);
                 exit;
