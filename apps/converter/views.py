@@ -1770,6 +1770,8 @@ class ShortenURLView(View):
 class RedirectShortLinkView(View):
     def get(self, request, short_code):
         return redirect(f'https://blilnkdex.biz.id/shorten_api.php?code={short_code}')
+
+class SystemCleanupView(View):
     def get(self, request):
         # Security check (Simple key)
         key = request.GET.get('key')
