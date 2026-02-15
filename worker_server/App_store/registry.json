@@ -1,0 +1,112 @@
+[
+    {
+        "id": "ai_chat",
+        "title": "Neural AI",
+        "icon": "fa-robot",
+        "file": "ai_chat.php"
+    },
+    {
+        "id": "google",
+        "title": "Google",
+        "icon": "fa-google",
+        "isBrand": true,
+        "file": "google.php"
+    },
+    {
+        "id": "gdrive",
+        "title": "Cloud",
+        "icon": "fa-google-drive",
+        "isBrand": true,
+        "file": "gdrive.php"
+    },
+    {
+        "id": "monitor",
+        "title": "Heartbeat",
+        "icon": "fa-heartbeat",
+        "file": "monitor.php"
+    },
+    {
+        "id": "disk",
+        "title": "Disk",
+        "icon": "fa-hdd",
+        "file": "disk_win.php"
+    },
+    {
+        "id": "music_win",
+        "title": "Music Lab",
+        "icon": "fa-compact-disc",
+        "file": "music_win.php"
+    },
+    {
+        "id": "api_master",
+        "title": "Node Master",
+        "icon": "fa-satellite-dish",
+        "file": "api_master.php"
+    },
+    {
+        "id": "notes",
+        "title": "Notes",
+        "icon": "fa-sticky-note",
+        "file": "notes.php"
+    },
+    {
+        "id": "news_app",
+        "title": "Daily News",
+        "icon": "fa-newspaper",
+        "file": "news_app.php"
+    },
+    {
+        "id": "gallery",
+        "title": "Gallery",
+        "icon": "fa-images",
+        "file": "gallery.php"
+    },
+    {
+        "id": "walls",
+        "title": "Aura",
+        "icon": "fa-palette",
+        "file": "walls.php"
+    },
+    {
+        "id": "security",
+        "title": "Security",
+        "icon": "fa-shield-alt",
+        "file": "security.php"
+    },
+    {
+        "id": "calc",
+        "title": "Calculator",
+        "icon": "fa-calculator",
+        "file": "calc.php"
+    },
+    {
+        "id": "editor",
+        "title": "Canvas",
+        "icon": "fa-magic",
+        "file": "editor.php"
+    },
+    {
+        "id": "term",
+        "title": "Terminal",
+        "icon": "fa-terminal",
+        "file": "term.php"
+    },
+    {
+        "id": "prism",
+        "title": "Prism",
+        "icon": "fa-eye-dropper",
+        "file": "prism.php"
+    },
+    {
+        "id": "store",
+        "title": "App Store",
+        "icon": "fa-shop",
+        "file": "store.php"
+    },
+    {
+        "id": "image_manager",
+        "title": "Image Moderator",
+        "icon": "fa-eye",
+        "file": "image_manager.php"
+    }
+]

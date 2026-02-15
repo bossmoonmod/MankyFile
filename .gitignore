@@ -110,4 +110,6 @@ node_modules/
 .DS_Store
 
 # MankyOS Sub-system (Standalone)
-worker_server/
+# worker_server/
+worker_server/db/*.sqlite
+worker_server/storage/
