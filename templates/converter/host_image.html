@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="tool-container">
+    <div class="tool-header">
+        <h1 id="tool-title-heading">{{ title }}</h1>
+        <p id="tool-subtitle-text">{{ subtitle }}</p>
+    </div>
+
+    <!-- Error Message Display -->
+    {% if error %}
+    <div style="background-color: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ef9a9a; text-align: center;">
+        <strong>เกิดข้อผิดพลาด:</strong> {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Upload Form -->
+    <div class="upload-area">
+        <form id="upload-form" method="post" enctype="multipart/form-data" action="{% url 'converter:host_image' %}">
+            {% csrf_token %}
+            
+            <!-- Hidden input for file selection -->
+            <input type="file" id="image-input" name="image" style="display: none;" accept="image/*">
+
+            <a href="#" id="select-image-btn" class="btn-upload-big">
+                <span data-i18n="btn_select_file">เลือกรูปภาพ</span>
+            </a>
+
+            <div class="drop-text" data-i18n="drag_drop_hint">หรือวางรูปภาพที่นี่</div>
+
+            <div class="settings-panel" style="margin-top: 30px; text-align: left; background: rgba(0,0,0,0.03); padding: 20px; border-radius: 12px; border: 1px dashed rgba(0,0,0,0.1);">
+                <label style="display: block; font-weight: 600; margin-bottom: 10px; color: var(--text-color);">
+                    <i class="fas fa-trash-alt"></i> Auto delete
+                </label>
+                <select name="auto_delete" class="lang-select" style="width: 100%; height: 45px; border-radius: 8px; padding: 0 15px;">
+                    <option value="never">Don't auto delete</option>
+                    <option value="5min">หลังจาก 5 นาที</option>
+                    <option value="15min">หลังจาก 15 นาที</option>
+                    <option value="30min">หลังจาก 30 นาที</option>
+                    <option value="1h">หลังจาก 1 ชั่วโมง</option>
+                    <option value="3h">หลังจาก 3 ชั่วโมง</option>
+                    <option value="6h">หลังจาก 6 ชั่วโมง</option>
+                    <option value="12h">หลังจาก 12 ชั่วโมง</option>
+                    <option value="1d">หลังจาก 1 วัน</option>
+                    <option value="2d">หลังจาก 2 วัน</option>
+                    <option value="3d">หลังจาก 3 วัน</option>
+                    <option value="1w">หลังจาก 1 อาทิตย์</option>
+                    <option value="2w">หลังจาก 2 อาทิตย์</option>
+                    <option value="1m">หลังจาก 1 เดือน</option>
+                    <option value="2m">หลังจาก 2 เดือน</option>
+                    <option value="3m">หลังจาก 3 เดือน</option>
+                </select>
+            </div>
+
+            <button type="submit" id="submit-btn" class="btn btn-primary"
+                style="display: none; margin-top: 25px; width: 100%; padding: 15px; font-size: 1.2rem; border-radius: 30px;">
+                อัพโหลดเลย! 🚀
+            </button>
+        </form>
+    </div>
+
+    <!-- Progress / Status -->
+    <div id="progress-container" style="display: none; margin-top: 30px; width: 100%; max-width: 400px; margin-left: auto; margin-right: auto;">
+        <div style="background: #e0e0e0; height: 6px; border-radius: 3px; overflow: hidden;">
+            <div id="progress-bar" style="background: var(--primary-color); width: 0%; height: 100%; transition: width 0.3s;"></div>
+        </div>
+        <p id="status-text" style="margin-top: 15px; color: #666; font-weight: 500;">กำลังอัปโหลดรูปภาพไปยังเซิร์ฟเวอร์สำรอง...</p>
+    </div>
+</div>
+
+<script>
+    const imageInput = document.getElementById('image-input');
+    const selectBtn = document.getElementById('select-image-btn');
+    const submitBtn = document.getElementById('submit-btn');
+    const form = document.getElementById('upload-form');
+    const progressContainer = document.getElementById('progress-container');
+    const uploadArea = document.querySelector('.upload-area');
+
+    selectBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        imageInput.click();
+    });
+
+    imageInput.addEventListener('change', () => {
+        if (imageInput.files.length > 0) {
+            submitBtn.style.display = 'block';
+            selectBtn.querySelector('span').textContent = imageInput.files[0].name;
+            // Scroll to button
+            submitBtn.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+
+    form.addEventListener('submit', () => {
+        uploadArea.style.display = 'none';
+        progressContainer.style.display = 'block';
+        
+        // Fake progress
+        let p = 0;
+        const interval = setInterval(() => {
+            p += Math.random() * 15;
+            if (p > 95) {
+                p = 95;
+                clearInterval(interval);
+            }
+            document.getElementById('progress-bar').style.width = p + '%';
+        }, 200);
+    });
+
+    // Drag and Drop
+    const dropZone = document.querySelector('.tool-container');
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.background = 'rgba(229, 50, 45, 0.05)'; });
+    dropZone.addEventListener('dragleave', () => { dropZone.style.background = 'transparent'; });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.background = 'transparent';
+        if (e.dataTransfer.files.length > 0) {
+            imageInput.files = e.dataTransfer.files;
+            submitBtn.style.display = 'block';
+            selectBtn.querySelector('span').textContent = imageInput.files[0].name;
+        }
+    });
+</script>
+
+<style>
+    .settings-panel i { margin-right: 8px; color: var(--primary-color); }
+    [data-theme='dark'] .settings-panel { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+</style>
+{% endblock %}

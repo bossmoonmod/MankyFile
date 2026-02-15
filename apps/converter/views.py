@@ -1816,3 +1816,51 @@ class SystemCleanupView(View):
             })
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+class HostImageView(View):
+    def get(self, request):
+        context = {
+            'title': 'อัพโหลดรูปภาพ',
+            'subtitle': 'ฝากรูปภาพออนไลน์พร้อมระบบลบอัตโนมัติ ใช้งานง่าย ปลอดภัย',
+            'file_type': 'IMAGE',
+            'accept': 'image/*'
+        }
+        return render(request, 'converter/host_image.html', context)
+
+    def post(self, request):
+        import requests
+        try:
+            image = request.FILES.get('image')
+            auto_delete = request.POST.get('auto_delete', 'never')
+            
+            if not image:
+                return redirect('converter:host_image')
+
+            # Worker Configuration
+            WORKER_URL = 'https://blilnkdex.biz.id/image_api.php'
+            API_KEY = 'MANKY_SECRET_KEY_12345'
+            
+            files = {'image': (image.name, image.read(), image.content_type)}
+            data = {'auto_delete': auto_delete}
+            headers = {'X-API-KEY': API_KEY}
+            
+            target_url = f'{WORKER_URL}?action=upload&key={API_KEY}'
+            response = requests.post(target_url, files=files, data=data, headers=headers, timeout=300, verify=False)
+            
+            if response.status_code == 200:
+                res_data = response.json()
+                if res_data.get('success'):
+                    return render(request, 'converter/host_image_result.html', {
+                        'res': res_data,
+                        'title': 'ผลการอัพโหลดรูปภาพ'
+                    })
+                else:
+                    raise Exception(res_data.get('error', 'Unknown error'))
+            else:
+                raise Exception(f'Worker Error: {response.status_code}')
+
+        except Exception as e:
+            return render(request, 'converter/host_image.html', {
+                'error': str(e),
+                'title': 'อัพโหลดรูปภาพ'
+            })

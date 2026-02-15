@@ -201,6 +201,8 @@
                 'card_img_resize_desc': 'Reduce image file size or dimensions while preserving quality.',
                 'card_img_convert_title': 'Convert Image',
                 'card_img_convert_desc': 'Convert images between formats like JPG, PNG, and WebP.',
+                'card_host_img_title': 'Upload Image',
+                'card_host_img_desc': 'Upload your images to the web and get links to use anywhere (with auto-delete options).',
 
                 // Tool UI
                 'btn_select_file': 'Select File',
@@ -301,6 +303,8 @@
                 'card_img_resize_desc': '品質を維持しながら画像サイズや寸法を削減します。',
                 'card_img_convert_title': '画像形式変換',
                 'card_img_convert_desc': 'JPG、PNG、WebPなどの形式間で画像を変換します。',
+                'card_host_img_title': '画像アップロード',
+                'card_host_img_desc': '画像をウェブにアップロードし、どこでも使用できるリンクを取得します（自動削除オプション付き）。',
 
                 // Tool UI
                 'btn_select_file': 'ファイルを選択',
@@ -401,6 +405,8 @@
                 'card_img_resize_desc': 'ปรับขนาดหรือลดคุณภาพไฟล์ภาพเพื่อลดขนาดไฟล์',
                 'card_img_convert_title': 'แปลงไฟล์ภาพ',
                 'card_img_convert_desc': 'แปลงไฟล์รูปภาพเป็นนามสกุลอื่น เช่น JPG, PNG, WebP',
+                'card_host_img_title': 'อัพโหลดรูปภาพ',
+                'card_host_img_desc': 'ฝากรูปภาพของคุณขึ้นเว็บ พร้อมลิงก์ไว้ใช้งานต่อ (ลบอัตโนมัติได้)',
 
                 // Tool UI
                 'btn_select_file': 'เลือกไฟล์',
@@ -515,6 +521,7 @@
                 else if (path.includes('/image-to-pdf')) toolKey = 'img_pdf';
                 else if (path.includes('/image-resizer')) toolKey = 'img_resize';
                 else if (path.includes('/image-convert')) toolKey = 'img_convert';
+                else if (path.includes('/host-image')) toolKey = 'host_img';
 
                 if (toolKey) {
                     const titleKey = `card_${toolKey}_title`;
