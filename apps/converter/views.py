@@ -1726,77 +1726,50 @@ class ShortenURLView(View):
         return render(request, 'converter/shorten_link.html')
     
     def post(self, request):
+        import requests
         original_url = request.POST.get('url')
-        expiry_option = request.POST.get('expiry') # 24h, 7d
+        expiry_option = request.POST.get('expiry', '24h') 
         
         if not original_url:
             if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.GET.get('ajax') == 'true':
                 return JsonResponse({'success': False, 'error': 'กรุณาระบุ URL'})
             return render(request, 'converter/shorten_link.html', {'error': 'กรุณาระบุ URL'})
         
-        # Generate Short Code
-        def generate_code(length=6):
-            return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
-        
-        short_code = generate_code()
-        while ShortLink.objects.filter(short_code=short_code).exists():
-            short_code = generate_code()
-        
-        # Calculate Expiry
-        from datetime import timedelta
-        now = timezone.now()
-        if expiry_option == '7d':
-            expires_at = now + timedelta(days=7)
-        else: # Default 24h
-            expires_at = now + timedelta(hours=24)
+        try:
+            WORKER_URL = 'https://blilnkdex.biz.id/shorten_api.php'
+            API_KEY = 'MANKY_SECRET_KEY_12345'
+            data = {'long_url': original_url, 'duration': expiry_option}
+            headers = {'X-API-KEY': API_KEY}
+            target_url = f'{WORKER_URL}?action=create&key={API_KEY}'
+            response = requests.post(target_url, data=data, headers=headers, timeout=10, verify=False)
             
-        link = ShortLink.objects.create(
-            original_url=original_url,
-            short_code=short_code,
-            expires_at=expires_at
-        )
-        
-        # Build absolute URL
-        short_url = request.build_absolute_uri(f'/s/{short_code}/')
-        
-        # Check if AJAX request
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.GET.get('ajax') == 'true':
-            return JsonResponse({
-                'success': True,
-                'short_url': short_url,
-                'expires_at': expires_at.strftime("%d %b %Y %H:%M")
-            })
+            if response.status_code == 200:
+                res_data = response.json()
+                if res_data.get('success'):
+                    short_code = res_data.get('short_code')
+                    short_url = request.build_absolute_uri(f'/s/{short_code}/')
+                    expires_at_str = res_data.get('expires_at')
+                    expires_at_display = expires_at_str if expires_at_str else 'ไม่มีวันหมดอายุ (Forever)'
+                    
+                    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.GET.get('ajax') == 'true':
+                        return JsonResponse({'success': True, 'short_url': short_url, 'expires_at': expires_at_display})
 
-        return render(request, 'converter/shorten_link.html', {
-            'short_url': short_url,
-            'original_url': original_url,
-            'expires_at': expires_at,
-            'short_code': short_code
-        })
+                    return render(request, 'converter/shorten_link.html', {
+                        'short_url': short_url, 'original_url': original_url,
+                        'expires_at': expires_at_display, 'short_code': short_code
+                    })
+                else:
+                    raise Exception(res_data.get('error', 'Unknown Error'))
+            else:
+                raise Exception(f'Worker Error: {response.status_code}')
+        except Exception as e:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.GET.get('ajax') == 'true':
+                return JsonResponse({'success': False, 'error': str(e)})
+            return render(request, 'converter/shorten_link.html', {'error': str(e)})
 
 class RedirectShortLinkView(View):
     def get(self, request, short_code):
-        try:
-            link = ShortLink.objects.get(short_code=short_code)
-            
-            # Check Expiry
-            if timezone.now() > link.expires_at:
-                return render(request, 'converter/redirect_page.html', {'error': 'ลิงก์นี้หมดอายุแล้ว (Expired link)'})
-            
-            # Update clicks
-            link.clicks += 1
-            link.save()
-            
-            # Render interstitial page
-            return render(request, 'converter/redirect_page.html', {
-                'original_url': link.original_url,
-                'short_code': short_code
-            })
-            
-        except ShortLink.DoesNotExist:
-            return render(request, 'converter/redirect_page.html', {'error': 'ไม่พบลิงก์ที่คุณต้องการ (Link not found)'})
-
-class SystemCleanupView(View):
+        return redirect(f'https://blilnkdex.biz.id/shorten_api.php?code={short_code}')
     def get(self, request):
         # Security check (Simple key)
         key = request.GET.get('key')
