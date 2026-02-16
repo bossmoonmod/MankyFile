@@ -1824,8 +1824,35 @@ class HostImageView(View):
             image.seek(0)
             file_content = image.read()
             
-            files = {'image': (image.name, file_content, image.content_type)}
-            response = requests.post(target_url, files=files, data=data, headers=headers, timeout=300, verify=False)
+            # Size Check
+            if len(file_content) < 100:
+                 return render(request, 'converter/host_image.html', {
+                    'error': f'Image file is too small or corrupted ({len(file_content)} bytes). Please try again.',
+                    'title': 'ฝากรูปภาพ (Host Image)'
+                })
+
+            # Base64 Encoding for Reliable Transfer
+            import base64
+            b64_data = base64.b64encode(file_content).decode('utf-8')
+            
+            print(f"DEBUG: Uploading {image.name} | Size: {len(file_content)} bytes | Base64 Mode")
+            
+            # Send as POST data instead of Multipart File
+            # Send as POST data instead of Multipart File
+            payload = {
+                'auto_delete': auto_delete,
+                'image_base64': b64_data,
+                'original_name': image.name
+            }
+            
+            # Increase timeout for large base64 strings
+            response = requests.post(
+                target_url, 
+                data=payload, 
+                headers={'X-API-KEY': API_KEY}, 
+                timeout=300, 
+                verify=False
+            )
             
             if response.status_code == 200:
                 res_data = response.json()

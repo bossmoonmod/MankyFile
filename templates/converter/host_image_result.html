@@ -14,7 +14,7 @@
         <div style="text-align: center; margin-bottom: 40px;">
             <img src="{{ res.direct_link }}" alt="Preview Image"
                 style="max-width: 100%; max-height: 400px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);"
-                onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300?text=Image+Load+Error'; this.style.border='2px solid red'; alert('โหลดรูปภาพไม่สำเร็จ กรุณาตรวจสอบลิงก์หรือการเชื่อมต่อ');">
+                onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300?text=Image+Load+Error'; this.style.border='2px solid red'; console.error('Failed to load image: {{ res.direct_link }}');">
             {% if res.expiry %}
             <p style="margin-top: 15px; color: #e5322d; font-weight: 600;">
                 <i class="fas fa-history"></i> รูปภาพนี้จะถูกลบอัตโนมัติเมื่อ: {{ res.expiry }}
