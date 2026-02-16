@@ -21,13 +21,15 @@
             {% csrf_token %}
 
             <!-- Hidden input for file selection -->
-            <input type="file" id="image-input" name="image" style="display: none;" accept="image/*">
+            <input type="file" id="image-input" name="image" style="display: none;"
+                accept="image/png, image/jpeg, image/gif, image/webp, image/*">
 
             <a href="#" id="select-image-btn" class="btn-upload-big">
                 <span data-i18n="btn_select_file">เลือกรูปภาพ</span>
             </a>
 
             <div class="drop-text" data-i18n="drag_drop_hint">หรือวางรูปภาพที่นี่</div>
+            <p style="margin-top: 10px; font-size: 0.85em; color: #888;">รองรับไฟล์: JPG, PNG, GIF, WebP (Max 10MB)</p>
 
             <!-- Client-side Preview -->
             <div id="preview-container" style="display: none; margin-top: 20px; text-align: center;">

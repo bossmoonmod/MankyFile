@@ -1825,7 +1825,7 @@ class HostImageView(View):
             file_content = image.read()
             
             # Size Check
-            if len(file_content) < 100:
+            if len(file_content) < 10:
                  return render(request, 'converter/host_image.html', {
                     'error': f'Image file is too small or corrupted ({len(file_content)} bytes). Please try again.',
                     'title': 'ฝากรูปภาพ (Host Image)'
