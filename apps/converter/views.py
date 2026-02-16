@@ -1823,7 +1823,6 @@ class HostImageView(View):
             # Ensure we are reading from the start of the file
             image.seek(0)
             file_content = image.read()
-            print(f"DEBUG: Uploading image to Worker using {target_url} | Size: {len(file_content)} bytes")
             
             files = {'image': (image.name, file_content, image.content_type)}
             response = requests.post(target_url, files=files, data=data, headers=headers, timeout=300, verify=False)

@@ -9,7 +9,8 @@
 
     <!-- Error Message Display -->
     {% if error %}
-    <div style="background-color: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ef9a9a; text-align: center;">
+    <div
+        style="background-color: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ef9a9a; text-align: center;">
         <strong>เกิดข้อผิดพลาด:</strong> {{ error }}
     </div>
     {% endif %}
@@ -18,7 +19,7 @@
     <div class="upload-area">
         <form id="upload-form" method="post" enctype="multipart/form-data" action="{% url 'converter:host_image' %}">
             {% csrf_token %}
-            
+
             <!-- Hidden input for file selection -->
             <input type="file" id="image-input" name="image" style="display: none;" accept="image/*">
 
@@ -28,11 +29,22 @@
 
             <div class="drop-text" data-i18n="drag_drop_hint">หรือวางรูปภาพที่นี่</div>
 
-            <div class="settings-panel" style="margin-top: 30px; text-align: left; background: rgba(0,0,0,0.03); padding: 20px; border-radius: 12px; border: 1px dashed rgba(0,0,0,0.1);">
+            <!-- Client-side Preview -->
+            <div id="preview-container" style="display: none; margin-top: 20px; text-align: center;">
+                <p style="font-weight: 600; color: #555; margin-bottom: 10px;">ตัวอย่างรูปภาพที่จะอัพโหลด:</p>
+                <img id="image-preview" src="" alt="Preview"
+                    style="max-width: 100%; max-height: 300px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                <p style="margin-top: 10px; font-size: 0.9em; color: #d32f2f; cursor: pointer; font-weight: 600;"
+                    onclick="window.clearImageSelection()">❌ ยกเลิก / เลือกใหม่</p>
+            </div>
+
+            <div class="settings-panel"
+                style="margin-top: 30px; text-align: left; background: rgba(0,0,0,0.03); padding: 20px; border-radius: 12px; border: 1px dashed rgba(0,0,0,0.1);">
                 <label style="display: block; font-weight: 600; margin-bottom: 10px; color: var(--text-color);">
                     <i class="fas fa-trash-alt"></i> Auto delete
                 </label>
-                <select name="auto_delete" class="lang-select" style="width: 100%; height: 45px; border-radius: 8px; padding: 0 15px;">
+                <select name="auto_delete" class="lang-select"
+                    style="width: 100%; height: 45px; border-radius: 8px; padding: 0 15px;">
                     <option value="never">Don't auto delete</option>
                     <option value="5min">หลังจาก 5 นาที</option>
                     <option value="15min">หลังจาก 15 นาที</option>
@@ -60,11 +72,14 @@
     </div>
 
     <!-- Progress / Status -->
-    <div id="progress-container" style="display: none; margin-top: 30px; width: 100%; max-width: 400px; margin-left: auto; margin-right: auto;">
+    <div id="progress-container"
+        style="display: none; margin-top: 30px; width: 100%; max-width: 400px; margin-left: auto; margin-right: auto;">
         <div style="background: #e0e0e0; height: 6px; border-radius: 3px; overflow: hidden;">
-            <div id="progress-bar" style="background: var(--primary-color); width: 0%; height: 100%; transition: width 0.3s;"></div>
+            <div id="progress-bar"
+                style="background: var(--primary-color); width: 0%; height: 100%; transition: width 0.3s;"></div>
         </div>
-        <p id="status-text" style="margin-top: 15px; color: #666; font-weight: 500;">กำลังอัปโหลดรูปภาพไปยังเซิร์ฟเวอร์สำรอง...</p>
+        <p id="status-text" style="margin-top: 15px; color: #666; font-weight: 500;">
+            กำลังอัปโหลดรูปภาพไปยังเซิร์ฟเวอร์สำรอง...</p>
     </div>
 </div>
 
@@ -75,6 +90,32 @@
     const form = document.getElementById('upload-form');
     const progressContainer = document.getElementById('progress-container');
     const uploadArea = document.querySelector('.upload-area');
+    const previewContainer = document.getElementById('preview-container');
+    const previewImg = document.getElementById('image-preview');
+
+    function handleFileSelection(file) {
+        if (!file.type.startsWith('image/')) {
+            alert('กรุณาเลือกไฟล์รูปภาพเท่านั้น');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewImg.src = e.target.result;
+            previewContainer.style.display = 'block';
+            submitBtn.style.display = 'block';
+            selectBtn.querySelector('span').textContent = file.name;
+            submitBtn.scrollIntoView({ behavior: 'smooth' });
+        };
+        reader.readAsDataURL(file);
+    }
+
+    window.clearImageSelection = function () {
+        imageInput.value = '';
+        previewContainer.style.display = 'none';
+        submitBtn.style.display = 'none';
+        selectBtn.querySelector('span').textContent = 'เลือกรูปภาพ';
+    }
 
     selectBtn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -83,30 +124,22 @@
 
     imageInput.addEventListener('change', () => {
         if (imageInput.files.length > 0) {
-            submitBtn.style.display = 'block';
-            selectBtn.querySelector('span').textContent = imageInput.files[0].name;
-            // Scroll to button
-            submitBtn.scrollIntoView({ behavior: 'smooth' });
+            handleFileSelection(imageInput.files[0]);
         }
     });
 
     form.addEventListener('submit', () => {
         uploadArea.style.display = 'none';
         progressContainer.style.display = 'block';
-        
-        // Fake progress
+
         let p = 0;
         const interval = setInterval(() => {
             p += Math.random() * 15;
-            if (p > 95) {
-                p = 95;
-                clearInterval(interval);
-            }
+            if (p > 95) { p = 95; clearInterval(interval); }
             document.getElementById('progress-bar').style.width = p + '%';
         }, 200);
     });
 
-    // Drag and Drop
     const dropZone = document.querySelector('.tool-container');
     dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.background = 'rgba(229, 50, 45, 0.05)'; });
     dropZone.addEventListener('dragleave', () => { dropZone.style.background = 'transparent'; });
@@ -115,14 +148,39 @@
         dropZone.style.background = 'transparent';
         if (e.dataTransfer.files.length > 0) {
             imageInput.files = e.dataTransfer.files;
-            submitBtn.style.display = 'block';
-            selectBtn.querySelector('span').textContent = imageInput.files[0].name;
+            handleFileSelection(imageInput.files[0]);
         }
     });
+
+    // Handle Paste (Ctrl+V)
+    document.addEventListener('paste', (e) => {
+        const items = e.clipboardData.items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const blob = items[i].getAsFile();
+                imageInput.files = createFileList(blob);
+                handleFileSelection(blob);
+                break;
+            }
+        }
+    });
+
+    function createFileList(file) {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        return dt.files;
+    }
 </script>
 
 <style>
-    .settings-panel i { margin-right: 8px; color: var(--primary-color); }
-    [data-theme='dark'] .settings-panel { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+    .settings-panel i {
+        margin-right: 8px;
+        color: var(--primary-color);
+    }
+
+    [data-theme='dark'] .settings-panel {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
 </style>
 {% endblock %}
