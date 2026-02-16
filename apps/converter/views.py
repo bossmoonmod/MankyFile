@@ -1837,18 +1837,19 @@ class HostImageView(View):
             
             print(f"DEBUG: Uploading {image.name} | Size: {len(file_content)} bytes | Base64 Mode")
             
-            # Send as POST data instead of Multipart File
-            # Send as POST data instead of Multipart File
+            # Send as JSON (More reliable for large Base64)
             payload = {
+                'key': API_KEY, 
+                'action': 'upload', 
                 'auto_delete': auto_delete,
                 'image_base64': b64_data,
                 'original_name': image.name
             }
             
-            # Increase timeout for large base64 strings
+            # Use 'json=' to send application/json
             response = requests.post(
                 target_url, 
-                data=payload, 
+                json=payload, 
                 headers={'X-API-KEY': API_KEY}, 
                 timeout=300, 
                 verify=False
