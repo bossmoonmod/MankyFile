@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/progress.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="tool-container" style="max-width: 800px;">
+    <div class="tool-header">
+        <h1>🧪 Progress Bar Demo</h1>
+        <p>ทดสอบระบบ Progress Bar แบบ Real-time</p>
+    </div>
+
+    <div style="background: white; padding: 40px; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+        <h3 style="margin-bottom: 20px; color: #333;">เลือกระยะเวลาทดสอบ</h3>
+
+        <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+            <button onclick="testProgress(5)" class="test-btn">
+                ⚡ เร็ว (5 วินาที)
+            </button>
+            <button onclick="testProgress(10)" class="test-btn">
+                🚀 ปานกลาง (10 วินาที)
+            </button>
+            <button onclick="testProgress(20)" class="test-btn">
+                🐢 ช้า (20 วินาที)
+            </button>
+        </div>
+
+        <div style="background: #f9fafb; padding: 20px; border-radius: 12px; border-left: 4px solid #e5322d;">
+            <h4 style="margin: 0 0 10px; color: #1f2937;">📖 วิธีใช้งาน</h4>
+            <ol style="margin: 0; padding-left: 20px; color: #6b7280; line-height: 1.8;">
+                <li>กดปุ่มด้านบนเพื่อเริ่มทดสอบ</li>
+                <li>Progress Bar จะแสดงขึ้นมาพร้อม Animation</li>
+                <li>ระบบจะ Poll สถานะทุกๆ 500ms</li>
+                <li>เมื่อเสร็จสิ้นจะแสดงข้อความสำเร็จ</li>
+            </ol>
+        </div>
+
+        <div
+            style="margin-top: 30px; padding: 20px; background: #fffbeb; border-radius: 12px; border: 1px solid #fbbf24;">
+            <h4 style="margin: 0 0 10px; color: #92400e;">⚙️ Technical Details</h4>
+            <ul style="margin: 0; padding-left: 20px; color: #78350f; line-height: 1.8; font-size: 14px;">
+                <li><strong>Backend:</strong> Django Cache Framework</li>
+                <li><strong>Polling:</strong> AJAX every 500ms</li>
+                <li><strong>Storage:</strong> In-memory cache (5 min timeout)</li>
+                <li><strong>Animation:</strong> CSS3 + JavaScript</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+    .test-btn {
+        background: linear-gradient(135deg, #e5322d 0%, #c41e3a 100%);
+        color: white;
+        border: none;
+        padding: 18px 24px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(229, 50, 45, 0.2);
+    }
+
+    .test-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(229, 50, 45, 0.3);
+    }
+
+    .test-btn:active {
+        transform: translateY(0);
+    }
+
+    [data-theme="dark"] .test-btn {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+</style>
+
+<script src="{% static 'js/progress.js' %}"></script>
+<script>
+    async function testProgress(duration) {
+        try {
+            // Call backend to start test
+            const response = await fetch('/api/progress/test/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ duration: duration })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Show progress bar
+                new ProgressBar(data.task_id, {
+                    onComplete: (progress) => {
+                        console.log('Conversion completed!', progress);
+                    },
+                    onError: (error) => {
+                        console.error('Conversion failed:', error);
+                    }
+                });
+            } else {
+                alert('เกิดข้อผิดพลาด: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+        }
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

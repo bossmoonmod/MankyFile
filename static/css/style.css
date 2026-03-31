@@ -1,0 +1,1241 @@
+:root {
+    /* Light Mode Variables */
+    --primary-color: #e5322d;
+    --primary-hover: #c91814;
+    --text-main: #333333;
+    --text-muted: #666666;
+    --bg-body: #f7f9fa;
+    --bg-white: #ffffff;
+    --border-color: #e0e0e0;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --font-family: 'Kanit', sans-serif;
+    --nav-height: 70px;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* Dark Mode Variables */
+[data-theme="dark"] {
+    --primary-color: #ff4d4d;
+    /* Brighter red for dark bg */
+    --primary-hover: #ff6666;
+    --text-main: #f0f0f0;
+    --text-muted: #b0b0b0;
+    --bg-body: #121212;
+    /* Very dark grey */
+    --bg-white: #1e1e1e;
+    /* Dark card bg */
+    --border-color: #333333;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+body {
+    background-color: var(--bg-body);
+    font-family: var(--font-family);
+    color: var(--text-main);
+    margin: 0;
+    line-height: 1.5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header & Nav */
+header {
+    background-color: var(--bg-white);
+    height: var(--nav-height);
+    box-shadow: var(--shadow-sm);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    padding: 0 40px;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-main);
+    text-decoration: none;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.logo span {
+    color: var(--primary-color);
+}
+
+nav {
+    margin-left: 40px;
+    display: flex;
+    gap: 20px;
+}
+
+nav a {
+    color: var(--text-main);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+nav a:hover,
+nav a.active {
+    color: var(--primary-color);
+    background-color: rgba(229, 50, 45, 0.05);
+}
+
+/* Main Layout */
+main {
+    flex: 1;
+    margin-top: var(--nav-height);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Home Dashboard (Grid) */
+.hero-section {
+    text-align: center;
+    padding: 60px 20px 40px;
+    max-width: 800px;
+}
+
+.hero-title {
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 20px;
+}
+
+.hero-subtitle {
+    font-size: 20px;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+    max-width: 1400px;
+    width: 100%;
+    padding: 20px;
+}
+
+.tool-card {
+    background: var(--bg-white);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+    color: var(--text-main);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    border: 1px solid transparent;
+}
+
+.tool-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: rgba(229, 50, 45, 0.2);
+}
+
+.tool-icon {
+    width: 48px;
+    height: 48px;
+    background-color: rgba(229, 50, 45, 0.1);
+    /* Light red tint */
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.tool-icon svg {
+    width: 28px;
+    height: 28px;
+    fill: var(--primary-color);
+}
+
+.tool-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.tool-card p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* Tool Interface (The "Big Red Button" page) */
+.tool-container {
+    background-color: transparent;
+    /* No glass panel anymore */
+    text-align: center;
+    max-width: 800px;
+    width: 100%;
+    padding: 60px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.tool-header h1 {
+    font-size: 48px;
+    margin-bottom: 16px;
+    color: var(--text-main);
+}
+
+.tool-header p {
+    font-size: 22px;
+    color: var(--text-muted);
+    margin-bottom: 40px;
+    font-weight: 300;
+}
+
+.upload-area {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.btn-upload-big {
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 24px;
+    font-weight: 600;
+    padding: 24px 48px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 8px 16px rgba(229, 50, 45, 0.25);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    text-decoration: none;
+}
+
+.btn-upload-big:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 20px rgba(229, 50, 45, 0.35);
+}
+
+.drop-text {
+    margin-top: 16px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/* Footer */
+footer {
+    background-color: var(--bg-white);
+    padding: 40px;
+    text-align: center;
+    margin-top: auto;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Utils */
+.badge-new {
+    background-color: #e5322d;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+/* Messages / Alerts */
+.messages-container {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    max-width: 600px;
+    width: auto;
+    min-width: 300px;
+}
+
+.alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: slideIn 0.3s ease-out;
+    background: white;
+    border-left: 4px solid;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+}
+
+.alert-error {
+    border-left-color: #dc2626;
+    background: #fef2f2;
+}
+
+.alert-warning {
+    border-left-color: #f59e0b;
+    background: #fffbeb;
+}
+
+.alert-success {
+    border-left-color: #10b981;
+    background: #f0fdf4;
+}
+
+.alert-info {
+    border-left-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.alert-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.alert-text {
+    flex: 1;
+    font-size: 15px;
+    color: #333;
+    line-height: 1.5;
+}
+
+.alert-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.alert-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .messages-container {
+        left: 20px;
+        right: 20px;
+        max-width: none;
+    }
+}
+
+/* --- Responsive Navigation Mobile Styles --- */
+
+/* Wrapper for Flex Layout */
+.nav-container {
+    display: flex;
+    justify-content: flex-start;
+    gap: 40px;
+    align-items: center;
+    width: 100%;
+    /* Removed max-width and margin auto to force left alignment */
+}
+
+/* Usage Badge Styling (Recreated from inline styles) */
+.usage-badge {
+    background: #f0f0f0;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    color: #555;
+    margin-left: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid #ddd;
+    white-space: nowrap;
+}
+
+.usage-badge .usage-count {
+    font-weight: bold;
+    color: #e5322d;
+}
+
+/* Menu Toggle Button (Hidden on Desktop) */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    color: var(--text-main);
+}
+
+/* Desktop Nav Styles (Default) */
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Hide Mobile Menu Container on Desktop */
+.mobile-menu {
+    display: none;
+}
+
+/* Mobile Breakpoint */
+@media screen and (max-width: 900px) {
+    header {
+        padding: 0 20px;
+    }
+
+    /* Revert to space-between for mobile to keep hamburger on right */
+    .nav-container {
+        justify-content: space-between;
+        gap: 0;
+    }
+
+    /* Show Hamburger Button */
+    .menu-toggle {
+        display: block;
+    }
+
+    /* Hide Nav Links initially */
+    .nav-links {
+        display: none;
+        position: absolute;
+        top: var(--nav-height);
+        left: 0;
+        right: 0;
+        background-color: var(--bg-white);
+        flex-direction: column;
+        padding: 20px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        border-top: 1px solid #eee;
+        gap: 10px;
+        z-index: 999;
+    }
+
+    /* Show Nav Links when active class is added by JS */
+    .nav-links.active {
+        display: flex;
+        animation: slideDown 0.3s ease-out forwards;
+    }
+
+    .nav-links a {
+        display: block;
+        width: 100%;
+        text-align: center;
+        padding: 12px;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+    }
+
+    .nav-links a:hover {
+        background-color: #ffe5e5;
+    }
+
+    /* Adjust Usage Badge for Mobile */
+    .usage-badge {
+        margin-left: 0;
+        margin-top: 10px;
+        width: 100%;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+}
+
+/* Dark Mode Overrides for Mobile Navigation */
+[data-theme="dark"] .nav-links {
+    background-color: #1e1e1e;
+    border-top-color: #333;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .nav-links a {
+    background-color: #2d2d2d;
+    color: #f0f0f0;
+}
+
+[data-theme="dark"] .nav-links a:hover,
+[data-theme="dark"] .nav-links a.active {
+    background-color: rgba(229, 50, 45, 0.15);
+    color: var(--primary-color);
+}
+
+[data-theme="dark"] .menu-toggle {
+    color: #f0f0f0;
+}
+
+[data-theme="dark"] .usage-badge {
+    background: #1e1e1e;
+    border-color: #333;
+    color: #bbb;
+}
+
+
+
+/* Theme Toggle Button (Switch Style) */
+.theme-switch {
+    position: relative;
+    width: 140px;
+    /* Increased width to fit text */
+    height: 40px;
+    border-radius: 20px;
+    background-color: #E2E8F0;
+    /* Light Grey (Day) */
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0;
+    transition: background-color 0.4s ease;
+    overflow: hidden;
+    margin-left: 24px;
+    /* Space from Logo */
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+    /* Prevent shrinking in flex container */
+}
+
+.switch-thumb {
+    position: absolute;
+    left: 4px;
+    width: 32px;
+    height: 32px;
+    background-color: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+    z-index: 2;
+}
+
+/* Icons within Switch */
+.theme-icon {
+    width: 18px;
+    height: 18px;
+    position: absolute;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.icon-sun {
+    color: #F59E0B;
+    /* Amber */
+    opacity: 1;
+    transform: rotate(0);
+}
+
+.icon-moon {
+    color: #8B5CF6;
+    /* Purple */
+    opacity: 0;
+    transform: rotate(90deg);
+}
+
+/* Text Labels - Fixed with Absolute Positioning */
+.switch-track {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    /* Essential for absolute children */
+    z-index: 1;
+    font-family: 'Kanit', sans-serif;
+    pointer-events: none;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.switch-text {
+    position: absolute;
+    /* Lock position */
+    top: 50%;
+    transform: translateY(-50%);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    white-space: nowrap;
+}
+
+.text-night {
+    opacity: 0;
+    color: white;
+    left: 14px;
+    /* Fixed Left Position */
+    transform: translateY(-50%) translateX(-10px);
+}
+
+.text-day {
+    opacity: 1;
+    color: #64748B;
+    right: 14px;
+    transform: translateY(-50%) translateX(0);
+}
+
+/* --- Language Switcher --- */
+.lang-switcher {
+    margin-left: 20px;
+}
+
+.lang-select {
+    padding: 6px 20px;
+    /* Wider padding */
+    width: 60px;
+    /* Fixed width for capsule shape */
+    height: 36px;
+    border-radius: 50px;
+    /* Capsule shape */
+    border: 1px solid #e0e0e0;
+    background-color: #ffffff;
+    /* White background */
+    color: var(--text-main);
+    font-family: var(--font-family);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+
+    /* Hide Default Arrow */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    text-align: center;
+    text-align-last: center;
+
+    /* Flex alignment fix for some browsers */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    /* Subtle shadow */
+}
+
+.lang-select:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 8px rgba(229, 50, 45, 0.15);
+    transform: translateY(-1px);
+}
+
+.lang-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(229, 50, 45, 0.1);
+}
+
+.lang-select option {
+    background-color: var(--bg-white);
+    color: var(--text-main);
+    text-align: left;
+}
+
+/* --- Dark Mode State --- */
+[data-theme="dark"] .lang-select {
+    border-color: #444;
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .lang-select:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(229, 50, 45, 0.15);
+}
+
+[data-theme="dark"] .lang-select option {
+    background-color: #2d2d2d;
+    color: #f0f0f0;
+}
+
+/* --- Dark Mode State --- */
+[data-theme="dark"] .theme-switch {
+    background-color: #1e1e1e;
+    /* Dark Surface */
+    border: 1px solid #333;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .switch-thumb {
+    /* Translate: Container(140) - Thumb(32) - Padding(4) - Start(4) = 100px */
+    transform: translateX(100px);
+    background-color: #333;
+    border: 1px solid #444;
+}
+
+[data-theme="dark"] .icon-sun {
+    opacity: 0;
+    transform: rotate(-90deg);
+}
+
+[data-theme="dark"] .icon-moon {
+    opacity: 1;
+    transform: rotate(0);
+}
+
+[data-theme="dark"] .text-night {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+    /* Align Center Vertical */
+}
+
+[data-theme="dark"] .text-day {
+    opacity: 0;
+    transform: translateY(-50%) translateX(10px);
+    /* Move away */
+}
+
+/* Hidden Utility */
+.hidden {
+    display: none;
+}
+
+/* --- Tool Base Components (Extracted from Inline) --- */
+.error-banner {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #ef9a9a;
+    text-align: center;
+}
+
+.manual-submit-btn {
+    display: none;
+    margin-top: 20px;
+    width: 100%;
+    padding: 15px;
+    font-size: 1.2rem;
+}
+
+.progress-container {
+    display: none;
+    margin-top: 30px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.progress-track {
+    background: #e0e0e0;
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    background: var(--primary-color);
+    width: 0%;
+    height: 100%;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.status-text {
+    margin-top: 10px;
+    color: var(--text-muted);
+}
+
+.drag-active {
+    background-color: rgba(229, 50, 45, 0.05);
+}
+
+/* --- Dark Mode Overrides for Tools & Components --- */
+[data-theme="dark"] .error-banner {
+    background-color: rgba(198, 40, 40, 0.1);
+    color: #ffcdd2;
+    border-color: rgba(239, 154, 154, 0.3);
+}
+
+[data-theme="dark"] .progress-track {
+    background: #333;
+}
+
+[data-theme="dark"] .drag-active {
+    background-color: rgba(229, 50, 45, 0.15);
+}
+
+[data-theme="dark"] .usage-badge {
+    background: #2d2d2d;
+    color: #bbb;
+    border-color: #444;
+}
+
+[data-theme="dark"] footer {
+    background-color: var(--bg-card);
+    border-top-color: var(--border-color);
+}
+
+[data-theme="dark"] .tool-icon {
+    background-color: rgba(229, 50, 45, 0.15);
+    border: 1px solid rgba(229, 50, 45, 0.2);
+}
+
+/* Ensure Tool Inputs/Areas have correct contrast */
+[data-theme="dark"] .btn-upload-big {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .tool-container {
+    background: transparent;
+}
+
+/* --- QR Tool Dark Mode Overrides (Appended) --- */
+
+/* 1. Global Container */
+[data-theme="dark"] body {
+    background-color: #121212 !important;
+    /* Force dark bg */
+}
+
+/* 2. Main Card & Panels */
+[data-theme="dark"] .qr-form-card,
+[data-theme="dark"] .preview-card,
+[data-theme="dark"] .design-accordion,
+[data-theme="dark"] .accordion-content,
+[data-theme="dark"] .accordion-header {
+    background-color: #1e1e1e !important;
+    /* Card background */
+    color: #e0e0e0;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+    border-color: #333;
+}
+
+/* 3. Inputs & text areas */
+[data-theme="dark"] .custom-input,
+[data-theme="dark"] .color-input-wrapper {
+    background-color: #2d2d2d;
+    color: #fff;
+    border-color: #444;
+}
+
+[data-theme="dark"] .custom-input::placeholder {
+    color: #888;
+}
+
+[data-theme="dark"] .custom-input:focus {
+    background-color: #333;
+    border-color: #e5322d;
+}
+
+/* 4. Labels & Text */
+[data-theme="dark"] label,
+[data-theme="dark"] .form-col label,
+[data-theme="dark"] .color-code,
+[data-theme="dark"] .accordion-header,
+[data-theme="dark"] .section-label,
+[data-theme="dark"] #logo-text {
+    color: #d0d0d0 !important;
+}
+
+/* 5. Logo Upload Box */
+[data-theme="dark"] .logo-upload-box {
+    background-color: #2d2d2d;
+    border-color: #444;
+}
+
+[data-theme="dark"] .logo-upload-box:hover {
+    background-color: #333;
+    border-color: #e5322d;
+}
+
+/* 6. Style Options (Patterns) */
+[data-theme="dark"] .style-option {
+    background-color: #2d2d2d;
+    border-color: #444;
+}
+
+[data-theme="dark"] .style-option:hover {
+    border-color: #888;
+}
+
+[data-theme="dark"] .preview-dot,
+[data-theme="dark"] .preview-bar,
+[data-theme="dark"] .eye-preview,
+[data-theme="dark"] .eye-preview::after {
+    background-color: #888 !important;
+    /* Lighter dots for visibility */
+    border-color: #888 !important;
+}
+
+/* 7. Preview Area */
+[data-theme="dark"] .qr-display-area {
+    background-color: #2d2d2d;
+    border-color: #444;
+}
+
+[data-theme="dark"] .preview-note {
+    color: #777;
+}
+
+/* 8. Accordion Icon */
+[data-theme="dark"] .accordion-icon {
+    color: #fff;
+}
+
+/* 9. Dark Mode SVG Icons override */
+[data-theme="dark"] .nav-item {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .nav-item.active {
+    background-color: #e5322d;
+    /* Keep active red */
+    color: white;
+}
+
+/* --- Compress Tool Dark Mode Overrides --- */
+[data-theme="dark"] .compression-section,
+[data-theme="dark"] .upload-section {
+    background-color: #1e1e1e;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .compression-section h3 {
+    color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .quality-card-modern .card-content {
+    background-color: #262626;
+    border-color: #444;
+}
+
+[data-theme="dark"] .quality-card-modern h4 {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .quality-desc {
+    color: #999;
+}
+
+[data-theme="dark"] .quality-badge {
+    background-color: #333;
+    color: #bbb;
+}
+
+[data-theme="dark"] .quality-info {
+    border-top-color: #444;
+}
+
+[data-theme="dark"] .upload-area-modern {
+    background: #262626;
+    border-color: #444;
+}
+
+[data-theme="dark"] .upload-area-modern h3 {
+    color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] .upload-area-modern p {
+    color: #999 !important;
+}
+
+[data-theme="dark"] .quality-card-modern:hover .card-content {
+    border-color: #e5322d;
+    background-color: #2d2d2d;
+}
+
+[data-theme="dark"] .quality-card-modern input:checked+.card-content {
+    border-color: #e5322d;
+    background-color: #2d2d2d;
+}
+
+/* --- Upload Area Styles (V2) --- */
+.error-banner {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #ef9a9a;
+    text-align: center;
+}
+
+.upload-area {
+    background: transparent;
+    padding: 0 20px 40px;
+    text-align: center;
+}
+
+
+
+
+
+[data-theme="dark"] .error-banner {
+    background-color: #3d1a1a;
+    color: #ff6b6b;
+    border-color: #5a2828;
+}
+
+[data-theme="dark"] .upload-area {
+    background-color: transparent;
+}
+
+[data-theme="dark"] .drop-text {
+    color: #9ca3af;
+}
+
+/* --- Comprehensive Mobile Optimization --- */
+
+/* Tablet & Mobile (Max width 768px) */
+@media screen and (max-width: 768px) {
+
+    /* 1. Header Optimization */
+    header {
+        height: 60px;
+        /* ลดความสูง Navbar เล็กน้อย */
+        padding: 0 16px;
+    }
+
+    main {
+        margin-top: 60px;
+        /* ขยับ Main ให้พอดีกับ Header ใหม่ */
+        padding: 16px;
+    }
+
+    .logo {
+        font-size: 20px;
+        gap: 4px;
+    }
+
+    .logo svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    /* ปรับปุ่ม Theme/Lang ให้ประหยัดที่ */
+    .theme-switch {
+        width: 100px;
+        /* ลดความกว้าง */
+        height: 34px;
+        margin-left: 10px;
+    }
+
+    .switch-thumb {
+        width: 26px;
+        height: 26px;
+        left: 4px;
+    }
+
+    .theme-icon {
+        width: 14px;
+        height: 14px;
+    }
+
+    /* Fix Dark Mode Thumb position for Mobile (Container 100px - Thumb 26px - Left 4px - Margin 4px = 66px) */
+    [data-theme="dark"] .switch-thumb {
+        transform: translateX(66px);
+    }
+
+    /* ซ่อน Text Day/Night ในมือถือเพื่อประหยัดที่ */
+    .switch-text {
+        display: none;
+    }
+
+    .lang-switcher {
+        margin-left: 8px;
+    }
+
+    .lang-select {
+        width: 50px;
+        /* เล็กลงนิดหน่อย */
+        height: 34px;
+        padding: 4px 10px;
+        font-size: 13px;
+    }
+
+    /* 2. Hero Section */
+    .hero-section {
+        padding: 30px 16px 20px;
+        /* ลด Padding */
+    }
+
+    .hero-title {
+        font-size: 28px;
+        /* ลดขนาด Font หัวข้อ */
+        line-height: 1.3;
+        margin-bottom: 12px;
+    }
+
+    .hero-subtitle {
+        font-size: 16px;
+        /* ลดขนาดคำอธิบาย */
+        margin-bottom: 20px;
+    }
+
+    /* 3. Tool Cards Grid */
+    .tools-grid {
+        grid-template-columns: 1fr;
+        /* Stack เป็นแนวตั้ง 1 แถว */
+        gap: 16px;
+        padding: 10px 0;
+    }
+
+    .tool-card {
+        padding: 20px;
+        /* ลด Padding การ์ด */
+        align-items: center;
+        /* จัดกึ่งกลางดูสวยกว่าในมือถือ */
+        text-align: center;
+        width: 100%;
+        box-sizing: border-box;
+        /* สำคัญ: ป้องกัน padding ดัน width เกินจอ */
+    }
+
+    .tool-card h3 {
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+
+    .tool-card p {
+        font-size: 13px;
+    }
+
+    /* 4. Tool Interface (Convert Tool Page) */
+    .tool-container {
+        padding: 30px 16px;
+    }
+
+    .tool-header h1 {
+        font-size: 28px;
+        word-wrap: break-word;
+        /* ป้องกันคำยาวล้นจอ */
+    }
+
+    .tool-header p {
+        font-size: 16px;
+        margin-bottom: 30px;
+    }
+
+    /* Large Upload Button */
+    .btn-upload-big {
+        width: 100%;
+        justify-content: center;
+        font-size: 18px;
+        padding: 16px;
+    }
+
+    .btn-upload-big span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .upload-area {
+        max-width: 100%;
+        padding: 0 10px;
+    }
+
+    /* Footer */
+    footer {
+        padding: 30px 16px;
+        font-size: 12px;
+    }
+}
+
+/* Small Mobile (Max width 360px) - หน้าจอเล็กมาก เช่น iPhone SE/5/Fold Folded */
+@media screen and (max-width: 360px) {
+    .theme-switch {
+        display: none;
+        /* ซ่อน Switch เลยถ้าจอเล็กมากจริงๆ */
+    }
+
+    .logo span {
+        display: none;
+        /* ซ่อนชื่อ MankyFile */
+    }
+
+
+    .lang-switcher {
+        margin-left: auto;
+    }
+}
+
+/* --- Footer Links Styling --- */
+.footer-links {
+    margin-top: 10px;
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.footer-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer-links a:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+.footer-links .separator {
+    color: #ccc;
+    font-size: 12px;
+}
+
+/* Mobile Tweaks for Footer */
+@media screen and (max-width: 480px) {
+    .footer-links {
+        font-size: 12px;
+        gap: 6px;
+    }
+}

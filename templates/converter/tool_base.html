@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="tool-container">
+    <div class="tool-header">
+        <h1 id="tool-title-heading">{{ title }}</h1>
+        <p id="tool-subtitle-text">{{ subtitle }}</p>
+    </div>
+
+    <!-- Error Message Display -->
+    {% if error %}
+    <div
+        style="background-color: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ef9a9a; text-align: center;">
+        <strong>เกิดข้อผิดพลาด:</strong> {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Upload Form -->
+    <div class="upload-area">
+        <form id="upload-form" method="post" enctype="multipart/form-data" action="{{ action_url }}">
+            {% csrf_token %}
+            <!-- Hidden input for file selection -->
+            {% if accept %}
+            <input type="file" id="file-input" name="files" multiple style="display: none;" accept="{{ accept }}">
+            {% else %}
+            <input type="file" id="file-input" name="files" multiple style="display: none;">
+            {% endif %}
+
+            <a href="#" id="select-files-btn" class="btn-upload-big">
+                <span data-i18n="btn_select_file">เลือกไฟล์ {{ file_type }}</span>
+            </a>
+
+            <div class="drop-text" data-i18n="drag_drop_hint">หรือวางไฟล์ {{ file_type }} ที่นี่</div>
+
+            <!-- Manual Submit Button (Hidden by default, shown if auto-submit fails or files selected) -->
+            <button type="submit" id="manual-submit-btn" class="btn btn-primary"
+                style="display: none; margin-top: 20px; width: 100%; padding: 15px; font-size: 1.2rem;">
+                แปลงไฟล์เลย! 🚀
+            </button>
+        </form>
+    </div>
+
+    <!-- Progress / Status (Hidden initially) -->
+    <div id="progress-container" style="display: none; margin-top: 30px; width: 100%; max-width: 400px;">
+        <div style="background: #e0e0e0; height: 6px; border-radius: 3px; overflow: hidden;">
+            <div id="progress-bar"
+                style="background: var(--primary-color); width: 0%; height: 100%; transition: width 0.3s;"></div>
+        </div>
+        <p id="status-text" style="margin-top: 10px; color: #666;">กำลังอัปโหลด...</p>
+    </div>
+</div>
+
+<script>
+    document.getElementById('select-files-btn').addEventListener('click', function (e) {
+        e.preventDefault();
+        document.getElementById('file-input').click();
+    });
+
+    // Auto-submit logic with UI feedback
+    document.getElementById('file-input').addEventListener('change', function () {
+        if (this.files.length > 0) {
+            // Show loading UI immediately
+            document.querySelector('.upload-area').style.display = 'none';
+            document.getElementById('progress-container').style.display = 'block';
+
+            // Try to submit
+            console.log("Auto-submitting form...");
+            document.getElementById('upload-form').submit();
+        }
+    });
+
+    // Drag and Drop (Basic binding to the whole main area or specific zone)
+    const dropZone = document.querySelector('.tool-container');
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.backgroundColor = 'rgba(229, 50, 45, 0.05)';
+    });
+
+    dropZone.addEventListener('dragleave', (e) => {
+        dropZone.style.backgroundColor = 'transparent';
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.backgroundColor = 'transparent';
+        const files = e.dataTransfer.files;
+        document.getElementById('file-input').files = files;
+        document.getElementById('upload-form').submit();
+    });
+</script>
+{% endblock %}

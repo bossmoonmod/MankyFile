@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="tool-container">
+    <div class="tool-header">
+        <h1 id="tool-title-heading">{{ title }}</h1>
+        <p id="tool-subtitle-text">{{ subtitle }}</p>
+    </div>
+
+    <!-- Error Message -->
+    {% if error %}
+    <div
+        style="background-color: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ef9a9a; text-align: center;">
+        <strong>เกิดข้อผิดพลาด:</strong> {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="upload-area">
+        <form id="upload-form" method="post" enctype="multipart/form-data" action="{{ action_url }}">
+            {% csrf_token %}
+
+            <!-- Format Selector -->
+            <div class="format-selection" style="margin-bottom: 30px; text-align: center;">
+                <label
+                    style="display: block; margin-bottom: 15px; font-weight: 600; color: #444;">เลือกนามสกุลไฟล์ที่ต้องการแปลงเป็น:</label>
+                <div style="display: flex; justify-content: center; gap: 15px;">
+                    <label class="format-option">
+                        <input type="radio" name="target_format" value="jpg" checked style="display: none;">
+                        <div class="format-card">JPG</div>
+                    </label>
+                    <label class="format-option">
+                        <input type="radio" name="target_format" value="png" style="display: none;">
+                        <div class="format-card">PNG</div>
+                    </label>
+                    <label class="format-option">
+                        <input type="radio" name="target_format" value="webp" style="display: none;">
+                        <div class="format-card">WebP</div>
+                    </label>
+                </div>
+            </div>
+
+            <input type="file" id="file-input" name="files" style="display: none;" accept="image/*">
+
+            <a href="#" id="select-files-btn" class="btn-upload-big">
+                <span data-i18n="btn_select_file">เลือกรูปภาพ</span>
+            </a>
+
+            <div class="drop-text" data-i18n="drag_drop_hint">หรือวางไฟล์ภาพที่นี่</div>
+        </form>
+    </div>
+
+    <!-- Loading State -->
+    <div id="progress-container"
+        style="display: none; margin-top: 30px; width: 100%; max-width: 400px; text-align: center;">
+        <div class="spinner" style="margin: 0 auto 20px;"></div>
+        <p id="status-text" style="color: #666;">กำลังอัปโหลดและส่งไปที่เซิร์ฟเวอร์บ้าน...</p>
+    </div>
+</div>
+
+<style>
+    .format-card {
+        padding: 12px 25px;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        background: white;
+        color: #666;
+    }
+
+    input[type="radio"]:checked+.format-card {
+        border-color: var(--primary-color);
+        background: var(--primary-color);
+        color: white;
+        box-shadow: 0 4px 12px rgba(229, 50, 45, 0.2);
+    }
+
+    .format-option:hover .format-card {
+        border-color: var(--primary-color);
+    }
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+
+<script>
+    const fileInput = document.getElementById('file-input');
+    const uploadForm = document.getElementById('upload-form');
+    const selectBtn = document.getElementById('select-files-btn');
+
+    selectBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', function () {
+        if (this.files.length > 0) {
+            startUpload();
+        }
+    });
+
+    function startUpload() {
+        document.querySelector('.upload-area').style.display = 'none';
+        document.getElementById('progress-container').style.display = 'block';
+        uploadForm.submit();
+    }
+
+    // Drag and Drop
+    const dropZone = document.querySelector('.tool-container');
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.backgroundColor = 'rgba(229, 50, 45, 0.05)'; });
+    dropZone.addEventListener('dragleave', (e) => { dropZone.style.backgroundColor = 'transparent'; });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.backgroundColor = 'transparent';
+        fileInput.files = e.dataTransfer.files;
+        startUpload();
+    });
+</script>
+{% endblock %}

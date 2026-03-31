@@ -1,0 +1,1121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="qr-tool-container">
+    <div class="hero-section" style="text-align: center; margin-bottom: 40px;">
+        <h1 id="tool-title-heading">สร้าง QR Code</h1>
+        <p id="tool-subtitle-text">สร้าง QR Code ฟรีจากลิงก์ ข้อความ หรือเบอร์โทรศัพท์ พร้อมปรับแต่งสีได้ตามใจชอบ</p>
+    </div>
+
+    <!-- Main Grid: Left (Controls) & Right (Preview) -->
+    <div class="qr-layout">
+
+        <!-- LEFT COLUMN: CONTROLS -->
+        <div class="qr-left-panel">
+
+            <!-- 1. Top Navigation Tabs -->
+            <div class="qr-nav-tabs">
+                <div class="nav-item active" onclick="selectType(this, 'url')" data-i18n="qr_nav_url">URL</div>
+                <div class="nav-item" onclick="selectType(this, 'text')" data-i18n="qr_nav_text">ข้อความ</div>
+                <div class="nav-item" onclick="selectType(this, 'email')" data-i18n="qr_nav_email">Email</div>
+                <div class="nav-item" onclick="selectType(this, 'tel')" data-i18n="qr_nav_tel">เบอร์โทร</div>
+                <div class="nav-item" onclick="selectType(this, 'sms')" data-i18n="qr_nav_sms">SMS</div>
+                <div class="nav-item" onclick="selectType(this, 'whatsapp')" data-i18n="qr_nav_whatsapp">Whatsapp</div>
+                <div class="nav-item" onclick="selectType(this, 'wifi')" data-i18n="qr_nav_wifi">WIFI</div>
+            </div>
+
+            <!-- 2. Main Form Card -->
+            <div class="qr-form-card">
+                <form method="post" action="{{ action_url }}" id="qr-form" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="qr_type" id="selected_qr_type" value="url">
+
+                    <!-- Colors Section -->
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label data-i18n="qr_fill_color">สีของตัวอักษร</label>
+                            <div class="color-input-wrapper">
+                                <input type="color" name="fill_color" value="#000000"
+                                    oninput="updateColorText(this, 'fill-text')">
+                                <span id="fill-text" class="color-code">#000000</span>
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <label data-i18n="qr_back_color">สีของพื้นหลัง</label>
+                            <div class="color-input-wrapper">
+                                <input type="color" name="back_color" value="#ffffff"
+                                    oninput="updateColorText(this, 'back-text')">
+                                <span id="back-text" class="color-code">#ffffff</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Logo Section (New UI) -->
+                    <div class="form-row" style="margin-top: 10px;">
+                        <div class="form-col">
+                            <label data-i18n="qr_logo_label">เพิ่มโลโก้ (Logo)</label>
+                            <div class="logo-upload-box" onclick="document.getElementById('logo-input').click()">
+                                <input type="file" name="logo" id="logo-input" accept="image/*" style="display: none;"
+                                    onchange="previewLogo(this)">
+                                <div id="logo-preview-area">
+                                    <div class="upload-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                            <polyline points="17 8 12 3 7 8" />
+                                            <line x1="12" y1="3" x2="12" y2="15" />
+                                        </svg>
+                                    </div>
+                                    <span id="logo-text" data-i18n="qr_logo_hint">คลิกเพื่ออัพโหลดรูปภาพ</span>
+                                    <p style="font-size: 0.8rem; color: #999; margin-top: 5px;">รองรับ JPG, PNG
+                                        (แนะนำพื้นใส)</p>
+                                </div>
+                                <img id="logo-preview-img" class="hidden">
+                                <button type="button" id="remove-logo-btn" class="hidden"
+                                    onclick="removeLogo(event)">✕</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <!-- Advanced Design Customization (Accordion) -->
+                    <div class="design-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion()">
+                            <span class="accordion-title" style="display: flex; align-items: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" style="margin-right:8px;">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                    <line x1="12" y1="8" x2="12" y2="16" />
+                                    <line x1="8" y1="12" x2="16" y2="12" />
+                                </svg>
+                                <span data-i18n="qr_design_label">ปรับแต่งการออกแบบ</span>
+                            </span>
+                            <span class="accordion-icon" id="acc-icon">+</span>
+                        </div>
+
+                        <div class="accordion-content" id="design-content">
+                            <!-- Pattern Style -->
+                            <div class="design-section">
+                                <label class="section-label" data-i18n="qr_pattern_label">รูปทรงลายพื้นหลัง
+                                    (Pattern)</label>
+                                <div class="style-grid">
+                                    <!-- Square -->
+                                    <label class="style-option">
+                                        <input type="radio" name="pattern_style" value="square" checked>
+                                        <div class="style-preview">
+                                            <div class="preview-dot square"></div>
+                                            <div class="preview-dot square"></div>
+                                            <div class="preview-dot square"></div>
+                                            <div class="preview-dot square"></div>
+                                        </div>
+                                    </label>
+
+                                    <!-- Rounded -->
+                                    <label class="style-option">
+                                        <input type="radio" name="pattern_style" value="rounded">
+                                        <div class="style-preview">
+                                            <div class="preview-dot rounded"></div>
+                                            <div class="preview-dot rounded"></div>
+                                            <div class="preview-dot rounded"></div>
+                                            <div class="preview-dot rounded"></div>
+                                        </div>
+                                    </label>
+
+                                    <!-- Circle -->
+                                    <label class="style-option">
+                                        <input type="radio" name="pattern_style" value="circle">
+                                        <div class="style-preview">
+                                            <div class="preview-dot circle"></div>
+                                            <div class="preview-dot circle"></div>
+                                            <div class="preview-dot circle"></div>
+                                            <div class="preview-dot circle"></div>
+                                        </div>
+                                    </label>
+
+                                    <!-- Gapped -->
+                                    <label class="style-option">
+                                        <input type="radio" name="pattern_style" value="gapped">
+                                        <div class="style-preview" style="gap: 4px;">
+                                            <div class="preview-dot square small"></div>
+                                            <div class="preview-dot square small"></div>
+                                            <div class="preview-dot square small"></div>
+                                            <div class="preview-dot square small"></div>
+                                        </div>
+                                    </label>
+
+                                    <!-- Vertical -->
+                                    <label class="style-option">
+                                        <input type="radio" name="pattern_style" value="vertical">
+                                        <div class="style-preview">
+                                            <div class="preview-bar vertical"></div>
+                                            <div class="preview-bar vertical"></div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Eye Frame (Functional UI) -->
+                            <div class="design-section">
+                                <label class="section-label">รูปทรงกรอบตา (Eye Frame)</label>
+                                <input type="hidden" name="eye_style" id="selected_eye_style" value="square">
+                                <div class="style-grid" id="eye-style-grid">
+                                    <div class="style-option selected" onclick="selectEyeStyle(this, 'square')">
+                                        <div class="eye-preview square"></div>
+                                    </div>
+                                    <div class="style-option" onclick="selectEyeStyle(this, 'rounded')">
+                                        <div class="eye-preview rounded"></div>
+                                    </div>
+                                    <div class="style-option" onclick="selectEyeStyle(this, 'circle')">
+                                        <div class="eye-preview circle"></div>
+                                    </div>
+                                    <div class="style-option" onclick="selectEyeStyle(this, 'leaf')">
+                                        <div class="eye-preview leaf"></div>
+                                    </div>
+                                    <div class="style-option" onclick="selectEyeStyle(this, 'shield')">
+                                        <div class="eye-preview shield"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+
+                    <hr class="divider">
+
+                    <!-- Dynamic Input Fields -->
+                    <div class="input-container">
+
+                        <!-- URL -->
+                        <div id="input-url" class="input-group">
+                            <label>ระบุ URL ที่ต้องการสร้างคิวอาร์โค้ด</label>
+                            <input type="text" name="content_url" placeholder="https://www.example.com"
+                                class="custom-input">
+                        </div>
+
+                        <!-- Text -->
+                        <div id="input-text" class="input-group hidden">
+                            <label>ระบุข้อความ</label>
+                            <textarea name="content_text" placeholder="พิมพ์ข้อความของคุณที่นี่..." class="custom-input"
+                                rows="3"></textarea>
+                        </div>
+
+                        <!-- Email -->
+                        <div id="input-email" class="input-group hidden">
+                            <label>อีเมล</label>
+                            <input type="email" name="email_address" placeholder="name@example.com"
+                                class="custom-input mb-2">
+                            <input type="text" name="email_subject" placeholder="หัวข้อเรื่อง"
+                                class="custom-input mb-2">
+                            <textarea name="email_body" placeholder="ข้อความ..." class="custom-input"
+                                rows="2"></textarea>
+                        </div>
+
+                        <!-- Tel -->
+                        <div id="input-tel" class="input-group hidden">
+                            <label>เบอร์โทรศัพท์</label>
+                            <input type="tel" name="tel_number" placeholder="081XXXXXXX" class="custom-input">
+                        </div>
+
+                        <!-- SMS -->
+                        <div id="input-sms" class="input-group hidden">
+                            <label>เบอร์โทรศัพท์</label>
+                            <input type="tel" name="sms_number" placeholder="081XXXXXXX" class="custom-input mb-2">
+                            <textarea name="sms_message" placeholder="ข้อความ SMS..." class="custom-input"
+                                rows="2"></textarea>
+                        </div>
+
+                        <!-- Whatsapp -->
+                        <div id="input-whatsapp" class="input-group hidden">
+                            <label>เบอร์ Whatsapp (พร้อมรหัสประเทศ)</label>
+                            <input type="tel" name="whatsapp_number" placeholder="6681XXXXXXX"
+                                class="custom-input mb-2">
+                            <textarea name="whatsapp_message" placeholder="ข้อความ..." class="custom-input"
+                                rows="2"></textarea>
+                        </div>
+
+                        <!-- WiFi -->
+                        <div id="input-wifi" class="input-group hidden">
+                            <label>ชื่อ WiFi (SSID)</label>
+                            <input type="text" name="wifi_ssid" placeholder="WiFi Name" class="custom-input mb-2">
+                            <label>รหัสผ่าน</label>
+                            <input type="text" name="wifi_password" placeholder="Password" class="custom-input mb-2">
+                            <label>ประเภทความปลอดภัย</label>
+                            <select name="wifi_encryption" class="custom-input">
+                                <option value="WPA">WPA/WPA2</option>
+                                <option value="WEP">WEP</option>
+                                <option value="nopass">ไม่มีรหัสผ่าน</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-create" data-i18n="qr_btn_create">
+                        สร้าง QR CODE
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: PREVIEW -->
+        <div class="qr-preview-panel">
+            <div class="preview-card">
+                <div class="qr-display-area" id="qr-display-area">
+                    {% if generated and qr_image_url %}
+                    <img src="{{ qr_image_url }}" id="qr-generated-image" alt="QR Code"
+                        style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
+                    {% else %}
+                    <!-- Placeholder SVG -->
+                    <div id="qr-placeholder-container">
+                        <svg viewBox="0 0 100 100" class="qr-svg-placeholder">
+                            <path d="M0 0h100v100H0z" fill="white" />
+                            <path d="M10 10h30v30H10zM60 10h30v30H60zM10 60h30v30H10z" fill="black" />
+                            <circle cx="25" cy="25" r="8" fill="black" />
+                            <circle cx="75" cy="25" r="8" fill="black" />
+                            <circle cx="25" cy="75" r="8" fill="black" />
+                            <path d="M50 50h10v10H50zM70 60h10v10H70zM60 80h20v10H60zM40 70h10v10H40z" fill="black" />
+                        </svg>
+                    </div>
+                    <!-- Hidden Image Element for AJAX updates -->
+                    <img id="qr-generated-image" class="hidden" alt="QR Code"
+                        style="width: 100%; height: 100%; object-fit: contain; padding: 10px;">
+                    {% endif %}
+                </div>
+
+                <div class="download-buttons">
+                    <a href="{% if generated %}{{ download_url }}{% else %}#{% endif %}" id="download-btn-png"
+                        class="btn-download png {% if not generated %}disabled-link{% endif %}"
+                        onclick="if(!this.href.includes('processed')) { document.getElementById('qr-form').dispatchEvent(new Event('submit')); return false; }">
+                        {% if generated %}ไฟล์ PNG{% else %}สร้างไฟล์ PNG{% endif %}
+                    </a>
+
+                    <button type="button" class="btn-download svg" disabled
+                        style="opacity:0.5; cursor:not-allowed;">ไฟล์ SVG (เร็วๆ นี้)</button>
+                </div>
+            </div>
+
+            <p class="preview-note">ตัวอย่าง QR Code (กดสร้างเพื่อดาวน์โหลด)</p>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Global Styles */
+    body {
+        background-color: #eef1f5;
+    }
+
+    .qr-tool-container {
+        max-width: 1400px;
+        margin: 60px auto;
+        padding: 0 30px;
+        font-family: 'Kanit', sans-serif;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    .disabled-link {
+        pointer-events: none;
+        opacity: 0.6;
+    }
+
+    .qr-layout {
+        display: flex;
+        gap: 40px;
+        align-items: flex-start;
+    }
+
+    /* --- LEFT SIDE --- */
+    .qr-left-panel {
+        flex: 1.6;
+        min-width: 0;
+    }
+
+    /* Navigation Tabs */
+    .qr-nav-tabs {
+        background: #e5322d;
+        padding: 15px 25px;
+        border-radius: 14px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 8px 25px rgba(229, 50, 45, 0.25);
+        align-items: center;
+    }
+
+    .nav-item {
+        color: white;
+        padding: 12px 24px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .nav-item:hover {
+        background: rgba(255, 255, 255, 0.18);
+    }
+
+    .nav-item.active {
+        background: white;
+        color: #e5322d;
+        font-weight: 800;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: scale(1.05);
+    }
+
+    /* Form Card */
+    .qr-form-card {
+        background: white;
+        padding: 45px;
+        border-radius: 20px;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.04);
+    }
+
+    .form-row {
+        display: flex;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+
+    .form-col {
+        flex: 1;
+    }
+
+    .form-col label {
+        display: block;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #444;
+        margin-bottom: 12px;
+    }
+
+    .color-input-wrapper {
+        background: #f4f6f8;
+        border-radius: 12px;
+        padding: 10px 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        border: 1px solid #eee;
+        transition: border-color 0.2s;
+        height: 55px;
+    }
+
+    .color-input-wrapper:hover {
+        border-color: #bbb;
+    }
+
+    input[type="color"] {
+        border: none;
+        width: 40px;
+        height: 40px;
+        background: none;
+        cursor: pointer;
+        padding: 0;
+        border-radius: 50%;
+        overflow: hidden;
+    }
+
+    .color-code {
+        font-family: monospace;
+        color: #555;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    .divider {
+        border: 0;
+        border-top: 2px dashed #f0f0f0;
+        margin: 30px 0;
+    }
+
+    /* Global Box Sizing */
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    /* Input Fields */
+    .custom-input {
+        width: 100%;
+        background: #f4f6f8;
+        border: 2px solid transparent;
+        padding: 18px 20px;
+        border-radius: 14px;
+        font-size: 1.1rem;
+        color: #222;
+        transition: all 0.2s;
+        font-family: inherit;
+        /* box-sizing: border-box; included in global */
+    }
+
+    .custom-input:focus {
+        border-color: #e5322d;
+        background: white;
+        outline: none;
+        box-shadow: 0 0 0 5px rgba(229, 50, 45, 0.08);
+    }
+
+    .mb-2 {
+        margin-bottom: 15px;
+    }
+
+    .input-group label {
+        font-weight: 700;
+        margin-bottom: 15px;
+        display: block;
+        color: #222;
+        font-size: 1.15rem;
+    }
+
+    /* Create Button */
+    .btn-create {
+        width: 100%;
+        background: linear-gradient(135deg, #ff4742 0%, #d9211c 100%);
+        color: white;
+        border: none;
+        padding: 22px;
+        border-radius: 14px;
+        font-size: 1.35rem;
+        font-weight: 800;
+        margin-top: 40px;
+        cursor: pointer;
+        box-shadow: 0 12px 30px rgba(229, 50, 45, 0.3);
+        transition: all 0.3s;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-create:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 18px 40px rgba(229, 50, 45, 0.4);
+    }
+
+    /* --- Logo Upload & Advanced Design --- */
+    .logo-upload-box {
+        border: 2px dashed #ddd;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        background: #fcfcfc;
+        transition: all 0.2s;
+        position: relative;
+        min-height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    .logo-upload-box:hover {
+        border-color: #e5322d;
+        background: #fff8f8;
+    }
+
+    .upload-icon {
+        color: #e5322d;
+        margin-bottom: 8px;
+    }
+
+    #logo-text {
+        font-weight: 500;
+        color: #555;
+    }
+
+    #logo-preview-img {
+        max-width: 100px;
+        max-height: 100px;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #remove-logo-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+        z-index: 10;
+    }
+
+    .design-accordion {
+        border: 1px solid #eee;
+        border-radius: 12px;
+        background: white;
+        margin-bottom: 20px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    .accordion-header {
+        padding: 15px 20px;
+        background: #f8f9fa;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 600;
+        color: #333;
+        transition: background 0.2s;
+    }
+
+    .accordion-header:hover {
+        background: #f0f0f0;
+    }
+
+    .accordion-content {
+        padding: 25px 20px;
+        display: none;
+        border-top: 1px solid #eee;
+        background: white;
+    }
+
+    .accordion-content.show {
+        display: block;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .accordion-icon {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #888;
+    }
+
+    .section-label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #444;
+        font-size: 0.95rem;
+    }
+
+    .style-grid {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .style-option {
+        width: 60px;
+        height: 60px;
+        border: 2px solid #eee;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        transition: all 0.2s;
+        background: white;
+    }
+
+    .style-option input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+        z-index: 5;
+    }
+
+    .style-option:has(input:checked),
+    .style-option.selected {
+        border-color: #e5322d;
+        box-shadow: 0 0 0 3px rgba(229, 50, 45, 0.1);
+        background: #fff5f5;
+    }
+
+    .style-option:hover {
+        border-color: #ccc;
+        transform: translateY(-2px);
+    }
+
+    .style-preview {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+        width: 32px;
+        height: 32px;
+        pointer-events: none;
+    }
+
+    .preview-dot {
+        background: #333;
+        width: 100%;
+        height: 100%;
+    }
+
+    .preview-dot.square {
+        border-radius: 0;
+    }
+
+    .preview-dot.rounded {
+        border-radius: 4px;
+    }
+
+    .preview-dot.circle {
+        border-radius: 50%;
+    }
+
+    .preview-bar {
+        background: #333;
+    }
+
+    .preview-bar.vertical {
+        width: 8px;
+        height: 32px;
+        margin: 0 4px;
+        border-radius: 4px;
+    }
+
+    .eye-preview {
+        width: 30px;
+        height: 30px;
+        border: 4px solid #333;
+        position: relative;
+    }
+
+    .eye-preview::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 12px;
+        height: 12px;
+        background: #333;
+    }
+
+    .eye-preview.rounded {
+        border-radius: 8px;
+    }
+
+    .eye-preview.rounded::after {
+        border-radius: 3px;
+    }
+
+    .eye-preview.circle {
+        border-radius: 50%;
+    }
+
+    .eye-preview.circle::after {
+        border-radius: 50%;
+    }
+
+    .eye-preview.leaf {
+        border-radius: 20px 0 20px 0;
+    }
+
+    .eye-preview.leaf::after {
+        border-radius: 8px 0 8px 0;
+    }
+
+    .eye-preview.shield {
+        border-radius: 4px 4px 15px 15px;
+    }
+
+    .eye-preview.shield::after {
+        border-radius: 2px 2px 6px 6px;
+    }
+
+
+    /* --- RIGHT SIDE --- */
+    .qr-preview-panel {
+        flex: 1;
+        max-width: 500px;
+    }
+
+    .preview-card {
+        background: white;
+        padding: 35px;
+        border-radius: 20px;
+        box-shadow: 0 4px 25px rgba(0, 0, 0, 0.04);
+        text-align: center;
+        position: sticky;
+        top: 30px;
+    }
+
+    .qr-display-area {
+        width: 100%;
+        aspect-ratio: 1/1;
+        background: #fcfcfc;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        border: 2px dashed #ddd;
+    }
+
+    .qr-svg-placeholder {
+        width: 70%;
+        height: 70%;
+        opacity: 0.1;
+    }
+
+    .download-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .btn-download {
+        flex: 1;
+        padding: 16px;
+        border-radius: 12px;
+        font-size: 1.05rem;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+    }
+
+    .btn-download.png {
+        background: #e5322d;
+        color: white;
+        box-shadow: 0 4px 15px rgba(229, 50, 45, 0.2);
+    }
+
+    .btn-download.svg {
+        background: #fff0f0;
+        color: #e5322d;
+        border: 1px solid rgba(229, 50, 45, 0.1);
+    }
+
+    .btn-download:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .preview-note {
+        margin-top: 25px;
+        color: #aaa;
+        font-size: 0.95rem;
+    }
+
+    /* Responsive Mobile Fix */
+    @media (max-width: 1000px) {
+        .qr-layout {
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .qr-left-panel,
+        .qr-preview-panel {
+            width: 100%;
+            flex: none;
+            max-width: 100%;
+        }
+
+        .qr-preview-panel {
+            order: 2;
+            /* Preview on bottom for mobile, or top if preferred? usually bottom for form flow */
+        }
+
+        .preview-card {
+            top: 0;
+            /* Remove sticky on mobile */
+        }
+    }
+
+    @media (max-width: 768px) {
+
+        /* Container Reset */
+        body {
+            overflow-x: hidden;
+            /* Prevent body scroll */
+        }
+
+        .qr-tool-container {
+            width: 100%;
+            padding: 15px;
+            /* Small padding */
+            margin: 20px 0;
+            overflow-x: hidden;
+            /* Prevent internal overflow */
+        }
+
+        /* 1. Navigation Tabs Fix */
+        .qr-nav-tabs {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            /* Allow horizontal scroll */
+            padding: 10px;
+            gap: 10px;
+            width: 100%;
+            /* Strict width */
+            max-width: 100vw;
+            box-sizing: border-box;
+            -webkit-overflow-scrolling: touch;
+            /* Scrollbar hiding */
+            scrollbar-width: none;
+            margin-bottom: 20px;
+        }
+
+        .qr-nav-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-item {
+            flex: 0 0 auto;
+            /* Do not shrink/grow */
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        /* 2. Form Card Fix */
+        .qr-form-card {
+            padding: 20px 15px;
+            /* Squeeze padding */
+            width: 100%;
+            border-radius: 12px;
+        }
+
+        .form-row {
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-col {
+            width: 100%;
+        }
+
+        /* Inputs & Colors */
+        .color-input-wrapper {
+            width: 100%;
+        }
+
+        /* Logo Box */
+        .logo-upload-box {
+            width: 100%;
+            min-height: 100px;
+        }
+
+        /* Input Fields */
+        .custom-input {
+            width: 100%;
+            min-width: 0;
+            /* Allow shrinking */
+        }
+
+        /* 3. Preview Section */
+        .qr-preview-panel {
+            margin-top: 20px;
+        }
+
+        .preview-card {
+            padding: 20px;
+        }
+
+        .download-buttons {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-download {
+            width: 100%;
+        }
+
+        /* Create Button */
+        .btn-create {
+            font-size: 1.1rem;
+            padding: 18px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- 1. Tab & Input Handling ---
+    function selectType(btn, type) {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('selected_qr_type').value = type;
+
+        // Hide all
+        document.querySelectorAll('.input-group').forEach(el => el.classList.add('hidden'));
+
+        // Show target
+        const targetId = 'input-' + type;
+        const target = document.getElementById(targetId);
+        if (target) {
+            target.classList.remove('hidden');
+        }
+    }
+
+    function selectEyeStyle(btn, style) {
+        const grid = document.getElementById('eye-style-grid');
+        if (!grid) return;
+        grid.querySelectorAll('.style-option').forEach(el => el.classList.remove('selected'));
+        btn.classList.add('selected');
+        document.getElementById('selected_eye_style').value = style;
+    }
+
+    function updateColorText(input, textId) {
+        const textSpan = document.getElementById(textId);
+        if (textSpan) textSpan.innerText = input.value;
+    }
+
+    function toggleAccordion() {
+        const content = document.getElementById('design-content');
+        const icon = document.getElementById('acc-icon');
+        if (content && icon) {
+            content.classList.toggle('show');
+            icon.textContent = content.classList.contains('show') ? '−' : '+';
+        }
+    }
+
+    // Pattern Style highlight
+    document.addEventListener('change', function (e) {
+        if (e.target.name === 'pattern_style') {
+            document.querySelectorAll('.style-option').forEach(opt => opt.classList.remove('selected'));
+            e.target.closest('.style-option').classList.add('selected');
+        }
+    });
+
+    function previewLogo(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const previewImg = document.getElementById('logo-preview-img');
+                const previewArea = document.getElementById('logo-preview-area');
+                const removeBtn = document.getElementById('remove-logo-btn');
+
+                if (previewImg) {
+                    previewImg.src = e.target.result;
+                    previewImg.classList.remove('hidden');
+                }
+                if (previewArea) previewArea.classList.add('hidden');
+                if (removeBtn) removeBtn.classList.remove('hidden');
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeLogo(e) {
+        e.stopPropagation();
+        const logoInput = document.getElementById('logo-input');
+        const previewImg = document.getElementById('logo-preview-img');
+        const previewArea = document.getElementById('logo-preview-area');
+        const removeBtn = document.getElementById('remove-logo-btn');
+
+        if (logoInput) logoInput.value = '';
+        if (previewImg) previewImg.classList.add('hidden');
+        if (removeBtn) removeBtn.classList.add('hidden');
+        if (previewArea) previewArea.classList.remove('hidden');
+    }
+
+    // --- 2. AJAX Form Handling ---
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('qr-form');
+        if (!form) return;
+
+        const submitBtn = form.querySelector('.btn-create');
+        const displayArea = document.getElementById('qr-display-area');
+        const placeholder = document.getElementById('qr-placeholder-container');
+        const displayImg = document.getElementById('qr-generated-image');
+        const downloadBtn = document.getElementById('download-btn-png');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // UI Loading State
+            let originalBtnText = 'สร้าง QR CODE';
+            if (submitBtn) {
+                originalBtnText = submitBtn.innerText;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังสร้าง...';
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.7';
+            }
+
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update Image
+                        if (displayImg) {
+                            displayImg.src = data.qr_image_url;
+                            displayImg.classList.remove('hidden');
+                        }
+                        if (placeholder) placeholder.classList.add('hidden');
+
+                        // Update Download Button
+                        if (downloadBtn) {
+                            downloadBtn.href = data.download_url;
+                            downloadBtn.classList.remove('disabled-link');
+                            downloadBtn.innerText = 'ไฟล์ PNG';
+                            downloadBtn.onclick = null;
+
+                            // Add animation effect
+                            downloadBtn.style.transform = 'scale(1.1)';
+                            setTimeout(() => downloadBtn.style.transform = 'scale(1)', 200);
+                        }
+                    } else {
+                        alert('เกิดข้อผิดพลาด: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('เกิดข้อผิดพลาดในการเชื่อมต่อหรือเซิร์ฟเวอร์ตอบกลับผิดรูปแบบ');
+                })
+                .finally(() => {
+                    // Restore Button
+                    if (submitBtn) {
+                        submitBtn.innerText = originalBtnText;
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '1';
+                    }
+                });
+        });
+    });
+</script>
+{% endblock %}

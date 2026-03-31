@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MankyFile - เครื่องมือจัดการ PDF ออนไลน์{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2.1">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <header>
+        <div class="nav-container">
+            <a href="{% url 'converter:index' %}" class="logo">
+                I<span>❤</span>MankyFile
+            </a>
+
+            <!-- Language Switcher -->
+            {% load i18n %}
+            <div class="lang-switcher">
+                <form action="{% url 'set_language' %}" method="post" id="lang-form">
+                    {% csrf_token %}
+                    <input name="next" type="hidden" value="{{ redirect_to }}">
+                    <select name="language" onchange="document.getElementById('lang-form').submit()"
+                        class="lang-select">
+                        {% get_current_language as LANGUAGE_CODE %}
+                        {% get_available_languages as LANGUAGES %}
+                        {% get_language_info_list for LANGUAGES as languages %}
+                        <option value="th">TH</option>
+                        <option value="en">EN</option>
+                        <option value="ja">JA</option>
+                    </select>
+                </form>
+            </div>
+
+            <!-- Dark Mode Toggle (Far Left Switch) -->
+            <button id="theme-toggle" class="theme-switch" aria-label="Toggle Dark Mode">
+                <div class="switch-track">
+                    <span class="switch-text text-night">NIGHTMODE</span>
+                    <span class="switch-text text-day">DAYMODE</span>
+                </div>
+                <div class="switch-thumb">
+                    <!-- Sun Icon -->
+                    <svg class="theme-icon icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                    </svg>
+                    <!-- Moon Icon -->
+                    <svg class="theme-icon icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </div>
+            </button>
+
+            <!-- Mobile Menu Button -->
+            <button class="menu-toggle" aria-label="Toggle Navigation">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 12H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M3 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </button>
+
+            <!-- Navigation Links -->
+            <nav class="nav-links">
+                <a href="{% url 'converter:merge_pdf' %}" data-i18n="nav_merge">รวม PDF</a>
+                <a href="{% url 'converter:split_pdf' %}" data-i18n="nav_split">แยก PDF</a>
+                <a href="{% url 'converter:pdf_to_word' %}" data-i18n="nav_pdf_word">PDF เป็น Word</a>
+                <a href="{% url 'converter:word_to_pdf' %}" data-i18n="nav_word_pdf">Word เป็น PDF</a>
+                <a href="{% url 'converter:unlock_pdf' %}" data-i18n="nav_unlock">ปลดล็อค PDF</a>
+            </nav>
+
+
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Messages -->
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="alert {{ message.tags }}">
+                {{ message }}
+                <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p data-i18n="footer_text">© 2026 MankyFile - เครื่องมือจัดการไฟล์ต่างๆ ด้วยตัวคุณเอง</p>
+        <div class="footer-links">
+            <a href="{% url 'converter:terms' %}" data-i18n="footer_terms">เงื่อนไขการใช้งาน</a>
+            <span class="separator">•</span>
+            <a href="{% url 'converter:privacy' %}" data-i18n="footer_privacy">นโยบายความเป็นส่วนตัว</a>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/upload_handler.js' %}"></script>
+    <script>
+        // --- Dark Mode Logic ---
+        const themeToggle = document.getElementById('theme-toggle');
+        const langSelect = document.querySelector('.lang-select');
+
+        // Check Saved Theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
+        // Initial Icon State
+        if (savedTheme === 'dark') {
+            themeToggle.classList.add('active');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeToggle.classList.toggle('active');
+        });
+
+        // --- Mobile Menu Logic ---
+        const menuToggle = document.querySelector('.menu-toggle');
+        const mobileMenu = document.querySelector('.nav-links'); // Target nav-links directly
+
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!menuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenu.classList.remove('active');
+            }
+        });
+
+        // --- Client-Side Translation ---
+        const translations = {
+            'en': {
+                'nav_merge': 'Merge PDF',
+                'nav_split': 'Split PDF',
+                'nav_pdf_word': 'PDF to Word',
+                'nav_word_pdf': 'Word to PDF',
+                'nav_unlock': 'Unlock PDF',
+                'footer_text': '© 2026 MankyFile - Your Personal File Management Tools',
+
+                // Hero
+                'hero_title': 'The All-in-One PDF Tool You Need',
+                'hero_subtitle': 'All the tools you need for PDFs at your fingertips. 100% Free and Easy to use! Merge, Split, Compress, Convert, Rotate, Unlock, and Watermark PDFs in just a few clicks.',
+
+                // Cards
+                'card_merge_title': 'Merge PDF',
+                'card_merge_desc': 'Combine PDFs in the order you want with the easiest PDF merger.',
+                'card_split_title': 'Split PDF',
+                'card_split_desc': 'Separate one page or a whole set for easy conversion into independent PDF files.',
+                'card_compress_title': 'Compress PDF',
+                'card_compress_desc': 'Reduce file size while optimizing for maximal PDF quality.',
+                'card_pdf_word_title': 'PDF to Word',
+                'card_pdf_word_desc': 'Easily convert your PDF files into easy to edit DOC and DOCX documents.',
+                'card_pdf_ppt_title': 'PDF to PowerPoint',
+                'card_pdf_ppt_desc': 'Turn your PDF files into easy to edit PPT and PPTX slideshows.',
+                'card_pdf_excel_title': 'PDF to Excel',
+                'card_pdf_excel_desc': 'Pull data straight from PDFs into Excel spreadsheets in a few seconds.',
+                'card_merge_word_title': 'Merge Word',
+                'card_merge_word_desc': 'Combine multiple Docs and Docx files into a single Word file easily.',
+                'card_word_pdf_title': 'Word to PDF',
+                'card_word_pdf_desc': 'Make DOC and DOCX files easy to read by converting them to PDF.',
+                'card_ppt_pdf_title': 'PowerPoint to PDF',
+                'card_ppt_pdf_desc': 'Make PPT and PPTX slideshows easy to view by converting them to PDF.',
+                'card_qrcode_title': 'QR Code Gen',
+                'card_qrcode_desc': 'Create free QR Codes from URLs, text, or phone numbers with custom colors.',
+                'card_url_title': 'URL Shortener',
+                'card_url_desc': 'Shorten long links for easy sharing. Includes stats and 24h/7d expiry.',
+                'card_unlock_title': 'Unlock PDF',
+                'card_unlock_desc': 'Remove passwords from PDFs to access and edit them immediately.',
+                'card_pdf_img_title': 'PDF to Image',
+                'card_pdf_img_desc': 'Convert PDF pages into high-quality image files (JPG/PNG).',
+                'card_img_pdf_title': 'Image to PDF',
+                'card_img_pdf_desc': 'Convert your images to PDF documents in seconds.',
+                'card_img_resize_title': 'Resize Image',
+                'card_img_resize_desc': 'Reduce image file size or dimensions while preserving quality.',
+                'card_img_convert_title': 'Convert Image',
+                'card_img_convert_desc': 'Convert images between formats like JPG, PNG, and WebP.',
+                'card_host_img_title': 'Upload Image',
+                'card_host_img_desc': 'Upload your images to the web and get links to use anywhere (with auto-delete options).',
+
+                // Tool UI
+                'btn_select_file': 'Select File',
+                'drag_drop_hint': 'or drag and drop here',
+                'footer_terms': 'Terms of Use',
+                'footer_privacy': 'Privacy Policy',
+
+                // QR Generator
+                'qr_nav_url': 'URL',
+                'qr_nav_text': 'Text',
+                'qr_nav_email': 'Email',
+                'qr_nav_tel': 'Phone',
+                'qr_nav_sms': 'SMS',
+                'qr_nav_whatsapp': 'Whatsapp',
+                'qr_nav_wifi': 'WIFI',
+                'qr_fill_color': 'Fill Color',
+                'qr_back_color': 'Background Color',
+                'qr_logo_label': 'Add Logo',
+                'qr_logo_hint': 'Click to upload image',
+                'qr_design_label': 'Custom Design',
+                'qr_pattern_label': 'Pattern Style',
+                'qr_btn_create': 'CREATE QR CODE',
+
+                // Shorten URL
+                'shorten_placeholder': 'Paste your long link here (https://...)',
+                'shorten_expiry_label': 'Link Expiry:',
+                'shorten_btn': 'Shorten Now! ✨',
+
+                // Unlock PDF
+                'unlock_upload_hint': 'Click to select PDF or drag and drop here',
+                'unlock_sub_status': 'Encrypted files supported',
+                'unlock_settings_label': 'Unlock Settings',
+                'unlock_mode_unknown_title': 'Forgot Password',
+                'unlock_mode_unknown_desc': 'System will help you find it (Recommended)',
+                'unlock_mode_known_title': 'Known Password',
+                'unlock_mode_known_desc': 'Enter password to unlock immediately',
+                'unlock_password_placeholder': 'Enter password (e.g., 1234, B-day)',
+                'unlock_btn': 'Start Unlock 🔓',
+
+                // Legal Pages
+                'terms_title': 'Terms of Service',
+                'terms_subtitle': 'Governing terms and conditions for using MankyFile services',
+                'terms_sec1_title': '1. Acceptance of Terms',
+                'terms_sec1_content': 'By accessing and using MankyFile, you agree to be bound by these professional terms of service in their entirety.',
+                'terms_sec2_title': '2. User Responsibility',
+                'terms_sec2_content': 'You are solely responsible for the content you upload, ensuring it complies with the law and does not infringe on third-party rights.',
+                'terms_sec3_title': '3. File Processing Policy',
+                'terms_sec3_content': 'MankyFile acts as a temporary processing station. All files are automatically and permanently deleted after tasks are completed.',
+                'privacy_title': 'Privacy Policy',
+                'privacy_subtitle': 'Our commitment to data protection and user privacy standards',
+                'privacy_sec1_title': '1. Data Collection',
+                'privacy_sec1_content': 'We adhere to data minimization principles, collecting only what is necessary to perform your requested file operations.',
+                'privacy_sec2_title': '2. Security and Encryption',
+                'privacy_sec2_content': 'All communication between your device and our servers is encrypted using industry-standard SSL/TLS technology.'
+            },
+            'ja': {
+                'nav_merge': 'PDF結合',
+                'nav_split': 'PDF分割',
+                'nav_pdf_word': 'PDF Word 変換',
+                'nav_word_pdf': 'Word PDF 変換',
+                'nav_unlock': 'PDF解除',
+                'footer_text': '© 2026 MankyFile - 誰でも使える簡単ファイルツール',
+
+                // Hero
+                'hero_title': '必要なすべてのPDFツールがここに',
+                'hero_subtitle': 'PDFに必要なすべてのツールが手元に。100％無料て使いやすい！数回のクリックでPDFの結合、分割、圧縮、変換、回転、ロック解除、透かし追加が可能です。',
+
+                // Cards
+                'card_merge_title': 'PDF結合',
+                'card_merge_desc': '最も簡単なPDF結合ツールを使用して、任意の順序でPDFを結合します。',
+                'card_split_title': 'PDF分割',
+                'card_split_desc': '1ページまたはセット全体を分離して、独立したPDFファイルに簡単に変換します。',
+                'card_compress_title': 'PDF圧縮',
+                'card_compress_desc': 'PDFの品質を最大限に維持しながら、ファイルサイズを削減します。',
+                'card_pdf_word_title': 'PDF Word 変換',
+                'card_pdf_word_desc': 'PDFファイルを編集しやすいDOCおよびDOCX文書に簡単に変換します。',
+                'card_pdf_ppt_title': 'PDF PowerPoint 変換',
+                'card_pdf_ppt_desc': 'PDFファイルを編集しやすいPPTおよびPPTXスライドショーに変換します。',
+                'card_pdf_excel_title': 'PDF Excel 変換',
+                'card_pdf_excel_desc': '数秒でPDFからExcelスプレッドシートにデータを直接抽出します。',
+                'card_merge_word_title': 'Word結合',
+                'card_merge_word_desc': '複数のDocsおよびDocxファイルを1つのWordファイルに簡単に結合します。',
+                'card_word_pdf_title': 'Word PDF 変換',
+                'card_word_pdf_desc': 'DOCおよびDOCXファイルをPDFに変換して読みやすくします。',
+                'card_ppt_pdf_title': 'PowerPoint PDF 変換',
+                'card_ppt_pdf_desc': 'PPTおよびPPTXスライドショーをPDFに変換して表示しやすくします。',
+                'card_qrcode_title': 'QRコード作成',
+                'card_qrcode_desc': 'URL、テキスト、電話番号から無料のQRコードを作成します。色はカスタマイズ可能です。',
+                'card_url_title': 'URL短縮',
+                'card_url_desc': '長いリンクを短縮して共有しやすくします。統計と自動期限切れ（24時間/7日）付き。',
+                'card_unlock_title': 'PDFロック解除',
+                'card_unlock_desc': 'PDFからパスワードを削除して、すぐにアクセスして編集できるようにします。',
+                'card_pdf_img_title': 'PDF画像変換',
+                'card_pdf_img_desc': 'PDFページを高品質な画像（JPG/PNG）に変換します。',
+                'card_img_pdf_title': '画像PDF変換',
+                'card_img_pdf_desc': '数秒でお使いの画像をPDFドキュメントに変換します。',
+                'card_img_resize_title': '画像リサイズ',
+                'card_img_resize_desc': '品質を維持しながら画像サイズや寸法を削減します。',
+                'card_img_convert_title': '画像形式変換',
+                'card_img_convert_desc': 'JPG、PNG、WebPなどの形式間で画像を変換します。',
+                'card_host_img_title': '画像アップロード',
+                'card_host_img_desc': '画像をウェブにアップロードし、どこでも使用できるリンクを取得します（自動削除オプション付き）。',
+
+                // Tool UI
+                'btn_select_file': 'ファイルを選択',
+                'drag_drop_hint': 'またはここにドラッグ＆ドロップ',
+                'footer_terms': '利用規約',
+                'footer_privacy': 'プライバシーポリシー',
+
+                // QR Generator
+                'qr_nav_url': 'URL',
+                'qr_nav_text': 'テキスト',
+                'qr_nav_email': 'メール',
+                'qr_nav_tel': '電話番号',
+                'qr_nav_sms': 'SMS',
+                'qr_nav_whatsapp': 'Whatsapp',
+                'qr_nav_wifi': 'WIFI',
+                'qr_fill_color': 'QRコードの色',
+                'qr_back_color': '背景色',
+                'qr_logo_label': 'ロゴを追加',
+                'qr_logo_hint': 'クリックして画像をアップロード',
+                'qr_design_label': 'デザインをカスタマイズ',
+                'qr_pattern_label': 'パターンスタイル',
+                'qr_btn_create': 'QRコードを作成',
+
+                // Shorten URL
+                'shorten_placeholder': 'ここに長いリンクを貼り付けてください (https://...)',
+                'shorten_expiry_label': 'リンクの有効期限:',
+                'shorten_btn': '今すぐ短縮! ✨',
+
+                // Unlock PDF
+                'unlock_upload_hint': 'クリックしてPDFを選択するか、ここにドラッグ＆ドロップしてください',
+                'unlock_sub_status': 'パスワード付きファイルに対応',
+                'unlock_settings_label': 'ロック解除設定',
+                'unlock_mode_unknown_title': 'パスワードを忘れた',
+                'unlock_mode_unknown_desc': 'システムが自動的に解析を試みます（推奨）',
+                'unlock_mode_known_title': 'パスワードを知っている',
+                'unlock_mode_known_desc': 'パスワードを入力してすぐに解除',
+                'unlock_password_placeholder': 'パスワードを入力（例：1234、誕生日）',
+                'unlock_btn': 'ロック解除開始 🔓',
+
+                // Legal Pages
+                'terms_title': '利用規約',
+                'terms_subtitle': 'MankyFile サービスの利用に関する利用規約',
+                'terms_sec1_title': '1. 規約の同意',
+                'terms_sec1_content': 'MankyFile サービスにアクセスまたは使用することにより、利用者は本規約に同意したものとみなされます。',
+                'terms_sec2_title': '2. ユーザーの責任',
+                'terms_sec2_content': '利用者は、アップロードするファイルに対して法的な権利を有していることを確認する責任があります。',
+                'terms_sec3_title': '3. プライバシーとファイル処理',
+                'terms_sec3_content': 'ファイルは処理後に自動的に削除されます。弊社が利用者のファイル内容を閲覧することはありません。',
+                'privacy_title': 'プライバシーポリシー',
+                'privacy_subtitle': '利用者の個人情報およびデータの保護に関する方針',
+                'privacy_sec1_title': '1. データの収集',
+                'privacy_sec1_content': '処理のためにアップロードされたファイルのみを一時的に収集します。',
+                'privacy_sec2_title': '2. データの保持',
+                'privacy_sec2_content': '全てのファイルは処理完了後、または一定期間経過後に自動的に削除されます。'
+            },
+            'th': {
+                'nav_merge': 'รวม PDF',
+                'nav_split': 'แยก PDF',
+                'nav_pdf_word': 'PDF เป็น Word',
+                'nav_word_pdf': 'Word เป็น PDF',
+                'nav_unlock': 'ปลดล็อค PDF',
+                'footer_text': '© 2026 MankyFile - เครื่องมือจัดการไฟล์ต่างๆ ด้วยตัวคุณเอง',
+
+                // Hero
+                'hero_title': 'เครื่องมือจัดการ File ครบวงจรที่คุณต้องการ',
+                'hero_subtitle': 'เครื่องมือทั้งหมดที่คุณต้องใช้กับ File อยู่ใกล้แค่เอื้อม ฟรีและใช้งานง่าย 100%! รวม, แยก, บีบอัด, แปลง, หมุน, ปลดล็อก และใส่ลายน้ำ File ได้ในไม่กี่คลิก',
+
+                // Cards
+                'card_merge_title': 'รวมไฟล์ PDF',
+                'card_merge_desc': 'รวมไฟล์ PDF ตามลำดับที่คุณต้องการด้วยตัวรวม PDF ที่ง่ายที่สุด',
+                'card_split_title': 'แยกไฟล์ PDF',
+                'card_split_desc': 'แยกหน้าหนึ่งหน้าหรือทั้งชุดเพื่อแปลงเป็นไฟล์ PDF อิสระได้อย่างง่ายดาย',
+                'card_compress_title': 'บีบอัด PDF',
+                'card_compress_desc': 'ลดขนาดไฟล์ในขณะที่รักษาคุณภาพ PDF ให้สูงสุด',
+                'card_pdf_word_title': 'PDF เป็น Word',
+                'card_pdf_word_desc': 'แปลงไฟล์ PDF ของคุณเป็นเอกสาร DOC และ DOCX ที่แก้ไขได้ง่ายอย่างง่ายดาย',
+                'card_pdf_ppt_title': 'PDF เป็น PowerPoint',
+                'card_pdf_ppt_desc': 'เปลี่ยนไฟล์ PDF ของคุณเป็นสไลด์โชว์ PPT และ PPTX ที่แก้ไขได้ง่าย',
+                'card_pdf_excel_title': 'PDF เป็น Excel',
+                'card_pdf_excel_desc': 'ดึงข้อมูลโดยตรงจาก PDF ลงในสเปรดชีต Excel ในเวลาไม่กี่วินาที',
+                'card_merge_word_title': 'รวมไฟล์ Word',
+                'card_merge_word_desc': 'รวมไฟล์ Docs และ Docx หลายไฟล์ให้เป็นไฟล์ Word เดียวได้อย่างง่ายดาย',
+                'card_word_pdf_title': 'Word เป็น PDF',
+                'card_word_pdf_desc': 'ทำให้ไฟล์ DOC และ DOCX อ่านง่ายโดยการแปลงเป็น PDF',
+                'card_ppt_pdf_title': 'PowerPoint เป็น PDF',
+                'card_ppt_pdf_desc': 'ทำให้สไลด์โชว์ PPT และ PPTX ดูง่ายโดยการแปลงเป็น PDF',
+                'card_qrcode_title': 'สร้าง QR Code',
+                'card_qrcode_desc': 'สร้าง QR Code ฟรีจากลิงก์ ข้อความ หรือเบอร์โทรศัพท์ พร้อมปรับแต่งสีได้',
+                'card_url_title': 'ย่อลิงก์',
+                'card_url_desc': 'ย่อลิงก์ยาวให้สั้น แชร์ง่าย พร้อมระบบหมดอายุอัตโนมัติ (24ชม./7วัน)',
+                'card_unlock_title': 'ปลดล็อค PDF',
+                'card_unlock_desc': 'ลบรหัสผ่านออกจากไฟล์ PDF เพื่อให้เข้าถึงและแก้ไขได้ทันที',
+                'card_pdf_img_title': 'PDF เป็น Image',
+                'card_pdf_img_desc': 'แปลงหน้า PDF ของคุณเป็นไฟล์รูปภาพ (JPG/PNG) ได้อย่างง่ายดาย',
+                'card_img_pdf_title': 'Image เป็น PDF',
+                'card_img_pdf_desc': 'แปลงรูปภาพของคุณเป็นไฟล์ PDF ภายในไม่กี่วินาที',
+                'card_img_resize_title': 'ลดขนาดไฟล์ภาพ',
+                'card_img_resize_desc': 'ปรับขนาดหรือลดคุณภาพไฟล์ภาพเพื่อลดขนาดไฟล์',
+                'card_img_convert_title': 'แปลงไฟล์ภาพ',
+                'card_img_convert_desc': 'แปลงไฟล์รูปภาพเป็นนามสกุลอื่น เช่น JPG, PNG, WebP',
+                'card_host_img_title': 'อัพโหลดรูปภาพ',
+                'card_host_img_desc': 'ฝากรูปภาพของคุณขึ้นเว็บ พร้อมลิงก์ไว้ใช้งานต่อ (ลบอัตโนมัติได้)',
+
+                // Tool UI
+                'btn_select_file': 'เลือกไฟล์',
+                'drag_drop_hint': 'หรือลากไฟล์มาวางที่นี่',
+                'footer_terms': 'เงื่อนไขการใช้งาน',
+                'footer_privacy': 'นโยบายความเป็นส่วนตัว',
+
+                // QR Generator
+                'qr_nav_url': 'URL',
+                'qr_nav_text': 'ข้อความ',
+                'qr_nav_email': 'Email',
+                'qr_nav_tel': 'เบอร์โทร',
+                'qr_nav_sms': 'SMS',
+                'qr_nav_whatsapp': 'Whatsapp',
+                'qr_nav_wifi': 'WIFI',
+                'qr_fill_color': 'สีของตัวอักษร',
+                'qr_back_color': 'สีของพื้นหลัง',
+                'qr_logo_label': 'เพิ่มโลโก้ (Logo)',
+                'qr_logo_hint': 'คลิกเพื่ออัพโหลดรูปภาพ',
+                'qr_design_label': 'ปรับแต่งการออกแบบ',
+                'qr_pattern_label': 'รูปทรงลายพื้นหลัง (Pattern)',
+                'qr_btn_create': 'สร้าง QR CODE',
+
+                // Shorten URL
+                'shorten_placeholder': 'วางลิงก์ยาวของคุณที่นี่ (https://...)',
+                'shorten_expiry_label': 'อายุลิงก์:',
+                'shorten_btn': 'ย่อลิงก์เลย! ✨',
+
+                // Unlock PDF
+                'unlock_upload_hint': 'คลิกเลือกไฟล์ PDF หรือวางที่นี่',
+                'unlock_sub_status': 'รองรับไฟล์ที่มีรหัสผ่าน',
+                'unlock_settings_label': 'ตั้งค่าการปลดล็อค',
+                'unlock_mode_unknown_title': 'จำรหัสไม่ได้',
+                'unlock_mode_unknown_desc': 'ระบบช่วยสุ่มหาให้ (แนะนำ)',
+                'unlock_mode_known_title': 'รู้รหัสผ่าน',
+                'unlock_mode_known_desc': 'กรอกเพื่อปลดทันที',
+                'unlock_password_placeholder': 'กรอกรหัสผ่าน (เช่น 1234, วันเกิด)',
+                'unlock_btn': 'เริ่มปลดล็อค 🔓',
+
+                // Legal Pages
+                'terms_title': 'เงื่อนไขการใช้งาน (Terms of Service)',
+                'terms_subtitle': 'ข้อกำหนดและนโยบายความเป็นธรรมในการเข้าถึงบริการ MankyFile',
+                'terms_sec1_title': '1. การยอมรับข้อตกลงและเงื่อนไข',
+                'terms_sec1_content': 'การเข้าถึงและการใช้งานเว็บไซต์ MankyFile ถือว่าท่านได้ยอมรับข้อผูกพันตามเงื่อนไขการใช้งานเหล่านี้โดยสมบูรณ์ หากท่านไม่ยอมรับโปรดระงับการใช้งานทันที',
+                'terms_sec2_title': '2. ความรับผิดชอบของผู้ใช้',
+                'terms_sec2_content': 'ท่านเป็นผู้รับผิดชอบแต่เพียงผู้เดียวต่อไฟล์ที่นำเข้าสู่ระบบ โดยต้องเป็นไฟล์ที่ได้มาอย่างถูกต้องตามกฎหมาย และไม่ละเมิดสิทธิของบุคคลที่สาม',
+                'terms_sec3_title': '3. นโยบายการคุ้มครองและจัดการไฟล์',
+                'terms_sec3_content': 'ระบบได้รับการออกแบบให้เป็นสถานีประมวลผลชั่วคราว ไฟล์ทั้งหมดจะถูกลบออกอย่างถาวรโดยอัตโนมัติ และไม่มีทีมงานคนใดเข้าถึงเนื้อหาภายในไฟล์ของท่านได้',
+                'privacy_title': 'นโยบายความเป็นส่วนตัว (Privacy Policy)',
+                'privacy_subtitle': 'มาตรฐานการรักษาความปลอดภัยข้อมูลส่วนบุคคลและการจัดการข้อมูลผู้ใช้งาน',
+                'privacy_sec1_title': '1. การเก็บรวบรวมข้อมูลส่วนบุคคล',
+                'privacy_sec1_content': 'เรามุ่งเน้นการเก็บข้อมูลให้น้อยที่สุด (Data Minimization) โดยจัดเก็บเพียงไฟล์ที่จำเป็นต่อการประมวลผลตามคำสั่งของท่านเท่านั้น',
+                'privacy_sec2_title': '2. ความปลอดภัยและการเข้ารหัสข้อมูล',
+                'privacy_sec2_content': 'ข้อมูลทุกอย่างที่รับ-ส่งผ่านเว็บไซต์ จะถูกเข้ารหัสด้วยเทคโนโลยี SSL/TLS เกรดทางการทหาร เพื่อป้องกันการรั่วไหลของข้อมูล'
+            },
+        };
+
+        function updateLanguage() {
+            // 1. Get Language from Django (Source of Truth)
+            let rawLang = "{{ LANGUAGE_CODE|default:'th' }}".toLowerCase();
+            let lang = 'th'; // Default fallback
+            const path = window.location.pathname;
+
+            // 2. Normalize Language Code (Handle en-us, ja-jp, etc.)
+            if (rawLang.startsWith('en')) {
+                lang = 'en';
+            } else if (rawLang.startsWith('ja')) {
+                lang = 'ja';
+            } else {
+                lang = 'th';
+            }
+
+            // Apply translations to data-i18n elements
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+
+            // Apply translations to placeholders
+            const placeholderElements = document.querySelectorAll('[data-i18n-placeholder]');
+            placeholderElements.forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[lang] && translations[lang][key]) {
+                    el.placeholder = translations[lang][key];
+                }
+            });
+
+            // --- Dynamic Tool Title Logic ---
+            // If we are on a specific tool page, override the title/subtitle using the 'card' keys
+            const toolTitleEl = document.getElementById('tool-title-heading');
+            const toolSubtitleEl = document.getElementById('tool-subtitle-text');
+
+            if (toolTitleEl && translations[lang]) {
+                let toolKey = null;
+                // Match URL to tool keys
+                if (path.includes('/merge-pdf')) toolKey = 'merge';
+                else if (path.includes('/split-pdf')) toolKey = 'split';
+                else if (path.includes('/compress-pdf')) toolKey = 'compress';
+                else if (path.includes('/pdf-to-word')) toolKey = 'pdf_word';
+                else if (path.includes('/pdf-to-powerpoint')) toolKey = 'pdf_ppt';
+                else if (path.includes('/pdf-to-excel')) toolKey = 'pdf_excel';
+                else if (path.includes('/word-to-pdf')) toolKey = 'word_pdf';
+                else if (path.includes('/powerpoint-to-pdf')) toolKey = 'ppt_pdf';
+                else if (path.includes('/unlock-pdf')) toolKey = 'unlock';
+                else if (path.includes('/merge-word')) toolKey = 'merge_word';
+                else if (path.includes('/qrcode-generator')) toolKey = 'qrcode';
+                else if (path.includes('/shorten-url')) toolKey = 'url';
+                else if (path.includes('/pdf-to-image')) toolKey = 'pdf_img';
+                else if (path.includes('/image-to-pdf')) toolKey = 'img_pdf';
+                else if (path.includes('/image-resizer')) toolKey = 'img_resize';
+                else if (path.includes('/image-convert')) toolKey = 'img_convert';
+                else if (path.includes('/host-image')) toolKey = 'host_img';
+
+                if (toolKey) {
+                    const titleKey = `card_${toolKey}_title`;
+                    const descKey = `card_${toolKey}_desc`;
+
+                    if (translations[lang][titleKey]) toolTitleEl.textContent = translations[lang][titleKey];
+                    if (toolSubtitleEl && translations[lang][descKey]) toolSubtitleEl.textContent = translations[lang][descKey];
+                }
+            }
+
+            // Update Dropdown Selection UI
+            if (langSelect) {
+                for (let i = 0; i < langSelect.options.length; i++) {
+                    if (langSelect.options[i].value === lang) {
+                        langSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Run translation on load
+        document.addEventListener('DOMContentLoaded', updateLanguage);
+    </script>
+    <!-- Botnoi Chatbot Integration -->
+    <div id="bn-root"></div>
+    <script>window.onload = function () { if (window.BN) BN.init({ version: '1.0' }) }</script>
+    <script>
+            (function (d, s, id) {
+                var js, bjs = d.getElementsByTagName(s)[0];
+                if (d.getElementById(id)) return;
+                js = d.createElement(s); js.id = id;
+                js.src = 'https://console.botnoi.ai/customerchat/index.js';
+                bjs.parentNode.insertBefore(js, bjs);
+            }(document, 'script', 'bn-jssdk'));
+    </script>
+
+    <div class="bn-customerchat" bot_id="698485a75a9346c5622f111c"
+        bot_logo="https://bn-sme-production-ap-southeast-1.s3.amazonaws.com/profile/c9278b3c-baef-4aef-9c3f-f48eb404735a.png"
+        bot_name="MankyFile AI Assistant" theme_color="#e5322d" locale="th"
+        logged_in_greeting="สวัสดีครับ ยินดีต้อนรับสู่ MankyFile! มีอะไรให้ช่วยไหมครับ?"
+        greeting_message="สวัสดีครับ ผมเป็นผู้ช่วย AI ของ MankyFile ยินดีที่ได้รู้จักครับ" default_open="false">
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="hero-section">
+    <h1 class="hero-title" data-i18n="hero_title">เครื่องมือจัดการ File ครบวงจรที่คุณต้องการ</h1>
+    <p class="hero-subtitle" data-i18n="hero_subtitle">เครื่องมือทั้งหมดที่คุณต้องใช้กับ File อยู่ใกล้แค่เอื้อม
+        ฟรีและใช้งานง่าย 100%! รวม, แยก,
+        บีบอัด, แปลง, หมุน, ปลดล็อก และใส่ลายน้ำ File ได้ในไม่กี่คลิก</p>
+</div>
+
+<div class="tools-grid">
+    <!-- Row 1: Favorites -->
+    <a href="{% url 'converter:merge_pdf' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+            </svg>
+        </div>
+        <h3 data-i18n="card_merge_title">รวมไฟล์ PDF</h3>
+        <p data-i18n="card_merge_desc">รวมไฟล์ PDF ตามลำดับที่คุณต้องการด้วยตัวรวม PDF ที่ง่ายที่สุด</p>
+    </a>
+
+    <a href="{% url 'converter:split_pdf' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+            </svg> <!-- Placeholder icon -->
+        </div>
+        <h3 data-i18n="card_split_title">แยกไฟล์ PDF</h3>
+        <p data-i18n="card_split_desc">แยกหน้าหนึ่งหน้าหรือทั้งชุดเพื่อแปลงเป็นไฟล์ PDF อิสระได้อย่างง่ายดาย</p>
+    </a>
+
+    <a href="{% url 'converter:compress_pdf' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+            </svg>
+        </div>
+        <h3 data-i18n="card_compress_title">บีบอัด PDF</h3>
+        <p data-i18n="card_compress_desc">ลดขนาดไฟล์ในขณะที่รักษาคุณภาพ PDF ให้สูงสุด</p>
+    </a>
+
+    <!-- Row 2: Converters -->
+    <a href="{% url 'converter:pdf_to_word' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+            </svg>
+        </div>
+        <h3 data-i18n="card_pdf_word_title">PDF เป็น Word</h3>
+        <p data-i18n="card_pdf_word_desc">แปลงไฟล์ PDF ของคุณเป็นเอกสาร DOC และ DOCX ที่แก้ไขได้ง่ายอย่างง่ายดาย</p>
+    </a>
+
+    <a href="{% url 'converter:pdf_to_powerpoint' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+            </svg>
+        </div>
+        <h3 data-i18n="card_pdf_ppt_title">PDF เป็น PowerPoint</h3>
+        <p data-i18n="card_pdf_ppt_desc">เปลี่ยนไฟล์ PDF ของคุณเป็นสไลด์โชว์ PPT และ PPTX ที่แก้ไขได้ง่าย</p>
+    </a>
+
+    <a href="{% url 'converter:pdf_to_excel' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+            </svg>
+        </div>
+        <h3 data-i18n="card_pdf_excel_title">PDF เป็น Excel</h3>
+        <p data-i18n="card_pdf_excel_desc">ดึงข้อมูลโดยตรงจาก PDF ลงในสเปรดชีต Excel ในเวลาไม่กี่วินาที</p>
+    </a>
+
+    <a href="{% url 'converter:merge_word' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+            </svg>
+        </div>
+        <h3 data-i18n="card_merge_word_title">รวมไฟล์ Word</h3>
+        <p data-i18n="card_merge_word_desc">รวมไฟล์ Docs และ Docx หลายไฟล์ให้เป็นไฟล์ Word เดียวได้อย่างง่ายดาย</p>
+    </a>
+
+    <!-- Row 3: Word to PDF -->
+    <a href="{% url 'converter:word_to_pdf' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+            </svg>
+        </div>
+        <h3 data-i18n="card_word_pdf_title">Word เป็น PDF</h3>
+        <p data-i18n="card_word_pdf_desc">ทำให้ไฟล์ DOC และ DOCX อ่านง่ายโดยการแปลงเป็น PDF</p>
+    </a>
+
+    <a href="{% url 'converter:powerpoint_to_pdf' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+            </svg>
+        </div>
+        <h3 data-i18n="card_ppt_pdf_title">PowerPoint เป็น PDF</h3>
+        <p data-i18n="card_ppt_pdf_desc">ทำให้สไลด์โชว์ PPT และ PPTX ดูง่ายโดยการแปลงเป็น PDF</p>
+    </a>
+
+    <a href="{% url 'converter:qrcode_generator' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path d="M4 4h4v4H4V4zm0 12h4v4H4v-4zM16 4h4v4h-4V4z" fill="currentColor" />
+                <path d="M2 2v8h8V2H2zm2 2h4v4H4V4zM2 14v8h8v-8H2zm2 2h4v4H4v-4zM14 2v8h8V2h-8zm2 2h4v4h-4V4z"
+                    fill="currentColor" />
+                <path d="M14 14h2v2h-2v-2zm2 2h2v2h-2v-2zm-2 2h2v2h-2v-2zm2 2h2v2h-2v-2zm2-4h2v2h-2v-2z"
+                    fill="currentColor" />
+            </svg>
+        </div>
+        <h3 data-i18n="card_qrcode_title">สร้าง QR Code</h3>
+        <p data-i18n="card_qrcode_desc">สร้าง QR Code ฟรีจากลิงก์ ข้อความ หรือเบอร์โทรศัพท์ พร้อมปรับแต่งสีได้</p>
+    </a>
+
+    <a href="{% url 'converter:shorten_url' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            </svg>
+        </div>
+        <h3 data-i18n="card_url_title">ย่อลิงก์</h3>
+        <p data-i18n="card_url_desc">ย่อลิงก์ยาวให้สั้น แชร์ง่าย พร้อมระบบหมดอายุอัตโนมัติ (24ชม./7วัน)</p>
+    </a>
+
+    <!-- PDF to Image -->
+    <a href="{% url 'converter:pdf_to_image' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+            </svg>
+        </div>
+        <h3 data-i18n="card_pdf_img_title">PDF เป็น Image</h3>
+        <p data-i18n="card_pdf_img_desc">แปลงหน้า PDF ของคุณเป็นไฟล์รูปภาพ (JPG/PNG) ได้อย่างง่ายดาย</p>
+    </a>
+
+    <!-- Image to PDF -->
+    <a href="{% url 'converter:image_to_pdf' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5l2.5 3.01L17.5 7l4.5 6H9l2.5-3.5zM16 22H4c-1.1 0-2-.9-2-2V7h2v13h12v2z" />
+            </svg>
+        </div>
+        <h3 data-i18n="card_img_pdf_title">Image เป็น PDF</h3>
+        <p data-i18n="card_img_pdf_desc">แปลงรูปภาพของคุณเป็นไฟล์ PDF ภายในไม่กี่วินาที</p>
+    </a>
+
+    <!-- Resize Image -->
+    <a href="{% url 'converter:image_resize' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path d="M7 2v3h10V2H7zm0 17v3h10v-3H7zM2 7h3v10H2V7zm17 0h3v10h-3V7zM8 8h8v8H8V8z" />
+            </svg>
+        </div>
+        <h3 data-i18n="card_img_resize_title">ลดขนาดไฟล์ภาพ</h3>
+        <p data-i18n="card_img_resize_desc">ปรับขนาดหรือลดคุณภาพไฟล์ภาพเพื่อลดขนาดไฟล์</p>
+    </a>
+
+    <!-- Convert Image -->
+    <a href="{% url 'converter:image_convert' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M15 16h4v2h-4v-2zm0-8h7v2h-7V8zm0 4h5v2h-5v-2zM3 18c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v12zM5 6h6v12H5V6z" />
+            </svg>
+        </div>
+        <h3 data-i18n="card_img_convert_title">แปลงไฟล์ภาพ</h3>
+        <p data-i18n="card_img_convert_desc">แปลงไฟล์รูปภาพเป็นนามสกุลอื่น เช่น JPG, PNG, WebP</p>
+    </a>
+
+    <!-- Host Image -->
+    <a href="{% url 'converter:host_image' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+        </div>
+        <h3 data-i18n="card_host_img_title">อัพโหลดรูปภาพ</h3>
+        <p data-i18n="card_host_img_desc">ฝากรูปภาพของคุณขึ้นเว็บ พร้อมลิงก์ไว้ใช้งานต่อ (ลบอัตโนมัติได้)</p>
+    </a>
+
+    <!-- Unlock PDF -->
+    <a href="{% url 'converter:unlock_pdf' %}" class="tool-card">
+        <div class="tool-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+            </svg>
+        </div>
+        <h3 data-i18n="card_unlock_title">ปลดล็อค PDF</h3>
+        <p data-i18n="card_unlock_desc">ลบรหัสผ่านออกจากไฟล์ PDF เพื่อให้เข้าถึงและแก้ไขได้ทันที</p>
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="legal-container">
+    <div class="legal-header">
+        <h1 data-i18n="terms_title">{{ title }}</h1>
+        <p data-i18n="terms_subtitle">{{ subtitle }}</p>
+    </div>
+
+    <div class="legal-content">
+        <section>
+            <h2 data-i18n="terms_sec1_title">1. การยอมรับข้อตกลง</h2>
+            <p data-i18n="terms_sec1_content">การเข้าถึงและการใช้งานเว็บไซต์ MankyFile ("เรา", "บริการ")
+                ถือว่าคุณได้อ่าน เข้าใจ
+                และตกลงที่จะผูกพันตามเงื่อนไขการใช้งานเหล่านี้ หากคุณไม่เห็นด้วยกับข้อกำหนดใดๆ
+                โปรดหยุดการใช้งานบริการทันที</p>
+        </section>
+
+        <section>
+            <h2 data-i18n="terms_sec2_title">2. ความรับผิดชอบของผู้ใช้</h2>
+            <p data-i18n="terms_sec2_content">คุณตกลงที่จะส่งเฉพาะไฟล์ที่คุณมีสิทธิ์ตามกฎหมายในการจัดการเท่านั้น
+                ห้ามใช้บริการเพื่อส่งไฟล์ที่ละเมิดลิขสิทธิ์หรือสิทธิ์ของบุคคลที่สาม
+                หรือพยายามรบกวนการทำงานของระบบในทุกกรณี</p>
+        </section>
+
+        <section>
+            <h2 data-i18n="terms_sec3_title">3. นโยบายการจัดการไฟล์</h2>
+            <p data-i18n="terms_sec3_content">เพื่อความเป็นส่วนตัวสูงสุด
+                ไฟล์ที่อัปโหลดและไฟล์ที่ประมวลผลแล้วจะถูกลบออกจากเซิร์ฟเวอร์ของเราโดยอัตโนมัติ
+                และไม่มีทีมงานคนใดสามารถเข้าดูเนื้อหาภายในไฟล์ของคุณได้</p>
+        </section>
+    </div>
+</div>
+
+<style>
+    :root {
+        --legal-bg: #ffffff;
+        --legal-text: #333333;
+        --legal-heading: #1a1a1a;
+        --legal-border: #eeeeee;
+        --legal-accent: var(--primary-color);
+        --legal-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    [data-theme="dark"] {
+        --legal-bg: #1e1e1e;
+        --legal-text: #b0b0b0;
+        --legal-heading: #f0f0f0;
+        --legal-border: #333333;
+        --legal-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .legal-container {
+        max-width: 900px;
+        width: 100%;
+        margin: 40px auto;
+        padding: 20px;
+        background: var(--legal-bg);
+        border-radius: 12px;
+        box-shadow: var(--legal-shadow);
+        transition: all 0.3s ease;
+    }
+
+    .legal-header {
+        text-align: center;
+        padding: 40px 20px;
+        border-bottom: 1px solid var(--legal-border);
+        margin-bottom: 30px;
+    }
+
+    .legal-header h1 {
+        font-size: 32px;
+        color: var(--legal-heading);
+        margin-bottom: 10px;
+    }
+
+    .legal-header p {
+        font-size: 18px;
+        color: var(--legal-text);
+    }
+
+    .legal-content {
+        padding: 0 20px 40px;
+        line-height: 1.8;
+    }
+
+    .legal-content section {
+        margin-bottom: 35px;
+    }
+
+    .legal-content h2 {
+        font-size: 22px;
+        color: var(--legal-accent);
+        margin-bottom: 15px;
+        border-left: 4px solid var(--legal-accent);
+        padding-left: 15px;
+    }
+
+    .legal-content p {
+        color: var(--legal-text);
+        margin-bottom: 15px;
+    }
+
+    @media (max-width: 768px) {
+        .legal-container {
+            margin: 20px;
+            width: calc(100% - 40px);
+        }
+    }
+</style>
+{% endblock %}

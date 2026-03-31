@@ -1,0 +1,316 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="tool-container">
+    <div class="card-wrapper" style="text-align: center; padding: 40px 20px;">
+
+        <!-- Processing State -->
+        <div id="state-processing">
+            <div class="radar-spinner">
+                <div class="radar-scan"></div>
+            </div>
+
+            <h2 style="margin-top: 25px;">กำลังส่งภารกิจให้ Worker Node...</h2>
+            <p style="color: #888; font-family: monospace;" id="console-log">Connecting to {{ worker_host }}...</p>
+
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="p-bar"></div>
+            </div>
+
+            <p style="font-size: 0.8rem; color: #666; margin-top: 20px;">
+                ระบบกำลังดำเนินการ <br>
+                กรุณาโปรดรอจนกว่าสำเร็จ...
+            </p>
+
+        </div>
+
+        <!-- Success State -->
+        <div id="state-success" style="display: none;">
+
+            <!-- Unlock Mode UI -->
+            <div id="ui-unlock" style="display: none;">
+                <div class="success-icon">🔓</div>
+                <h1 style="color: #28a745;">ปลดล็อคสำเร็จ!</h1>
+                <div class="password-box">
+                    <span style="color: #888;">รหัสผ่านที่ค้นพบ:</span>
+                    <h2 id="found-password" style="font-family: monospace; color: #e5322d; margin: 10px 0;">...</h2>
+                </div>
+            </div>
+
+            <!-- Conversion Mode UI -->
+            <div id="ui-convert" style="display: none;">
+                <h1 style="font-size: 2.5rem; margin-bottom: 10px;">ประมวลผลไฟล์สำเร็จ!</h1>
+                <p style="color: #ccc; margin-bottom: 30px;" id="success-subtext">ไฟล์ของคุณถูกสร้างเรียบร้อยแล้ว</p>
+
+                <div
+                    style="margin-bottom: 20px; text-align: left; display: inline-block; max-width: 400px; width: 100%;">
+                    <label
+                        style="color: #aaa; font-size: 0.9rem; margin-bottom: 5px; display: block;">ตั้งชื่อไฟล์ที่ต้องการบันทึก:</label>
+                    <div style="display: flex;">
+                        <input type="text" id="filename-input" value="processed_document"
+                            style="flex: 1; padding: 10px; border-radius: 5px 0 0 5px; border: 1px solid #444; background: #222; color: white; outline: none;">
+                        <span id="file-ext-label"
+                            style="padding: 10px; background: #333; color: #aaa; border: 1px solid #444; border-left: none; border-radius: 0 5px 5px 0;">.pptx</span>
+                    </div>
+                </div>
+            </div>
+
+            <br>
+
+            <a id="download-btn" href="#" class="download-btn">
+                ดาวน์โหลดไฟล์
+            </a>
+
+            <div style="margin-top: 30px; display: flex; justify-content: center; gap: 15px;">
+                <a href="{% url 'converter:index' %}" class="btn btn-outline-secondary"
+                    style="border-radius: 50px; padding: 8px 20px; color: #aaa; border-color: #555;">กลับหน้าหลัก</a>
+                <a href="{% url 'converter:index' %}" class="btn btn-outline-secondary"
+                    style="border-radius: 50px; padding: 8px 20px; color: #aaa; border-color: #555;">ลบไฟล์ทันที</a>
+            </div>
+
+        </div>
+
+        <!-- Failed State -->
+        <div id="state-failed" style="display: none;">
+            <div class="fail-icon">❌</div>
+            <h2 id="fail-title">ไม่สามารถปลดล็อคได้</h2>
+            <p id="fail-desc">ขออภัย ระบบไม่สามารถหารหัสผ่านของไฟล์นี้ได้ภายในเวลาที่กำหนด</p>
+            <a href="javascript:history.back()" class="retry-btn">ลองใหม่อีกครั้ง</a>
+        </div>
+
+        <!-- Error Message -->
+        <div id="error-message" style="display: none; text-align: center; margin-top: 30px;">
+            <div style="font-size: 3rem; margin-bottom: 20px;">❌</div>
+            <h2 id="error-title">{{ error_header|default:"ทำงานไม่สำเร็จ" }}</h2>
+            <p id="error-desc" style="color: #ccc; margin-bottom: 30px;">
+                {{ error_text|default:"ระบบไม่สามารถประมวลผลไฟล์นี้ได้" }}
+            </p>
+            <a href="javascript:history.back()" class="btn btn-outline-light px-4 py-2">ลองใหม่อีกครั้ง</a>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .radar-spinner {
+        width: 80px;
+        height: 80px;
+        border: 2px solid rgba(229, 50, 45, 0.3);
+        border-radius: 50%;
+        margin: 0 auto;
+        position: relative;
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.02);
+    }
+
+    .radar-scan {
+        width: 100%;
+        height: 100%;
+        background: conic-gradient(from 0deg, transparent 0%, rgba(229, 50, 45, 0.8) 100%);
+        animation: radar 1.5s linear infinite;
+        border-radius: 50%;
+        opacity: 0.5;
+    }
+
+    @keyframes radar {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .progress-bar-container {
+        width: 100%;
+        max-width: 300px;
+        height: 4px;
+        background: #eee;
+        margin: 20px auto;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        width: 0%;
+        height: 100%;
+        background: #e5322d;
+        transition: width 0.5s;
+        animation: progress 20s linear forwards;
+        /* Fake progress for UX */
+    }
+
+    @keyframes progress {
+        0% {
+            width: 0%;
+        }
+
+        100% {
+            width: 95%;
+        }
+    }
+
+    .password-box {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        border: 2px dashed #ddd;
+        margin: 20px 0;
+    }
+
+    .download-btn {
+        display: inline-block;
+        padding: 15px 40px;
+        background: #e5322d;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: 0.2s;
+        box-shadow: 0 4px 15px rgba(229, 50, 45, 0.3);
+        font-size: 1.2rem;
+    }
+
+    .download-btn:hover {
+        background: #d0201b;
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .retry-btn {
+        display: inline-block;
+        padding: 10px 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        color: #666;
+        text-decoration: none;
+        margin-top: 15px;
+    }
+
+    [data-theme="dark"] .password-box {
+        background: #252525;
+        border-color: #444;
+    }
+
+    [data-theme="dark"] .radar-spinner {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Input Focus */
+    #filename-input:focus {
+        border-color: #e5322d !important;
+    }
+</style>
+
+<script>
+    const taskId = "{{ task_id }}";
+    const workerHost = "{{ worker_host }}";
+    const apiKey = "MANKY_SECRET_KEY_12345";
+    const taskType = "{{ task_type|default_if_none:'' }}"; // 'PowerPoint', 'Excel', 'WORD', 'PDF', or empty for Unlock
+    const originalFileName = "{{ file_name }}"; // Need to pass this from view ideally
+
+    const consoleLog = document.getElementById('console-log');
+    const filenameInput = document.getElementById('filename-input');
+    const downloadBtn = document.getElementById('download-btn');
+
+    // Remove extension from filename if present
+    let defaultName = originalFileName.substring(0, originalFileName.lastIndexOf('.')) || originalFileName;
+    filenameInput.value = defaultName;
+
+    function updateDownloadLink() {
+        let name = filenameInput.value;
+        downloadBtn.href = `${workerHost}/download.php?task_id=${taskId}&key=${apiKey}&name=${encodeURIComponent(name)}`;
+    }
+
+    filenameInput.addEventListener('input', updateDownloadLink);
+
+    function checkStatus() {
+        const statusUrl = "{% url 'converter:check_worker_status' %}";
+
+        fetch(`${statusUrl}?task_id=${taskId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'completed') {
+                    // Success!
+                    document.getElementById('state-processing').style.display = 'none';
+                    document.getElementById('state-success').style.display = 'block';
+
+                    if (taskType) {
+                        // CONVERSION MODE
+                        document.getElementById('ui-convert').style.display = 'block';
+                        document.getElementById('ui-unlock').style.display = 'none';
+
+                        let ext = '.pdf';
+                        let typeUpper = taskType.toUpperCase();
+                        if (typeUpper === 'POWERPOINT') ext = '.pptx';
+                        else if (typeUpper === 'EXCEL') ext = '.xlsx';
+                        else if (typeUpper === 'WORD') ext = '.docx';
+                        else if (typeUpper === 'PDF') ext = '.pdf';
+                        else if (typeUpper === 'IMAGE' || typeUpper === 'JPG') ext = '.jpg';
+                        else if (typeUpper === 'ZIP') ext = '.zip';
+                        else if (typeUpper === 'PNG') ext = '.png';
+                        else if (typeUpper === 'WEBP') ext = '.webp';
+
+                        document.getElementById('file-ext-label').innerText = ext;
+                        document.getElementById('success-subtext').innerText = `ไฟล์ ${taskType} ของคุณถูกสร้างเรียบร้อยแล้ว`;
+                        document.getElementById('download-btn').innerText = `ดาวน์โหลด ${taskType}`;
+                    } else {
+                        // UNLOCK MODE
+                        document.getElementById('ui-convert').style.display = 'none';
+                        document.getElementById('ui-unlock').style.display = 'block';
+                        document.getElementById('found-password').textContent = data.password_found;
+                        document.getElementById('download-btn').innerText = `ดาวน์โหลดไฟล์ PDF 🔓`;
+                    }
+
+                    updateDownloadLink(); // Initial Link Set
+
+                } else if (data.status === 'failed' || (data.status === 'processing' && data.proxy_error)) {
+
+                    if (data.proxy_error) {
+                        // Connection Error to Worker
+                        consoleLog.innerHTML = `<span style="color:salmon;">> Error: ${data.proxy_error}</span>`;
+                        // Don't hide processing immediately, let user see error
+                    } else {
+                        // Logic Failed
+                        document.getElementById('state-processing').style.display = 'none';
+
+                        if (taskType) {
+                            document.getElementById('error-title').innerText = "แปลงไฟล์ไม่สำเร็จ";
+                            document.getElementById('error-desc').innerText = "เกิดข้อผิดพลาดในการแปลงไฟล์ (อาจเกิดจากไฟล์เสียหาย)";
+                            document.getElementById('error-message').style.display = 'block';
+                        } else {
+                            document.getElementById('fail-title').innerText = "ไม่สามารถปลดล็อคได้";
+                            document.getElementById('state-failed').style.display = 'block';
+                        }
+                    }
+                } else {
+                    // Still processing
+                    let msg = taskType ? `Converting to ${taskType}...` : "Cracking password...";
+                    consoleLog.textContent = `> Worker Node: Status [${data.status}] - ${msg}`;
+                    setTimeout(checkStatus, 2500);
+                }
+            })
+            .catch(err => {
+                consoleLog.textContent = `> Connection Error: ${err}`;
+                setTimeout(checkStatus, 5000);
+            });
+    }
+
+    // Cancel Task when user leaves page or closes app
+    function cancelTask() {
+        const cancelUrl = "{% url 'converter:check_worker_status' %}?task_id=" + taskId + "&cancel=1";
+        // Use keepalive to ensure the request completes even if the page is closed
+        fetch(cancelUrl, { keepalive: true, method: 'GET' });
+    }
+
+    // Listen for page exit or app close
+    window.addEventListener('pagehide', cancelTask);
+    /* Removed visibilitychange to allow users to switch tabs without cancelling */
+
+    // Start Polling
+    setTimeout(checkStatus, 1000);
+</script>
+
+{% endblock %}

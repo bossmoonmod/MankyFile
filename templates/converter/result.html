@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="tool-container">
+    <div class="tool-header">
+        <h1>ประมวลผลไฟล์สำเร็จ!</h1>
+        <p>ไฟล์ {{ file_type|default:"WORD" }} ของคุณถูกสร้างเรียบร้อยแล้ว</p>
+        {% if extra_message %}
+        <p style="color: #28a745; font-weight: bold; margin-top: 5px;">{{ extra_message }}</p>
+        {% endif %}
+    </div>
+
+    <div class="upload-area">
+        <div style="margin-bottom: 25px;">
+            <label for="filename-input"
+                style="display:block; margin-bottom: 8px; color:#555; font-weight: 500;">ตั้งชื่อไฟล์ที่ต้องการบันทึก:</label>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 5px;">
+                <input type="text" id="filename-input" value="merged_document"
+                    style="padding: 12px; border: 2px solid #ddd; border-radius: 8px; width: 280px; text-align: center; font-size: 16px; outline: none; transition: border-color 0.2s;">
+                <span id="file-extension" style="font-size: 16px; color: #666; font-weight: 500;"></span>
+            </div>
+        </div>
+
+        <a href="#" id="download-btn" class="btn-upload-big">
+            <span style="font-size: 20px;">ดาวน์โหลด {{ file_type|default:"WORD" }}</span>
+        </a>
+
+        <script>
+            const filenameInput = document.getElementById('filename-input');
+            const downloadBtn = document.getElementById('download-btn');
+            const fileExtSpan = document.getElementById('file-extension');
+            const fileType = "{{ file_type|default:'WORD' }}";
+
+            // Backend already provided the full correct download link
+            // Handle both variable names for maximum compatibility
+            const baseUrl = "{{ download_url }}" || "{{ file_url }}";
+
+            // Set file extension based on type
+            let extension = '.docx';
+            if (fileType === 'PDF') extension = '.pdf';
+            if (fileType === 'ZIP') extension = '.zip';
+            if (fileType === 'WORD') extension = '.docx';
+            if (fileType === 'PPTX') extension = '.pptx';
+            if (fileType === 'XLSX') extension = '.xlsx';
+            fileExtSpan.textContent = extension;
+
+            // Focus input on load for convenience
+            filenameInput.focus();
+            filenameInput.select();
+
+            // Download with custom filename using fetch + blob
+            downloadBtn.addEventListener('click', async function (e) {
+                e.preventDefault();
+
+                const customFilename = (filenameInput.value.trim() || 'merged_document') + extension;
+
+                try {
+                    // Show loading state
+                    downloadBtn.style.opacity = '0.6';
+                    downloadBtn.style.pointerEvents = 'none';
+
+                    // Fetch the file
+                    const response = await fetch(baseUrl);
+                    if (!response.ok) throw new Error('Download failed');
+
+                    // Convert to blob
+                    const blob = await response.blob();
+
+                    // Create download link
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = customFilename;
+                    document.body.appendChild(a);
+                    a.click();
+
+                    // Cleanup
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+
+                    // Restore button state
+                    downloadBtn.style.opacity = '1';
+                    downloadBtn.style.pointerEvents = 'auto';
+                } catch (error) {
+                    console.error('Download error:', error);
+                    alert('เกิดข้อผิดพลาดในการดาวน์โหลด');
+                    downloadBtn.style.opacity = '1';
+                    downloadBtn.style.pointerEvents = 'auto';
+                }
+            });
+
+            // Update input style on focus
+            filenameInput.addEventListener('focus', () => {
+                filenameInput.style.borderColor = '#e5322d';
+            });
+
+            filenameInput.addEventListener('blur', () => {
+                filenameInput.style.borderColor = '#ddd';
+            });
+
+            // Allow enter key to trigger download
+            filenameInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    downloadBtn.click();
+                }
+            });
+        </script>
+
+        <div style="margin-top: 40px; display: flex; gap: 20px; justify-content: center;">
+            <a href="{% url 'converter:index' %}"
+                style="color: #666; text-decoration: none; border: 1px solid #ccc; padding: 10px 20px; border-radius: 6px;">กลับหน้าหลัก</a>
+            <a href="{% url 'converter:delete_instant' %}" onclick="return confirm('ยืนยันลบไฟล์ทันที?');"
+                style="color: #666; text-decoration: none; border: 1px solid #ccc; padding: 10px 20px; border-radius: 6px;">ลบไฟล์ทันที</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

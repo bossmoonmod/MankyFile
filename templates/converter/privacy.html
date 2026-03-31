@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="legal-container">
+    <div class="legal-header">
+        <h1 data-i18n="privacy_title">{{ title }}</h1>
+        <p data-i18n="privacy_subtitle">{{ subtitle }}</p>
+    </div>
+
+    <div class="legal-content">
+        <section>
+            <h2 data-i18n="privacy_sec1_title">1. ความมุ่งมั่นในความเป็นส่วนตัว</h2>
+            <p data-i18n="privacy_sec1_content">MankyFile ตระหนักถึงความสำคัญของข้อมูลส่วนบุคคลของคุณ เรายึดมั่นในนโยบาย
+                "ความเป็นส่วนตัวโดยการออกแบบ" (Privacy by Design)
+                ซึ่งหมายความว่าเราออกแบบระบบเพื่อลดการเก็บข้อมูลให้เหลือน้อยที่สุดเท่าที่จำเป็นต่อการให้บริการ เท่านั้น
+            </p>
+        </section>
+
+        <section>
+            <h2 data-i18n="privacy_sec2_title">2. ความปลอดภัยและการเข้ารหัสข้อมูล</h2>
+            <p data-i18n="privacy_sec2_content">ความปลอดภัยของคุณคือสิ่งสำคัญที่สุดของเรา
+                ไฟล์ที่ถูกส่งระหว่างเครื่องคอมพิวเตอร์ของคุณและเซิร์ฟเวอร์ของเราจะถูกส่งผ่านโปรโตคอล HTTPS
+                ที่มีการเข้ารหัส SSL/TLS ระดับทางการทหาร และจะถูกทำลายทิ้งทันทีหลังเสร็จสิ้นภารกิจ</p>
+        </section>
+    </div>
+</div>
+
+<style>
+    :root {
+        --privacy-bg: #ffffff;
+        --privacy-text: #333333;
+        --privacy-heading: #1a1a1a;
+        --privacy-border: #eeeeee;
+        --privacy-accent: #3b82f6;
+        /* Privacy Blue */
+        --privacy-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    [data-theme="dark"] {
+        --privacy-bg: #1e1e1e;
+        --privacy-text: #b0b0b0;
+        --privacy-heading: #f0f0f0;
+        --privacy-border: #333333;
+        --privacy-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .legal-container {
+        max-width: 900px;
+        width: 100%;
+        margin: 40px auto;
+        padding: 20px;
+        background: var(--privacy-bg);
+        border-radius: 12px;
+        box-shadow: var(--privacy-shadow);
+        transition: all 0.3s ease;
+    }
+
+    .legal-header {
+        text-align: center;
+        padding: 40px 20px;
+        border-bottom: 1px solid var(--privacy-border);
+        margin-bottom: 30px;
+    }
+
+    .legal-header h1 {
+        font-size: 32px;
+        color: var(--privacy-heading);
+        margin-bottom: 10px;
+    }
+
+    .legal-header p {
+        font-size: 18px;
+        color: var(--privacy-text);
+    }
+
+    .legal-content {
+        padding: 0 20px 40px;
+        line-height: 1.8;
+    }
+
+    .legal-content section {
+        margin-bottom: 35px;
+    }
+
+    .legal-content h2 {
+        font-size: 22px;
+        color: var(--privacy-accent);
+        margin-bottom: 15px;
+        border-left: 4px solid var(--privacy-accent);
+        padding-left: 15px;
+    }
+
+    .legal-content p {
+        color: var(--privacy-text);
+        margin-bottom: 15px;
+    }
+
+    @media (max-width: 768px) {
+        .legal-container {
+            margin: 20px;
+            width: calc(100% - 40px);
+        }
+    }
+</style>
+{% endblock %}
