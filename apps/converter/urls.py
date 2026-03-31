@@ -6,7 +6,7 @@ from .views import (
     PDFToExcelView, PowerPointToPDFView, PDFToWordView, WordToPDFView,
     TermsView, PrivacyView, QRCodeGeneratorView, DeleteInstantView,
     ShortenURLView, RedirectShortLinkView, SystemCleanupView,
-    PDFToImageView, ImageToPDFView, ImageResizeView, ImageConvertView,
+    PDFToImageView, ArrangePDFToImageView, ImageToPDFView, ImageResizeView, ImageConvertView,
     ArrangeImageView, HostImageView,
     download_file
 )
@@ -43,6 +43,7 @@ urlpatterns = [
     path('privacy/', PrivacyView.as_view(), name='privacy'),
     path('qrcode-generator/', QRCodeGeneratorView.as_view(), name='qrcode_generator'),
     path('pdf-to-image/', PDFToImageView.as_view(), name='pdf_to_image'),
+    path('arrange-pdf-to-image/', ArrangePDFToImageView.as_view(), name='arrange_pdf_to_image'),
     path('image-to-pdf/', ImageToPDFView.as_view(), name='image_to_pdf'),
     path('arrange-image/', ArrangeImageView.as_view(), name='arrange_image'),
     path('image-resizer/', ImageResizeView.as_view(), name='image_resize'),

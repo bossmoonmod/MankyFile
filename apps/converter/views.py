@@ -1498,7 +1498,6 @@ class PDFToImageView(View):
         return render(request, 'converter/tool_base.html', context)
 
     def post(self, request):
-        import requests
         try:
             if 'files' in request.FILES:
                 uploaded_file = request.FILES.getlist('files')[0]
@@ -1508,15 +1507,104 @@ class PDFToImageView(View):
                 return redirect('converter:index')
             
             upload_instance = UploadedFile.objects.create(file=uploaded_file, original_filename=uploaded_file.name)
-            input_path = upload_instance.file.path
             
+            request.session['pdf_to_image_file_id'] = str(upload_instance.id)
+            request.session.modified = True
+            
+            return redirect('converter:arrange_pdf_to_image')
+            
+        except Exception as e:
+            return render(request, 'converter/tool_base.html', {'error': str(e), 'title': 'PDF เป็น Image'})
+
+class ArrangePDFToImageView(View):
+    def get(self, request):
+        file_id = request.session.get('pdf_to_image_file_id')
+        if not file_id:
+            return redirect('converter:pdf_to_image')
+            
+        try:
+            uploaded_file = UploadedFile.objects.get(id=file_id)
+        except UploadedFile.DoesNotExist:
+            return redirect('converter:pdf_to_image')
+            
+        import os
+        import fitz
+        from django.conf import settings
+        
+        pages_data = []
+        preview_dir_rel = f"previews/{file_id}"
+        preview_dir_abs = os.path.join(settings.MEDIA_ROOT, preview_dir_rel)
+        os.makedirs(preview_dir_abs, exist_ok=True)
+        
+        try:
+            doc = fitz.open(uploaded_file.file.path)
+            for i in range(len(doc)):
+                page = doc.load_page(i)
+                mat = fitz.Matrix(0.8, 0.8)
+                pix = page.get_pixmap(matrix=mat, alpha=False)
+                
+                img_filename = f"page_{i+1}.png"
+                img_path_abs = os.path.join(preview_dir_abs, img_filename)
+                
+                if not os.path.exists(img_path_abs):
+                    pix.save(img_path_abs)
+                    
+                img_url = f"{settings.MEDIA_URL}{preview_dir_rel}/{img_filename}"
+                
+                pages_data.append({
+                    'page_num': i + 1,
+                    'image_url': img_url
+                })
+        except Exception as e:
+            print(f"PDF to Image Thumbnail error: {e}")
+            
+        context = {
+            'file_id': file_id,
+            'pages': pages_data,
+            'filename': uploaded_file.original_filename or uploaded_file.file.name.split('/')[-1]
+        }
+        return render(request, 'converter/arrange_pdf_to_image.html', context)
+
+    def post(self, request):
+        import requests
+        import os
+        import PyPDF2
+        import uuid
+        from django.conf import settings
+        
+        file_id = request.POST.get('file_id')
+        ordered_pages = request.POST.getlist('page_order[]')
+        
+        if not file_id or not ordered_pages:
+            return redirect('converter:pdf_to_image')
+            
+        try:
+            uploaded_file = UploadedFile.objects.get(id=file_id)
+            
+            # 1. Extract selected pages to a temp PDF
+            temp_filename = f"temp_image_{uuid.uuid4()}.pdf"
+            temp_full_path = os.path.join(settings.MEDIA_ROOT, 'processed', temp_filename)
+            os.makedirs(os.path.dirname(temp_full_path), exist_ok=True)
+            
+            reader = PyPDF2.PdfReader(uploaded_file.file.path)
+            writer = PyPDF2.PdfWriter()
+            
+            for page_str in ordered_pages:
+                page_idx = int(page_str) - 1
+                if 0 <= page_idx < len(reader.pages):
+                    writer.add_page(reader.pages[page_idx])
+                    
+            with open(temp_full_path, 'wb') as out_f:
+                writer.write(out_f)
+                
+            # 2. Call Worker
             WORKER_URL = 'https://blilnkdex.biz.id/api.php'
             API_KEY = 'MANKY_SECRET_KEY_12345'
             
-            with open(input_path, 'rb') as f:
-                files = {'file': (uploaded_file.name, f, 'application/pdf')}
+            with open(temp_full_path, 'rb') as f:
+                files = {'file': (uploaded_file.original_filename, f, 'application/pdf')}
                 headers = {'X-API-KEY': API_KEY}
-                data = {'type': 'pdf-to-image'} # ZIP of images
+                data = {'type': 'pdf-to-image'}
                 
                 target_url = f"{WORKER_URL}?key={API_KEY}"
                 response = requests.post(target_url, files=files, data=data, headers=headers, timeout=300, verify=False)
@@ -1524,16 +1612,22 @@ class PDFToImageView(View):
                 if response.status_code == 200:
                     res_data = response.json()
                     task_id = res_data.get('task_id')
+                    
+                    if 'pdf_to_image_file_id' in request.session:
+                        del request.session['pdf_to_image_file_id']
+                        
                     return render(request, 'converter/worker_wait.html', {
                         'task_id': task_id,
                         'worker_host': 'https://blilnkdex.biz.id',
-                        'file_name': uploaded_file.name,
-                        'task_type': 'ZIP' # Output usually ZIP for multi-page
+                        'file_name': uploaded_file.original_filename,
+                        'task_type': 'ZIP'
                     })
                 else:
                     raise Exception(f"Worker Error: {response.status_code}")
+                    
         except Exception as e:
-            return render(request, 'converter/tool_base.html', {'error': str(e), 'title': 'PDF เป็น Image'})
+            print(f"PDF to Image dispatch error: {e}")
+            return redirect('converter:pdf_to_image')
 
 class ImageToPDFView(View):
     def get(self, request):
