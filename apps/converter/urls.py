@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     IndexView, ResultView, MergePDFView, SplitPDFView,
-    MergeWordView, ArrangeWordView, ArrangePDFView, 
+    MergeWordView, ArrangeWordView, ArrangePDFView, ArrangeSplitPDFView,
     DownloadFileView, CompressPDFView, PDFToPowerPointView, 
     PDFToExcelView, PowerPointToPDFView, PDFToWordView, WordToPDFView,
     TermsView, PrivacyView, QRCodeGeneratorView, DeleteInstantView,
@@ -29,6 +29,7 @@ urlpatterns = [
     path('merge-word/', MergeWordView.as_view(), name='merge_word'),
     path('arrange-word/', ArrangeWordView.as_view(), name='arrange_word'),
     path('arrange-pdf/', ArrangePDFView.as_view(), name='arrange_pdf'),
+    path('arrange-split-pdf/', ArrangeSplitPDFView.as_view(), name='arrange_split_pdf'),
     path('result/', ResultView.as_view(), name='result'),
     
     # Download routes (both old and new for compatibility)

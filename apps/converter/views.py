@@ -72,7 +72,6 @@ class SplitPDFView(View):
 
     def post(self, request):
         try:
-             # Handle multiple files input (name="files") from template
             if 'files' in request.FILES:
                 uploaded_file = request.FILES.getlist('files')[0]
             elif 'file' in request.FILES:
@@ -80,89 +79,111 @@ class SplitPDFView(View):
             else:
                 return redirect('converter:index')
             
-            # Save uploaded file
-            upload_instance = UploadedFile(file=uploaded_file)
+            upload_instance = UploadedFile(file=uploaded_file, original_filename=uploaded_file.name)
             upload_instance.save()
-            input_path = upload_instance.file.path
             
-            # Prepare output directory
-            job_id = str(uuid.uuid4())
-            output_dir = os.path.join(settings.MEDIA_ROOT, 'processed', job_id)
-            os.makedirs(output_dir, exist_ok=True)
+            request.session['split_pdf_file_id'] = str(upload_instance.id)
+            request.session.modified = True
             
-            # Split PDF using PyPDF2
-            import PyPDF2
-            import zipfile
+            return redirect('converter:arrange_split_pdf')
+
+        except Exception as e:
+            print(f"Error preparing split PDF: {e}")
+            context = {
+                'error': f"เกิดข้อผิดพลาดในการนำเข้าไฟล์: {str(e)}",
+                'title': 'แยกไฟล์ PDF'
+            }
+            return render(request, 'converter/tool_base.html', context)
+
+class ArrangeSplitPDFView(View):
+    def get(self, request):
+        file_id = request.session.get('split_pdf_file_id')
+        if not file_id:
+            return redirect('converter:split_pdf')
             
-            extracted_files = []
-            filename_base = os.path.splitext(os.path.basename(input_path))[0]
+        try:
+            uploaded_file = UploadedFile.objects.get(id=file_id)
+        except UploadedFile.DoesNotExist:
+            return redirect('converter:split_pdf')
             
-            with open(input_path, 'rb') as f:
-                reader = PyPDF2.PdfReader(f)
-                total_pages = len(reader.pages)
+        import PyPDF2
+        pages_data = []
+        try:
+            reader = PyPDF2.PdfReader(uploaded_file.file.path)
+            for i, page in enumerate(reader.pages):
+                text = page.extract_text()
+                lines = [l.strip() for l in text.split('\n') if l.strip()]
+                preview_data = [{'text': line, 'align': 'left', 'bold': False} for line in lines[:6]]
+                pages_data.append({
+                    'page_num': i + 1,
+                    'preview_data': preview_data
+                })
+        except Exception as e:
+            print(f"Split PDF Preview error: {e}")
+            
+        context = {
+            'file_id': file_id,
+            'pages': pages_data,
+            'filename': uploaded_file.original_filename or uploaded_file.file.name.split('/')[-1]
+        }
+        return render(request, 'converter/arrange_split_pdf.html', context)
+
+    def post(self, request):
+        file_id = request.POST.get('file_id')
+        ordered_pages = request.POST.getlist('page_order[]')
+        
+        if not file_id or not ordered_pages:
+            return redirect('converter:split_pdf')
+            
+        try:
+            uploaded_file = UploadedFile.objects.get(id=file_id)
+        except UploadedFile.DoesNotExist:
+            return redirect('converter:split_pdf')
+            
+        import PyPDF2
+        import os
+        from django.conf import settings
+        import uuid
+        from django.utils import timezone
+        
+        output_filename = f"split_{uuid.uuid4()}.pdf"
+        output_rel_path = f"processed/{output_filename}"
+        output_full_path = os.path.join(settings.MEDIA_ROOT, 'processed', output_filename)
+        os.makedirs(os.path.dirname(output_full_path), exist_ok=True)
+        
+        try:
+            reader = PyPDF2.PdfReader(uploaded_file.file.path)
+            writer = PyPDF2.PdfWriter()
+            
+            for page_str in ordered_pages:
+                page_idx = int(page_str) - 1
+                if 0 <= page_idx < len(reader.pages):
+                    writer.add_page(reader.pages[page_idx])
+                    
+            with open(output_full_path, 'wb') as out_f:
+                writer.write(out_f)
                 
-                for i in range(total_pages):
-                    writer = PyPDF2.PdfWriter()
-                    writer.add_page(reader.pages[i])
-                    
-                    page_filename = f"{filename_base}_page_{i+1}.pdf"
-                    page_path = os.path.join(output_dir, page_filename)
-                    
-                    with open(page_path, 'wb') as out_f:
-                        writer.write(out_f)
-                    extracted_files.append(page_filename)
-            
-            # Zip all extracted files
-            zip_filename = f"{filename_base}_split.zip"
-            zip_path = os.path.join(output_dir, zip_filename)
-            
-            with zipfile.ZipFile(zip_path, 'w') as zipf:
-                for file in extracted_files:
-                    file_abs_path = os.path.join(output_dir, file)
-                    zipf.write(file_abs_path, arcname=file)
-                    
-            # Cleanup: Delete individual PDF pages after zipping
-            # ensures only the ZIP file remains for the download view to find
-            for file in extracted_files:
-                try:
-                    os.remove(os.path.join(output_dir, file))
-                except Exception as cleanup_error:
-                    print(f"Cleanup error: {cleanup_error}")
-            
-            # Create ProcessedFile record for the ZIP
-            processed_rel_path = f"processed/{job_id}/{zip_filename}"
-            processed_file = ProcessedFile(
-                file=processed_rel_path
-            )
+            processed_file = ProcessedFile(file=output_rel_path)
             processed_file.save()
             
-            # Track usage statistics
             try:
                 stat, _ = DailyStat.objects.get_or_create(date=timezone.now().date())
                 stat.usage_count += 1
                 stat.save()
-            except Exception as e:
-                print(f"Stats error: {e}")
+            except: pass
             
-            # Generate ID-only download link
-            download_url = reverse('converter:download_file', kwargs={'file_id': processed_file.id})
+            if 'split_pdf_file_id' in request.session:
+                del request.session['split_pdf_file_id']
+                
+            return render(request, 'converter/result.html', {
+                'download_url': processed_file.file.url,
+                'file_id': processed_file.id,
+                'file_type': 'PDF'
+            })
             
-            context = {
-                'success': True,
-                'download_url': download_url,
-                'file_name': zip_filename, # User will download the ZIP
-                'file_type': 'ZIP', # For result template
-                'file_size': os.path.getsize(zip_path)
-            }
-            return render(request, 'converter/result.html', context)
-
         except Exception as e:
-            print(f"Error splitting PDF: {e}")
-            context = {
-                'error': f"เกิดข้อผิดพลาดในการแยกไฟล์: {str(e)}",
-                'title': 'แยกไฟล์ PDF'
-            }
-            return render(request, 'converter/tool_base.html', context)
+            print(f"Split extraction error: {e}")
+            return redirect('converter:split_pdf')
 
 class PDFToWordView(View):
     def get(self, request):
