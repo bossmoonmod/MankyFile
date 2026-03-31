@@ -16,25 +16,11 @@
                     <div class="card-actions">
                         <button type="button" class="btn-remove" onclick="removePage(this)">×</button>
                     </div>
-                    <div class="card-preview doc-preview-wrapper" style="margin-top:20px;">
-                        <!-- Realistic PDF Page Simulation -->
-                        <div class="doc-page-simulation real-text-preview">
-                            {% if page.preview_data %}
-                            {% for line in page.preview_data %}
-                            <div class="doc-text-line"
-                                style="text-align: {{ line.align }}; {% if line.bold %}font-weight: bold; color: #444;{% endif %}">
-                                {{ line.text }}
-                            </div>
-                            {% endfor %}
-                            {% else %}
-                            <div class="doc-line line-short"></div>
-                            <div class="doc-line line-long"></div>
-                            <div class="doc-line line-long"></div>
-                            <div class="doc-line line-medium"></div>
-                            {% endif %}
-
+                    <div class="card-preview doc-preview-wrapper" style="margin-top:10px; border: none; background: transparent; padding: 0;">
+                        <!-- Real PDF Thumbnail Preview -->
+                        <div style="width: 100%; height: 160px; background-image: url('{{ page.image_url }}'); background-size: contain; background-position: center top; background-repeat: no-repeat; border-radius: 4px; position: relative;">
                             <!-- PDF Identifier Badge -->
-                            <div class="pdf-indicator">PAGE</div>
+                            <div class="pdf-indicator" style="position: absolute; bottom: 0px; right: 0px;">PAGE</div>
                         </div>
                     </div>
                     <div class="card-info">

@@ -106,20 +106,39 @@ class ArrangeSplitPDFView(View):
         except UploadedFile.DoesNotExist:
             return redirect('converter:split_pdf')
             
-        import PyPDF2
+        import os
+        import fitz
+        from django.conf import settings
+        
         pages_data = []
+        preview_dir_rel = f"previews/{file_id}"
+        preview_dir_abs = os.path.join(settings.MEDIA_ROOT, preview_dir_rel)
+        os.makedirs(preview_dir_abs, exist_ok=True)
+        
         try:
-            reader = PyPDF2.PdfReader(uploaded_file.file.path)
-            for i, page in enumerate(reader.pages):
-                text = page.extract_text()
-                lines = [l.strip() for l in text.split('\n') if l.strip()]
-                preview_data = [{'text': line, 'align': 'left', 'bold': False} for line in lines[:6]]
+            doc = fitz.open(uploaded_file.file.path)
+            for i in range(len(doc)):
+                page = doc.load_page(i)
+                
+                # Render page to an image (thumbnail size to be fast)
+                mat = fitz.Matrix(0.8, 0.8) # Adjust zoom for quality vs speed
+                pix = page.get_pixmap(matrix=mat, alpha=False)
+                
+                img_filename = f"page_{i+1}.png"
+                img_path_abs = os.path.join(preview_dir_abs, img_filename)
+                
+                # Save thumbnail if it does not exist
+                if not os.path.exists(img_path_abs):
+                    pix.save(img_path_abs)
+                    
+                img_url = f"{settings.MEDIA_URL}{preview_dir_rel}/{img_filename}"
+                
                 pages_data.append({
                     'page_num': i + 1,
-                    'preview_data': preview_data
+                    'image_url': img_url
                 })
         except Exception as e:
-            print(f"Split PDF Preview error: {e}")
+            print(f"Split PDF Thumbnail error: {e}")
             
         context = {
             'file_id': file_id,
