@@ -8,9 +8,16 @@ class DailyStat(models.Model):
     def __str__(self):
         return f"{self.date}: {self.usage_count}"
 
+import os
+
+def secure_upload_path(instance, filename):
+    ext = filename.split('.')[-1] if '.' in filename else ''
+    secure_name = f"{uuid.uuid4().hex}.{ext}" if ext else uuid.uuid4().hex
+    return os.path.join('uploads', secure_name)
+
 class UploadedFile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    file = models.FileField(upload_to='uploads/%Y/%m/%d/')
+    file = models.FileField(upload_to=secure_upload_path)
     original_filename = models.CharField(max_length=255, blank=True, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
