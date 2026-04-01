@@ -11,11 +11,11 @@
         style="background: var(--card-bg); border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-top: 30px; text-align: left;">
 
         <!-- Preview -->
-        {% with final_url=res.direct_link|default:res.url|default:res.link %}
+        <!-- Preview -->
         <div style="text-align: center; margin-bottom: 40px;">
-            <img src="{{ final_url }}" alt="Preview Image"
+            <img src="{{ res.direct_link }}" alt="Preview Image"
                 style="max-width: 100%; max-height: 400px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);"
-                onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300?text=Image+Load+Error'; this.style.border='2px solid red'; console.error('Failed to load image: {{ final_url }}');">
+                onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300?text=Image+Load+Error'; this.style.border='2px solid red'; console.error('Failed to load image: {{ res.direct_link }}');">
             {% if res.expiry %}
             <p style="margin-top: 15px; color: #e5322d; font-weight: 600;">
                 <i class="fas fa-history"></i> รูปภาพนี้จะถูกลบอัตโนมัติเมื่อ: {{ res.expiry }}
@@ -36,7 +36,7 @@
             <div class="link-group">
                 <label>Viewer Link</label>
                 <div class="copy-box">
-                    <input type="text" value="{{ res.viewer_link|default:final_url }}" readonly>
+                    <input type="text" value="{{ res.viewer_link|default:res.direct_link }}" readonly>
                     <button onclick="copyToClipboard(this)">คัดลอก</button>
                 </div>
             </div>
@@ -44,7 +44,7 @@
             <div class="link-group">
                 <label>Direct Link (ใช้งานในเว็บ)</label>
                 <div class="copy-box">
-                    <input type="text" value="{{ final_url }}" readonly>
+                    <input type="text" value="{{ res.direct_link }}" readonly>
                     <button onclick="copyToClipboard(this)">คัดลอก</button>
                 </div>
             </div>
@@ -52,7 +52,7 @@
             <div class="link-group">
                 <label>HTML Embed</label>
                 <div class="copy-box">
-                    <input type="text" value="<img src=&quot;{{ final_url }}&quot; alt=&quot;Hosted Image&quot; />" readonly>
+                    <input type="text" value="<img src=&quot;{{ res.direct_link }}&quot; alt=&quot;Hosted Image&quot; />" readonly>
                     <button onclick="copyToClipboard(this)">คัดลอก</button>
                 </div>
             </div>
@@ -60,7 +60,7 @@
             <div class="link-group">
                 <label>Markdown (สำหรับ GitHub/Pantip)</label>
                 <div class="copy-box">
-                    <input type="text" value="![Hosted Image]({{ final_url }})" readonly>
+                    <input type="text" value="![Hosted Image]({{ res.direct_link }})" readonly>
                     <button onclick="copyToClipboard(this)">คัดลอก</button>
                 </div>
             </div>
@@ -68,13 +68,12 @@
             <div class="link-group">
                 <label>BBCode (สำหรับเว็บบอร์ด)</label>
                 <div class="copy-box">
-                    <input type="text" value="[url={{ res.viewer_link|default:final_url }}][img]{{ final_url }}[/img][/url]" readonly>
+                    <input type="text" value="[url={{ res.viewer_link|default:res.direct_link }}][img]{{ res.direct_link }}[/img][/url]" readonly>
                     <button onclick="copyToClipboard(this)">คัดลอก</button>
                 </div>
             </div>
             
         </div>
-        {% endwith %}
 
         <div style="margin-top: 40px; text-align: center;">
             <a href="{% url 'converter:host_image' %}" class="btn btn-secondary">อัพโหลดรูปใหม่</a>
