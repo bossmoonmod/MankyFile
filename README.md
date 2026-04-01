@@ -1,8 +1,7 @@
 # 📄 MankyFile - Premium PDF & Document Tools
 
-<a href="https://blilnkdex.biz.id/image_api.php?id=img_69cd2eb305543.png"><img src="https://blilnkdex.biz.id/image_api.php?id=img_69cd2eb305543" alt="ภาพ 2026 02 05 161716777" border="0"></a>
+<a href="https://blilnkdex.biz.id/image_api.php?id=img_69cd2eb305543.png"><img src="https://blilnkdex.biz.id/image_api.php?id=img_69cd2eb305543.png" alt="ภาพ 2026 02 05 161716777" border="0"></a>
 <!-- Note: Layout & Design Updated V.3 -->
-<img src="https://blilnkdex.biz.id/image_api.php?id=img_69cd2eb305543.png" border="0">
 
 **MankyFile** คือสุดยอดเครื่องมือจัดการเอกสารออนไลน์แบบ All-in-One ที่รวมฟีเจอร์แปลงไฟล์ PDF, Word, PowerPoint และ QR Code ไว้ในที่เดียว ออกแบบด้วยแนวคิด **"Mobile-First"** เพื่อการใช้งานที่ลื่นไหลบนมือถือ พร้อมระบบความปลอดภัยระดับสูง
 
