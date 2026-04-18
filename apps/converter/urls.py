@@ -7,7 +7,7 @@ from .views import (
     TermsView, PrivacyView, QRCodeGeneratorView, DeleteInstantView,
     ShortenURLView, RedirectShortLinkView, SystemCleanupView,
     PDFToImageView, ArrangePDFToImageView, ImageToPDFView, ImageResizeView, ImageConvertView,
-    ArrangeImageView, HostImageView,
+    ArrangeImageView, HostImageView, HostImageResultView,
     download_file
 )
 from . import views_unlock
@@ -49,6 +49,7 @@ urlpatterns = [
     path('image-resizer/', ImageResizeView.as_view(), name='image_resize'),
     path('image-convert/', ImageConvertView.as_view(), name='image_convert'),
     path('host-image/', HostImageView.as_view(), name='host_image'),
+    path('host-image/result/', HostImageResultView.as_view(), name='host_image_result'),
     path('delete-instant/', DeleteInstantView.as_view(), name='delete_instant'),
     path('unlock-pdf/', views_unlock.UnlockPDFView.as_view(), name='unlock_pdf'),
     path('check-worker-status/', views_unlock.check_worker_status, name='check_worker_status'),

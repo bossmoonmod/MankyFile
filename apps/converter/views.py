@@ -1992,10 +1992,8 @@ class HostImageView(View):
             if response.status_code == 200:
                 res_data = response.json()
                 if res_data.get('success'):
-                    return render(request, 'converter/host_image_result.html', {
-                        'res': res_data,
-                        'title': 'ผลการอัพโหลดรูปภาพ'
-                    })
+                    request.session['host_image_result'] = res_data
+                    return redirect('converter:host_image_result')
                 else:
                     raise Exception(res_data.get('error', 'Unknown error'))
             else:
@@ -2006,3 +2004,14 @@ class HostImageView(View):
                 'error': str(e),
                 'title': 'อัพโหลดรูปภาพ'
             })
+
+class HostImageResultView(View):
+    def get(self, request):
+        res_data = request.session.get('host_image_result')
+        if not res_data:
+            return redirect('converter:host_image')
+            
+        return render(request, 'converter/host_image_result.html', {
+            'res': res_data,
+            'title': 'ผลการอัพโหลดรูปภาพ'
+        })
